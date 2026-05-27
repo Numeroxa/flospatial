@@ -1820,16 +1820,12 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
   const occupied = new Set(shape.map((cube) => cubeKey(cube)));
 
   const sortedCubes = [...shape].sort((a, b) => {
-    const projectedA = projectCube(a);
-    const projectedB = projectCube(b);
-
-    const depthA = projectedA.y + a.z * 4;
-    const depthB = projectedB.y + b.z * 4;
+    const depthA = a.x + a.y + a.z * 1.2;
+    const depthB = b.x + b.y + b.z * 1.2;
 
     if (depthA !== depthB) return depthA - depthB;
-    if (a.x + a.y !== b.x + b.y) return a.x + a.y - (b.x + b.y);
-    if (a.x !== b.x) return a.x - b.x;
     if (a.y !== b.y) return a.y - b.y;
+    if (a.x !== b.x) return a.x - b.x;
     return a.z - b.z;
   });
 
@@ -1866,45 +1862,6 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
     return !hasCubeAt(cube.x + 1, cube.y, cube.z);
   }
 
-  const renderedFaces = sortedCubes.flatMap((cube, cubeIndex) => {
-    const faces = getCubeFaces(cube);
-    const projected = projectCube(cube);
-    const baseDepth = projected.y + cube.z * 4;
-
-    return [
-      isLeftExposed(cube)
-        ? {
-            key: `${cube.x}-${cube.y}-${cube.z}-left-${cubeIndex}`,
-            points: faces.left,
-            fill: "#C5CED8",
-            stroke: "rgba(17,20,24,0.32)",
-            strokeWidth: 1.1,
-            depth: baseDepth + 0.05,
-          }
-        : null,
-      isRightExposed(cube)
-        ? {
-            key: `${cube.x}-${cube.y}-${cube.z}-right-${cubeIndex}`,
-            points: faces.right,
-            fill: "#AEBBC7",
-            stroke: "rgba(17,20,24,0.32)",
-            strokeWidth: 1.1,
-            depth: baseDepth + 0.1,
-          }
-        : null,
-      isTopExposed(cube)
-        ? {
-            key: `${cube.x}-${cube.y}-${cube.z}-top-${cubeIndex}`,
-            points: faces.top,
-            fill: "#DDE3EA",
-            stroke: "rgba(17,20,24,0.28)",
-            strokeWidth: 1.05,
-            depth: baseDepth + 0.15,
-          }
-        : null,
-    ].filter(Boolean);
-  }).sort((a, b) => (a?.depth ?? 0) - (b?.depth ?? 0));
-
   return (
     <svg
       viewBox={dynamicViewBox}
@@ -1917,18 +1874,48 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
         : "h-36 w-36 sm:h-44 sm:w-44"}
       aria-hidden="true"
     >
-      <g transform="translate(0, 10)" style={{ shapeRendering: "geometricPrecision" }}>
-        {renderedFaces.map((face) =>
-          face ? (
-            <polygon
-              key={face.key}
-              points={toPoints(face.points)}
-              fill={face.fill}
-              stroke={face.stroke}
-              strokeWidth={face.strokeWidth}
-            />
-          ) : null
-        )}
+      <g
+        transform="translate(0, 10)"
+        style={{ shapeRendering: "geometricPrecision" }}
+        opacity="0.98"
+      >
+        {sortedCubes.map((cube, index) => {
+          const faces = getCubeFaces(cube);
+
+          return (
+            <g key={`${cube.x}-${cube.y}-${cube.z}-${index}`}>
+              {isLeftExposed(cube) && (
+                <polygon
+                  points={toPoints(faces.left)}
+                  fill="#C7D0DA"
+                  stroke="rgba(17,20,24,0.3)"
+                  strokeWidth="1.05"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )}
+
+              {isRightExposed(cube) && (
+                <polygon
+                  points={toPoints(faces.right)}
+                  fill="#AAB7C4"
+                  stroke="rgba(17,20,24,0.32)"
+                  strokeWidth="1.05"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )}
+
+              {isTopExposed(cube) && (
+                <polygon
+                  points={toPoints(faces.top)}
+                  fill="#E1E6EC"
+                  stroke="rgba(17,20,24,0.26)"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )}
+            </g>
+          );
+        })}
       </g>
     </svg>
   );
