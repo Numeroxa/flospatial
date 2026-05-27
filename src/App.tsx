@@ -1867,7 +1867,7 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
       viewBox={dynamicViewBox}
       className={large
         ? compact
-          ? "h-56 w-56 sm:h-72 sm:w-72"
+          ? "h-40 w-40 sm:h-56 sm:w-56 lg:h-72 lg:w-72"
           : "h-64 w-64 sm:h-80 sm:w-80"
         : compact
         ? "h-32 w-32 sm:h-40 sm:w-40"
@@ -2517,7 +2517,7 @@ function SessionScreen({ onReturnHome, sessionLength }: { onReturnHome: () => vo
                 ? "Reference object — stabilised presentation"
                 : "Reference object"}
             </div>
-            <div className="flex min-h-[180px] items-center justify-center sm:min-h-[240px] lg:min-h-[360px]">
+            <div className="flex min-h-[135px] items-center justify-center sm:min-h-[220px] lg:min-h-[360px]">
               <ShapeRenderer
                 shape={currentPuzzle.referenceShape}
                 large
@@ -2560,11 +2560,19 @@ function SessionScreen({ onReturnHome, sessionLength }: { onReturnHome: () => vo
           </section>
         </div>
 
-        <div className="mt-8 min-h-[40px] text-center text-lg text-[#DCE3EA] transition-all duration-300 ease-out">
+        <div className="mt-8 hidden min-h-[40px] text-center text-lg text-[#DCE3EA] transition-all duration-300 ease-out sm:block">
           {showFeedback && selectedIndex !== null && <span className="inline-block rounded-xl border border-white/5 bg-white/[0.02] px-5 py-3">
               {getResponseFeedback(currentPuzzle, selectedIndex)}
             </span>}
         </div>
+
+        {showFeedback && selectedIndex !== null && (
+          <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-5 sm:hidden">
+            <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-[#171C23]/95 px-5 py-4 text-center text-sm leading-relaxed text-[#DCE3EA] shadow-2xl shadow-black/40 backdrop-blur-md">
+              {getResponseFeedback(currentPuzzle, selectedIndex)}
+            </div>
+          </div>
+        )}
 
         {session.recentInsights.length > 0 && (
           <section className="mt-12 rounded-[28px] border border-white/5 bg-[#171C23] p-8">
