@@ -455,6 +455,78 @@ const SEED_SHAPE_FAMILIES: Shape[] = [
     { x: 0, y: 1, z: 0 },
     { x: 0, y: 1, z: 1 },
   ],
+
+  // cantilever / overhang forms
+  [
+    { x: 0, y: 0, z: 0 },
+    { x: 1, y: 0, z: 0 },
+    { x: 1, y: 0, z: 1 },
+    { x: 2, y: 0, z: 1 },
+    { x: 3, y: 0, z: 1 },
+    { x: 1, y: 1, z: 0 },
+  ],
+  [
+    { x: 0, y: 0, z: 0 },
+    { x: 0, y: 1, z: 0 },
+    { x: 0, y: 1, z: 1 },
+    { x: 0, y: 2, z: 1 },
+    { x: 0, y: 3, z: 1 },
+    { x: 1, y: 1, z: 0 },
+  ],
+
+  // negative-space / frame-like forms
+  [
+    { x: 0, y: 0, z: 0 },
+    { x: 1, y: 0, z: 0 },
+    { x: 2, y: 0, z: 0 },
+    { x: 0, y: 1, z: 0 },
+    { x: 2, y: 1, z: 0 },
+    { x: 2, y: 1, z: 1 },
+  ],
+  [
+    { x: 0, y: 0, z: 0 },
+    { x: 0, y: 1, z: 0 },
+    { x: 0, y: 2, z: 0 },
+    { x: 1, y: 0, z: 0 },
+    { x: 1, y: 2, z: 0 },
+    { x: 1, y: 2, z: 1 },
+  ],
+
+  // asymmetric bridge forms
+  [
+    { x: 0, y: 0, z: 0 },
+    { x: 1, y: 0, z: 0 },
+    { x: 2, y: 0, z: 0 },
+    { x: 0, y: 0, z: 1 },
+    { x: 2, y: 0, z: 1 },
+    { x: 2, y: 1, z: 1 },
+  ],
+  [
+    { x: 0, y: 0, z: 0 },
+    { x: 0, y: 1, z: 0 },
+    { x: 0, y: 2, z: 0 },
+    { x: 0, y: 0, z: 1 },
+    { x: 0, y: 2, z: 1 },
+    { x: 1, y: 2, z: 1 },
+  ],
+
+  // rotational anchor traps
+  [
+    { x: 0, y: 0, z: 0 },
+    { x: 1, y: 0, z: 0 },
+    { x: 2, y: 0, z: 0 },
+    { x: 1, y: 1, z: 0 },
+    { x: 1, y: 1, z: 1 },
+    { x: 2, y: 1, z: 1 },
+  ],
+  [
+    { x: 0, y: 0, z: 0 },
+    { x: 0, y: 1, z: 0 },
+    { x: 0, y: 2, z: 0 },
+    { x: 1, y: 1, z: 0 },
+    { x: 1, y: 1, z: 1 },
+    { x: 1, y: 2, z: 1 },
+  ],
 ];
 
 function getSeedShape(random: () => number): Shape {
@@ -1748,12 +1820,16 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
   const occupied = new Set(shape.map((cube) => cubeKey(cube)));
 
   const sortedCubes = [...shape].sort((a, b) => {
-    const depthA = a.x + a.y + a.z * 1.6;
-    const depthB = b.x + b.y + b.z * 1.6;
+    const projectedA = projectCube(a);
+    const projectedB = projectCube(b);
+
+    const depthA = projectedA.y + a.z * 4;
+    const depthB = projectedB.y + b.z * 4;
 
     if (depthA !== depthB) return depthA - depthB;
-    if (a.y !== b.y) return a.y - b.y;
+    if (a.x + a.y !== b.x + b.y) return a.x + a.y - (b.x + b.y);
     if (a.x !== b.x) return a.x - b.x;
+    if (a.y !== b.y) return a.y - b.y;
     return a.z - b.z;
   });
 
@@ -1792,7 +1868,8 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
 
   const renderedFaces = sortedCubes.flatMap((cube, cubeIndex) => {
     const faces = getCubeFaces(cube);
-    const baseDepth = cube.x + cube.y + cube.z * 1.6;
+    const projected = projectCube(cube);
+    const baseDepth = projected.y + cube.z * 4;
 
     return [
       isLeftExposed(cube)
@@ -1800,9 +1877,9 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
             key: `${cube.x}-${cube.y}-${cube.z}-left-${cubeIndex}`,
             points: faces.left,
             fill: "#C5CED8",
-            stroke: "rgba(0,0,0,0.22)",
+            stroke: "rgba(17,20,24,0.32)",
             strokeWidth: 1.1,
-            depth: baseDepth + 0.1,
+            depth: baseDepth + 0.05,
           }
         : null,
       isRightExposed(cube)
@@ -1810,9 +1887,9 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
             key: `${cube.x}-${cube.y}-${cube.z}-right-${cubeIndex}`,
             points: faces.right,
             fill: "#AEBBC7",
-            stroke: "rgba(0,0,0,0.22)",
+            stroke: "rgba(17,20,24,0.32)",
             strokeWidth: 1.1,
-            depth: baseDepth + 0.2,
+            depth: baseDepth + 0.1,
           }
         : null,
       isTopExposed(cube)
@@ -1820,9 +1897,9 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
             key: `${cube.x}-${cube.y}-${cube.z}-top-${cubeIndex}`,
             points: faces.top,
             fill: "#DDE3EA",
-            stroke: "rgba(0,0,0,0.2)",
+            stroke: "rgba(17,20,24,0.28)",
             strokeWidth: 1.05,
-            depth: baseDepth + 0.3,
+            depth: baseDepth + 0.15,
           }
         : null,
     ].filter(Boolean);
@@ -1840,7 +1917,7 @@ function ShapeRenderer({ shape, large = false, compact = false }: { shape: Shape
         : "h-36 w-36 sm:h-44 sm:w-44"}
       aria-hidden="true"
     >
-      <g transform="translate(0, 10)">
+      <g transform="translate(0, 10)" style={{ shapeRendering: "geometricPrecision" }}>
         {renderedFaces.map((face) =>
           face ? (
             <polygon
