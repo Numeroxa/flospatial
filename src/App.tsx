@@ -2512,10 +2512,15 @@ function SessionScreen({ onReturnHome, sessionLength }: { onReturnHome: () => vo
           }`}
         >
           <section className="sticky top-0 z-20 rounded-[28px] border border-white/5 bg-[#171C23]/95 p-5 shadow-2xl shadow-black/20 backdrop-blur-md lg:static lg:rounded-[32px] lg:p-10 lg:backdrop-blur-0">
-            <div className="mb-6 text-sm text-[#8D98A6]">
-              {session.phase === "recovery"
-                ? "Reference object — stabilised presentation"
-                : "Reference object"}
+            <div className="mb-4 flex items-center justify-between gap-4 text-sm text-[#8D98A6] lg:mb-6">
+              <span>
+                {session.phase === "recovery"
+                  ? "Reference object — stabilised presentation"
+                  : "Reference object"}
+              </span>
+              <span className="text-xs tracking-[0.16em] text-[#6E7A88] lg:hidden">
+                {session.questionIndex + 1} / {sessionLength}
+              </span>
             </div>
             <div className="flex min-h-[135px] items-center justify-center sm:min-h-[220px] lg:min-h-[360px]">
               <ShapeRenderer
@@ -2567,8 +2572,8 @@ function SessionScreen({ onReturnHome, sessionLength }: { onReturnHome: () => vo
         </div>
 
         {showFeedback && selectedIndex !== null && (
-          <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-5 sm:hidden">
-            <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-[#171C23]/95 px-5 py-4 text-center text-sm leading-relaxed text-[#DCE3EA] shadow-2xl shadow-black/40 backdrop-blur-md">
+          <div className="fixed inset-x-0 z-40 px-4 sm:hidden" style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)" }}>
+            <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-[#171C23]/95 px-4 py-3 text-center text-sm leading-relaxed text-[#DCE3EA] shadow-2xl shadow-black/40 backdrop-blur-md">
               {getResponseFeedback(currentPuzzle, selectedIndex)}
             </div>
           </div>
