@@ -2374,6 +2374,7 @@ function SessionScreen({ onReturnHome, sessionLength }: { onReturnHome: () => vo
   const [questionStartedAt, setQuestionStartedAt] = useState(Date.now());
   const [profileSaved, setProfileSaved] = useState(false);
   const pendingTimeoutsRef = useRef<number[]>([]);
+  const mobileScrollAnchorRef = useRef<HTMLDivElement | null>(null);
 
   const currentPuzzle = useMemo(() => {
     if (session.questionIndex >= sessionLength) return null;
@@ -2383,6 +2384,19 @@ function SessionScreen({ onReturnHome, sessionLength }: { onReturnHome: () => vo
   const compactPresentation = currentPuzzle
     ? currentPuzzle.profile.verticality >= 3 || currentPuzzle.profile.branching >= 6
     : false;
+
+  useEffect(() => {
+    if (typeof window === "undefined" || session.questionIndex === 0) return;
+
+    if (window.innerWidth < 1024) {
+      window.requestAnimationFrame(() => {
+        mobileScrollAnchorRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    }
+  }, [session.questionIndex]);
 
   useEffect(() => {
     if (currentPuzzle || profileSaved) return;
@@ -2507,6 +2521,7 @@ function SessionScreen({ onReturnHome, sessionLength }: { onReturnHome: () => vo
         </div>
 
         <div
+          ref={mobileScrollAnchorRef}
           className={`grid gap-6 transition-all duration-150 ease-out lg:grid-cols-[0.8fr_1.2fr] lg:gap-10 ${
             isTransitioningPuzzle ? "opacity-40 scale-[0.995]" : "opacity-100 scale-100"
           }`}
