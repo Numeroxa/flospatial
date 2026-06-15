@@ -10,7 +10,7 @@ npm install
 npm run dev
 ```
 
-3. Open the local address shown in the terminal, usually:
+3. Open the local address  shown in the terminal, usually:
 
 ```text
 http://localhost:5173/
