@@ -11,10 +11,6 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,9 +22,11 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install --legacy-peer-deps
+      - name: Install required packages
+        run: npm install vite @vitejs/plugin-react @tailwindcss/vite react react-dom typescript @types/react @types/react-dom --legacy-peer-deps
 
-      - run: npx vite build
+      - name: Build
+        run: npx vite build
 
       - uses: actions/upload-pages-artifact@v3
         with:
