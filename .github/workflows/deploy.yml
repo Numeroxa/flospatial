@@ -25,8 +25,8 @@ jobs:
       - name: Install required packages
         run: npm install vite @vitejs/plugin-react @tailwindcss/vite react react-dom typescript @types/react @types/react-dom --legacy-peer-deps
 
-      - name: Build
-        run: npx vite build
+     - name: Build
+  run: npx --yes --package vite@5.4.11 --package @vitejs/plugin-react@4.3.4 --package @tailwindcss/vite@4.1.16 vite build
 
       - uses: actions/upload-pages-artifact@v3
         with:
