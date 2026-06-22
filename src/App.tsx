@@ -564,6 +564,9 @@ function createGuidedHydraulicPracticeSession(): AssessmentSession {
 function createMixedMechanicalPracticeSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "mixed_mechanical_practice", pathwayId: "fire_service", startedAt: now(), questionIds: mixedMechanicalPracticeQuestions.map((q) => q.questionId) };
 }
+function createGuidedGearPracticeSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "guided_gear_practice", pathwayId: "fire_service", startedAt: now(), questionIds: guidedGearPracticeQuestions.map((q) => q.questionId) };
+}
 function createAssessmentResponse(sessionId: string, question: MvpQuestion, selectedOptionId: string | null, responseTimeMs: number, notSureSelected: boolean): AssessmentResponse {
   return { responseId: id("response"), sessionId, questionId: question.questionId, selectedOptionId, correct: selectedOptionId === question.correctOptionId, responseTimeMs, notSureSelected, answeredAt: now() };
 }
