@@ -25,10 +25,10 @@ jobs:
       - name: Install packages
         run: npm install vite@5.4.11 rollup@4.24.0 @vitejs/plugin-react@4.3.4 @tailwindcss/vite@4.1.16 react@18.3.1 react-dom@18.3.1 typescript@5.6.3 @types/react@18.3.12 @types/react-dom@18.3.1 --legacy-peer-deps
 
-           - name: Build
-        run: npx --yes vite@5.4.11 build
-
-      - uses: actions/upload-pages-artifact@v3
+       - name: Build
+         run: npx --yes vite@5.4.11 build
+           
+       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
