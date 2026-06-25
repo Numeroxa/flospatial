@@ -1273,6 +1273,189 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 function Shell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) { return <main className="min-h-screen bg-[#111418] text-[#F4F6F8]"><header className="border-b border-white/5"><div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6"><div><div className="text-xl font-semibold tracking-wide">FloSpatial</div><div className="mt-1 text-xs tracking-[0.18em] text-[#6E7A88]">Preparation intelligence</div></div><div className="text-sm text-[#8D98A6]">{right ?? "Progress saved locally"}</div></div></header>{children}</main>; }
 function Badge({ children }: { children: React.ReactNode }) { return <span className="rounded-full border border-[#5ED3F3]/20 bg-[#5ED3F3]/10 px-3 py-1 text-xs font-medium text-[#BFF3FF]">{children}</span>; }
 
+
+type TimelineEntry = {
+  id: string;
+  title: string;
+  detail: string;
+  completedAt?: string;
+  current?: boolean;
+};
+
+function formatTimelineDate(value?: string) {
+  if (!value) return "";
+  try {
+    return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function firstSessionCompletedAt(journey: MvpGuestJourney, sessionType: AssessmentSession["sessionType"]) {
+  return journey.sessions.find((session) => session.sessionType === sessionType && session.completedAt)?.completedAt;
+}
+
+function firstModuleCompletedAt(journey: MvpGuestJourney, moduleId: LearningModuleId) {
+  return journey.moduleCompletions.find((completion) => completion.moduleId === moduleId)?.completedAt;
+}
+
+function hasRecommendation(journey: MvpGuestJourney, types: Recommendation["recommendationType"][]) {
+  return journey.recommendations.some((recommendation) => types.includes(recommendation.recommendationType));
+}
+
+function buildAdvisorTimelineEntries(journey: MvpGuestJourney): TimelineEntry[] {
+  const entries: TimelineEntry[] = [];
+  const baselineCompletedAt = firstSessionCompletedAt(journey, "mechanical_starting_point");
+  const hydraulicModuleAt = firstModuleCompletedAt(journey, "hydraulic_fundamentals");
+  const gearModuleAt = firstModuleCompletedAt(journey, "gear_fundamentals");
+  const guidedHydraulicAt = firstSessionCompletedAt(journey, "guided_hydraulic_practice");
+  const mixedAt = firstSessionCompletedAt(journey, "mixed_mechanical_practice");
+  const guidedGearAt = firstSessionCompletedAt(journey, "guided_gear_practice");
+  const currentRecommendation = getCurrentRecommendation(journey);
+
+  if (baselineCompletedAt || journey.competencyEvidence.length > 0) {
+    entries.push({
+      id: "initial-assessment",
+      title: "Initial Assessment completed",
+      completedAt: baselineCompletedAt,
+      detail: "FloSpatial gathered starting evidence across mechanical reasoning areas and used it to identify an initial preparation direction rather than simply showing a score.",
+    });
+  }
+
+  if (journey.constraints.some((constraint) => constraint.subcompetency === "hydraulics") || hasRecommendation(journey, ["start_hydraulic_fundamentals", "begin_guided_hydraulic_practice", "start_applied_hydraulic_problems", "begin_mixed_mechanical_practice"])) {
+    entries.push({
+      id: "hydraulic-focus",
+      title: "Hydraulic focus identified",
+      completedAt: journey.milestones.find((milestone) => milestone.type === "first_focus_identified")?.createdAt,
+      detail: "The early evidence suggested hydraulic-force reasoning was the most useful first preparation focus. Hydraulic Fundamentals was recommended to address that specific foundation area.",
+    });
+  }
+
+  if (hydraulicModuleAt) {
+    entries.push({
+      id: "hydraulic-fundamentals",
+      title: "Hydraulic Fundamentals completed",
+      completedAt: hydraulicModuleAt,
+      detail: "Core hydraulic concepts were completed. FloSpatial then recommended guided practice to check whether those concepts were beginning to transfer into problem solving.",
+    });
+  }
+
+  if (guidedHydraulicAt || journey.practiceSummaries.some((summary) => summary.sessionType === "guided_hydraulic_practice")) {
+    entries.push({
+      id: "guided-hydraulic-practice",
+      title: "Guided Hydraulic Practice completed",
+      completedAt: guidedHydraulicAt,
+      detail: "Guided practice added follow-up evidence after the hydraulic learning module. The advisor used this to decide whether to continue practice, review fundamentals, or move toward applied/mixed practice.",
+    });
+  }
+
+  if (hasRecommendation(journey, ["begin_mixed_mechanical_practice", "start_gear_fundamentals", "return_to_mixed_mechanical_practice"])) {
+    entries.push({
+      id: "hydraulic-transfer",
+      title: "Hydraulic transfer checked",
+      completedAt: journey.milestones.find((milestone) => milestone.type === "first_improvement_signal")?.createdAt,
+      detail: "FloSpatial treated the hydraulic pathway as an evidence loop: learn the concept, practise it, then check whether it remains stable when the context becomes less guided.",
+    });
+  }
+
+  if (mixedAt || journey.practiceSummaries.some((summary) => summary.sessionType === "mixed_mechanical_practice")) {
+    entries.push({
+      id: "mixed-mechanical-practice",
+      title: "Mixed Mechanical Practice completed",
+      completedAt: mixedAt,
+      detail: "Mixed practice reintroduced hydraulics, gears, pulleys and levers together. This helped the advisor look for the next useful preparation focus rather than staying fixed on the first one.",
+    });
+  }
+
+  if (hasRecommendation(journey, ["start_gear_fundamentals", "begin_guided_gear_practice", "continue_guided_gear_practice", "review_gear_fundamentals", "return_to_mixed_mechanical_practice"])) {
+    entries.push({
+      id: "gear-focus",
+      title: "Gear focus identified",
+      completedAt: journey.milestones.find((milestone) => milestone.type === "second_focus_identified")?.createdAt,
+      detail: "After mixed mechanical practice, gear reasoning became the next preparation focus. This is a second-stage recommendation, showing that FloSpatial can move beyond the original hydraulic pathway.",
+    });
+  }
+
+  if (gearModuleAt) {
+    entries.push({
+      id: "gear-fundamentals",
+      title: "Gear Fundamentals completed",
+      completedAt: gearModuleAt,
+      detail: "Gear direction, idler gears, gear trains and gear-size concepts were reviewed. FloSpatial then recommended guided gear practice to check whether those concepts transfer into practice.",
+    });
+  }
+
+  if (guidedGearAt || journey.practiceSummaries.some((summary) => summary.sessionType === "guided_gear_practice")) {
+    entries.push({
+      id: "guided-gear-practice",
+      title: "Guided Gear Practice completed",
+      completedAt: guidedGearAt,
+      detail: "Guided gear practice added direct evidence about direction changes, idlers and gear-size reasoning. The advisor can now decide whether to return to mixed practice or continue strengthening gears.",
+    });
+  }
+
+  if (currentRecommendation) {
+    entries.push({
+      id: "current-recommendation",
+      title: currentRecommendation.title,
+      current: true,
+      detail: "This is the current next step. FloSpatial is recommending it because of the evidence gathered so far, not simply because it is the next item in a fixed course sequence.",
+    });
+  }
+
+  return entries;
+}
+
+function AdvisorTimelineCard({ journey }: { journey: MvpGuestJourney }) {
+  const entries = buildAdvisorTimelineEntries(journey);
+  const [expandedId, setExpandedId] = useState<string | null>(entries[0]?.id ?? null);
+
+  if (!entries.length) {
+    return null;
+  }
+
+  return (
+    <Card className="lg:col-span-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Your preparation journey</div>
+          <h3 className="mt-3 text-2xl font-semibold">What FloSpatial has learned so far</h3>
+        </div>
+        <Badge>{entries.length} steps</Badge>
+      </div>
+      <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#9AA3B2]">
+        This timeline shows the reasoning story behind your current recommendation. It focuses on evidence and next steps rather than raw scores.
+      </p>
+      <div className="mt-7 space-y-3">
+        {entries.map((entry) => {
+          const isExpanded = expandedId === entry.id;
+          return (
+            <button
+              key={entry.id}
+              type="button"
+              onClick={() => setExpandedId(isExpanded ? null : entry.id)}
+              className={`w-full rounded-2xl border p-4 text-left transition ${entry.current ? "border-[#5ED3F3]/35 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-white/20"}`}
+            >
+              <div className="flex items-start gap-4">
+                <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${entry.current ? "border-[#5ED3F3]/50 bg-[#5ED3F3]/15 text-[#D9F8FF]" : "border-white/15 bg-white/5 text-[#BFF3FF]"}`}>
+                  {entry.current ? "→" : "✓"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="font-semibold text-[#E8EEF5]">{entry.title}</div>
+                    {entry.completedAt && <div className="text-xs uppercase tracking-[0.14em] text-[#6E7A88]">{formatTimelineDate(entry.completedAt)}</div>}
+                  </div>
+                  {isExpanded && <p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">{entry.detail}</p>}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 function LandingScreen({ onBegin, onLoadTestScenario }: { onBegin: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) { return <Shell><section className="mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-center px-8 py-20"><div className="max-w-2xl"><Badge>No account or email required to begin</Badge><h1 className="mt-8 text-5xl font-semibold leading-tight tracking-tight md:text-6xl">Prepare smarter for selection assessments.</h1><p className="mt-8 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">FloSpatial helps you identify what to work on, why it matters, and what to do next.</p><div className="mt-12"><PrimaryButton onClick={onBegin}>Begin preparation</PrimaryButton></div></div><div className="mt-20 grid gap-5 md:grid-cols-3"><Card><h3 className="text-lg font-semibold">Find your focus</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">FloSpatial looks for the preparation area most likely to matter next.</p></Card><Card><h3 className="text-lg font-semibold">Understand why</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Every major recommendation includes a clear explanation.</p></Card><Card><h3 className="text-lg font-semibold">Track progress</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Your preparation journey is saved on this device.</p></Card></div><div className="mt-10"><TestScenarioPanel onLoad={onLoadTestScenario} /></div></section></Shell>; }
 function PathwaySelectionScreen({ onSelect }: { onSelect: () => void }) { return <Shell><section className="mx-auto max-w-5xl px-8 py-16"><h1 className="text-4xl font-semibold">Choose your preparation pathway</h1><p className="mt-5 max-w-2xl text-[#9AA3B2]">FloSpatial adapts recommendations to the type of selection assessment you are preparing for.</p><div className="mt-10 grid gap-5 md:grid-cols-2"><Card className="border-[#5ED3F3]/20"><div className="flex justify-between gap-4"><h2 className="text-2xl font-semibold">Fire Service</h2><Badge>Available</Badge></div><p className="mt-5 text-[#AAB4C0]">Mechanical, numerical and spatial reasoning preparation for Fire Service-style selection assessments.</p><div className="mt-8"><PrimaryButton onClick={onSelect}>Select Fire Service</PrimaryButton></div></Card>{["Military Aircrew", "Police Selection", "Defence Officer", "Emergency Services"].map((name) => <Card key={name} className="opacity-55"><div className="flex justify-between"><h2 className="text-xl font-semibold">{name}</h2><span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8D98A6]">Coming soon</span></div><p className="mt-5 text-sm text-[#8D98A6]">This pathway will be added later.</p></Card>)}</div><p className="mt-10 text-sm text-[#6E7A88]">FloSpatial is not affiliated with or endorsed by any specific employer, agency or selection body.</p></section></Shell>; }
 function OptionGroup<T extends string>({ label, value, options, onChange }: { label: string; value?: T; options: { label: string; value: T }[]; onChange: (value: T) => void }) { return <div><div className="mb-3 text-sm font-medium text-[#C8D2DD]">{label}</div><div className="grid gap-3 sm:grid-cols-2">{options.map((o) => <button key={o.value} onClick={() => onChange(o.value)} className={`rounded-xl border p-4 text-left text-sm transition ${value === o.value ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10 text-[#E8FBFF]" : "border-white/10 bg-[#111418] text-[#AAB4C0] hover:border-white/20"}`}>{o.label}</button>)}</div></div>; }
@@ -1306,7 +1489,7 @@ function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGu
   const canStartMixed = rec?.recommendationType === "begin_mixed_mechanical_practice" || rec?.title?.toLowerCase().includes("mixed mechanical practice") || rec?.actionLabel?.toLowerCase().includes("mixed practice");
   const canStartGear = rec?.recommendationType === "start_gear_fundamentals" || rec?.title?.toLowerCase().includes("gear fundamentals") || rec?.actionLabel?.toLowerCase().includes("gear fundamentals");
   const canStartGuidedGear = rec?.recommendationType === "begin_guided_gear_practice" || rec?.recommendationType === "continue_guided_gear_practice" || rec?.title?.toLowerCase().includes("guided gear practice") || rec?.actionLabel?.toLowerCase().includes("gear practice");
-  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin gear practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card><div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div></div></section></Shell>;
+  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin gear practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><AdvisorTimelineCard journey={journey} /><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card><div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div></div></section></Shell>;
 }
 
 
