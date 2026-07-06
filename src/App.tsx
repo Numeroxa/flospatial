@@ -21,7 +21,10 @@ type AppScreen =
   | "gear-fundamentals-complete"
   | "guided-gear-practice-intro"
   | "guided-gear-practice-question"
-  | "guided-gear-practice-debrief";
+  | "guided-gear-practice-debrief"
+  | "gear-assessment-intro"
+  | "gear-assessment-question"
+  | "gear-assessment-debrief";
 
 type TestScenario =
   | "hydraulic_baseline"
@@ -48,7 +51,7 @@ type PreparationContext = {
 type QuestionOption = { optionId: string; label: "A" | "B" | "C" | "D"; text: string };
 type MvpQuestion = {
   questionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_assessment";
   pathwayId: PathwayId;
   domain: "mechanical";
   subcompetency: MechanicalSubcompetency;
@@ -63,7 +66,7 @@ type MvpQuestion = {
 
 type AssessmentSession = {
   sessionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_assessment";
   pathwayId: PathwayId;
   startedAt: string;
   completedAt?: string;
@@ -124,7 +127,9 @@ type Recommendation = {
     | "begin_guided_gear_practice"
     | "continue_guided_gear_practice"
     | "review_gear_fundamentals"
-    | "return_to_mixed_mechanical_practice";
+    | "return_to_mixed_mechanical_practice"
+    | "begin_gear_assessment"
+    | "repeat_gear_assessment";
   title: string;
   summary: string;
   actionLabel: string;
@@ -166,7 +171,9 @@ type Milestone = {
     | "mixed_mechanical_practice_completed"
     | "second_focus_identified"
     | "guided_gear_practice_completed"
-    | "gear_improvement_signal";
+    | "gear_improvement_signal"
+    | "gear_assessment_completed"
+    | "gear_pathway_completed";
   label: string;
   createdAt: string;
 };
@@ -236,7 +243,7 @@ type ModuleCompletion = {
 type PracticeSummary = {
   summaryId: string;
   sessionId: string;
-  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice";
+  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_assessment";
   attempted: number;
   correct: number;
   accuracy: number;
@@ -281,13 +288,28 @@ type MvpGuestJourney = {
 
 const MVP_GUEST_JOURNEY_KEY = "flospatial.mvpGuestJourney.v1";
 const TEST_ACCESS_PASSWORD = "flospatial";
-const ENABLE_PASSWORD_GATE = true;
+const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
+const SHOW_TEST_SCENARIOS = import.meta.env.DEV || import.meta.env.VITE_SHOW_TEST_SCENARIOS === "true";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 function now() { return new Date().toISOString(); }
+
+const OPTION_LABELS = ["A", "B", "C", "D"] as const;
+type OptionLabel = (typeof OPTION_LABELS)[number];
+
+function buildQuestionOptions(questionId: string, optionTexts: string[], correctLabel: OptionLabel) {
+  const offset = [...questionId].reduce((sum, char) => sum + char.charCodeAt(0), 0) % OPTION_LABELS.length;
+  const originalCorrectIndex = OPTION_LABELS.indexOf(correctLabel);
+  const rotatedTexts = optionTexts.map((_, index) => optionTexts[(index + offset) % OPTION_LABELS.length]);
+  const newCorrectIndex = (originalCorrectIndex - offset + OPTION_LABELS.length) % OPTION_LABELS.length;
+  return {
+    options: OPTION_LABELS.map((label, index) => ({ optionId: `${questionId}-${label}`, label, text: rotatedTexts[index] })),
+    correctOptionId: `${questionId}-${OPTION_LABELS[newCorrectIndex]}`,
+  };
+}
 
 function createEmptyMvpGuestJourney(): MvpGuestJourney {
   return { version: "mvp_v1", guestJourneyId: id("guest"), sessions: [], responses: [], competencyEvidence: [], observations: [], constraints: [], recommendations: [], whyExplanations: [], readinessSnapshots: [], milestones: [], moduleProgress: [], moduleCompletions: [], practiceSummaries: [], debriefs: [], updatedAt: now() };
@@ -309,10 +331,9 @@ function resetMvpGuestJourney() {
   if (typeof window !== "undefined") window.localStorage.removeItem(MVP_GUEST_JOURNEY_KEY);
 }
 
-function makeQuestion(questionId: string, subcompetency: MechanicalSubcompetency, concept: string, stem: string, options: string[], correctLabel: "A" | "B" | "C" | "D", explanation: string): MvpQuestion {
-  const labels: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"];
-  const qOptions = labels.map((label, index) => ({ optionId: `${questionId}-${label}`, label, text: options[index] }));
-  return { questionId, sessionType: "mechanical_starting_point", pathwayId: "fire_service", domain: "mechanical", subcompetency, concept, difficulty: "foundational", stem, options: qOptions, correctOptionId: `${questionId}-${correctLabel}`, explanation };
+function makeQuestion(questionId: string, subcompetency: MechanicalSubcompetency, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "mechanical_starting_point", pathwayId: "fire_service", domain: "mechanical", subcompetency, concept, difficulty: "foundational", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
 }
 
 const mechanicalQuestions: MvpQuestion[] = [
@@ -339,10 +360,9 @@ const mechanicalQuestions: MvpQuestion[] = [
 ];
 
 
-function makePracticeQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: "A" | "B" | "C" | "D", explanation: string, feedbackCue: string): MvpQuestion {
-  const labels: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"];
-  const qOptions = labels.map((label, index) => ({ optionId: `${questionId}-${label}`, label, text: options[index] }));
-  return { questionId, sessionType: "guided_hydraulic_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency: "hydraulics", concept, difficulty: "developing", stem, options: qOptions, correctOptionId: `${questionId}-${correctLabel}`, explanation, feedbackCue };
+function makePracticeQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string, feedbackCue: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "guided_hydraulic_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency: "hydraulics", concept, difficulty: "developing", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation, feedbackCue };
 }
 
 const guidedHydraulicPracticeQuestions: MvpQuestion[] = [
@@ -358,30 +378,46 @@ const guidedHydraulicPracticeQuestions: MvpQuestion[] = [
   makePracticeQuestion("HYD-GP-010", "applied_press", "A hydraulic press produces a large pressing force using a smaller input piston. What best explains this?", ["Pressure is lost as it travels.", "The output piston has no area.", "The same pressure acts over a larger output area.", "The fluid prevents force transfer."], "C", "Same pressure acting over a larger output piston area produces greater force.", "Look for pressure acting over a larger area."),
 ];
 
-function makeMixedQuestion(questionId: string, subcompetency: MechanicalSubcompetency, concept: string, stem: string, options: string[], correctLabel: "A" | "B" | "C" | "D", explanation: string, feedbackCue: string): MvpQuestion {
-  const labels: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"];
-  const qOptions = labels.map((label, index) => ({ optionId: `${questionId}-${label}`, label, text: options[index] }));
-  return { questionId, sessionType: "mixed_mechanical_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency, concept, difficulty: "developing", stem, options: qOptions, correctOptionId: `${questionId}-${correctLabel}`, explanation, feedbackCue };
+function makeMixedQuestion(questionId: string, subcompetency: MechanicalSubcompetency, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string, feedbackCue: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "mixed_mechanical_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency, concept, difficulty: "developing", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation, feedbackCue };
 }
 
 
-function makeGearPracticeQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: "A" | "B" | "C" | "D", explanation: string, feedbackCue: string): MvpQuestion {
-  const labels: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"];
-  const qOptions = labels.map((label, index) => ({ optionId: `${questionId}-${label}`, label, text: options[index] }));
-  return { questionId, sessionType: "guided_gear_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency: "gears", concept, difficulty: "developing", stem, options: qOptions, correctOptionId: `${questionId}-${correctLabel}`, explanation, feedbackCue };
+function makeGearPracticeQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string, feedbackCue: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "guided_gear_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency: "gears", concept, difficulty: "developing", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation, feedbackCue };
 }
 
 const guidedGearPracticeQuestions: MvpQuestion[] = [
-  makeGearPracticeQuestion("GEAR-GP-001", "direct_mesh_direction", "Gear A is directly meshed with Gear B. Gear A turns clockwise. Which way does Gear B turn?", ["Clockwise", "Anticlockwise", "It does not turn", "It turns only if it is larger"], "B", "Directly meshed gears rotate in opposite directions.", "Each gear contact reverses direction."),
-  makeGearPracticeQuestion("GEAR-GP-002", "direct_mesh_direction", "Gear A turns anticlockwise and directly drives Gear B. Which way does Gear B turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It turns the same way as A"], "A", "Because the gears mesh directly, Gear B turns opposite to Gear A.", "Adjacent gear teeth push in opposite directions."),
-  makeGearPracticeQuestion("GEAR-GP-003", "driver_driven", "In a gear train, what is the driver gear?", ["The gear being turned first", "The largest gear", "The final output gear", "The gear with the fewest teeth"], "A", "The driver gear is the gear being turned first. It sets the starting direction for the gear train.", "Find the driver before tracing the rest of the train."),
-  makeGearPracticeQuestion("GEAR-GP-004", "three_gear_train", "Three gears are in a straight line: A drives B, and B drives C. If A turns clockwise, which way does C turn?", ["Clockwise", "Anticlockwise", "It stops", "Direction cannot be known"], "A", "A reverses B, then B reverses C. Two reversals means C turns the same way as A.", "Count the number of direct gear contacts."),
-  makeGearPracticeQuestion("GEAR-GP-005", "four_gear_train", "Four gears are in a line: A drives B, B drives C, and C drives D. If A turns clockwise, which way does D turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It turns both ways"], "B", "There are three reversals. After an odd number of reversals, the final gear turns opposite to the first.", "Odd number of contacts = opposite direction."),
-  makeGearPracticeQuestion("GEAR-GP-006", "count_reversals", "A gear train has five gears in a row. Gear 1 turns clockwise. Which way does Gear 5 turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends only on size"], "A", "Gear 1 to Gear 5 involves four contacts. An even number of reversals means the final gear turns the same way as the first.", "Count contacts, not just gears."),
-  makeGearPracticeQuestion("GEAR-GP-007", "idler_gear", "Gear B sits between Gear A and Gear C. What is Gear B commonly called?", ["An idler gear", "A hydraulic gear", "A pulley gear", "A locked gear"], "A", "A gear placed between input and output gears is commonly called an idler gear.", "Idler gears are often used to change output direction."),
-  makeGearPracticeQuestion("GEAR-GP-008", "idler_effect", "In a simple gear train, what is the main effect of adding one idler gear between the input and output gears?", ["It changes the output direction", "It removes all torque", "It stops the gears turning", "It makes gear size irrelevant"], "A", "An idler gear reverses direction through an extra contact, changing the output direction relationship.", "An idler changes direction; it is not usually the main output gear."),
-  makeGearPracticeQuestion("GEAR-GP-009", "gear_size_speed", "A small gear drives a larger gear. Compared with the small gear, the larger driven gear usually turns:", ["More slowly", "Faster", "At exactly the same speed", "Only anticlockwise"], "A", "A larger driven gear usually turns more slowly because it has more teeth to move through each revolution.", "Small driving large usually means slower output."),
-  makeGearPracticeQuestion("GEAR-GP-010", "speed_torque_tradeoff", "A large gear drives a smaller gear. What usually happens to the smaller driven gear?", ["It turns faster", "It turns more slowly", "It cannot turn", "It becomes an idler automatically"], "A", "When a larger gear drives a smaller gear, the smaller gear usually turns faster.", "Compare gear sizes before deciding speed."),
+  makeGearPracticeQuestion("GEAR-GP-001", "direct_mesh_direction", "Gear A turns clockwise. Which way does Gear B turn?", ["Clockwise", "Anticlockwise", "It does not turn", "Direction cannot be known"], "B", "Each direct gear contact reverses direction, so Gear B turns anticlockwise.", "Trace one direct contact from the driver to the driven gear."),
+  makeGearPracticeQuestion("GEAR-GP-002", "three_gear_direction", "Gear A turns anticlockwise. Which way does Gear C turn?", ["Clockwise", "Anticlockwise", "It does not turn", "Direction cannot be known"], "B", "There are two direct contacts. Two reversals mean Gear C turns the same way as Gear A: anticlockwise.", "Work one contact at a time rather than guessing from the final position."),
+  makeGearPracticeQuestion("GEAR-GP-003", "four_gear_direction", "Gear A turns clockwise. Which way does Gear D turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends only on gear size"], "B", "There are three contacts. An odd number of reversals makes Gear D turn opposite to Gear A.", "Count contacts, not gears."),
+  makeGearPracticeQuestion("GEAR-GP-004", "five_gear_direction", "Gear A turns anticlockwise. Which way does Gear E turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends only on gear size"], "B", "There are four contacts. An even number of reversals means Gear E turns the same way as Gear A.", "Trace the direction through every contact."),
+  makeGearPracticeQuestion("GEAR-GP-005", "idler_effect", "Gear B sits between Gear A and Gear C. In this simple train, what is Gear B mainly doing?", ["Changing the direction relationship between A and C", "Making Gear C turn faster regardless of size", "Stopping torque from reaching Gear C", "Making all three gears turn the same way"], "A", "The middle gear adds another reversal and changes the direction relationship between the first and last gears.", "Ask what changes because an extra gear contact has been added."),
+  makeGearPracticeQuestion("GEAR-GP-006", "idler_ratio", "Gear A has 12 teeth, Gear B has 28 teeth and Gear C has 36 teeth. If B is replaced by a different-sized idler that still meshes correctly, what happens to the speed ratio between A and C?", ["It stays the same", "It always doubles", "It becomes impossible to predict", "It depends only on the idler size"], "A", "In a simple gear train, the idler changes direction and spacing, but the overall speed ratio between the first and last gears depends on their tooth counts.", "Compare the first and last gears; the middle idler does not set the overall ratio."),
+  makeGearPracticeQuestion("GEAR-GP-007", "small_to_large_speed", "Gear A is the 12-tooth driver and Gear B has 36 teeth. Which gear turns faster?", ["Gear A", "Gear B", "They turn at the same speed", "Neither gear can turn"], "A", "The smaller driver must turn more times for the larger driven gear to complete one revolution, so Gear A turns faster.", "Compare tooth counts before deciding speed."),
+  makeGearPracticeQuestion("GEAR-GP-008", "large_to_small_speed", "Gear A is the 36-tooth driver and Gear B has 12 teeth. What happens to Gear B?", ["It turns faster than Gear A", "It turns more slowly than Gear A", "It turns at the same speed as Gear A", "It cannot turn"], "A", "A larger driver turning a smaller driven gear produces a faster output.", "A smaller driven gear completes more revolutions for the same tooth movement."),
+  makeGearPracticeQuestion("GEAR-GP-009", "simple_ratio", "A 12-tooth gear turns at 90 rpm and drives a 36-tooth gear. How fast does the 36-tooth gear turn?", ["30 rpm", "90 rpm", "180 rpm", "270 rpm"], "A", "The driven gear has three times as many teeth, so it turns at one-third the speed: 30 rpm.", "Use the inverse tooth-count relationship: more teeth means fewer revolutions."),
+  makeGearPracticeQuestion("GEAR-GP-010", "direction_and_speed", "Gear A has 30 teeth and turns clockwise at 60 rpm. It directly drives 15-tooth Gear B. Which statement is correct?", ["Gear B turns anticlockwise at 120 rpm", "Gear B turns clockwise at 120 rpm", "Gear B turns anticlockwise at 30 rpm", "Gear B turns clockwise at 30 rpm"], "A", "Direct contact reverses direction, and the smaller 15-tooth gear turns twice as fast as the 30-tooth driver.", "Solve direction and speed as two separate questions, then combine them."),
+];
+
+function makeGearAssessmentQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "gear_assessment", pathwayId: "fire_service", domain: "mechanical", subcompetency: "gears", concept, difficulty: "applied", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
+}
+
+const gearAssessmentQuestions: MvpQuestion[] = [
+  makeGearAssessmentQuestion("GEAR-AS-001", "direct_mesh_direction", "Gear A turns anticlockwise. Which way does Gear B turn?", ["Clockwise", "Anticlockwise", "It does not turn", "Direction cannot be known"], "A", "Directly meshed gears rotate in opposite directions."),
+  makeGearAssessmentQuestion("GEAR-AS-002", "three_gear_direction", "Gear A turns clockwise. Which way does Gear C turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends on gear size"], "A", "Two gear contacts create two reversals, so Gear C turns the same way as Gear A."),
+  makeGearAssessmentQuestion("GEAR-AS-003", "four_gear_direction", "Gear A turns anticlockwise. Which way does Gear D turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends only on the largest gear"], "A", "Three contacts create an odd number of reversals, so Gear D turns opposite to Gear A."),
+  makeGearAssessmentQuestion("GEAR-AS-004", "idler_effect", "An extra gear is inserted between Gear A and Gear C without changing A or C. What is the main effect on Gear C?", ["Its rotation direction reverses", "Its speed always doubles", "It stops turning", "Its tooth count changes"], "A", "Adding one idler adds one extra direction reversal. With the first and last gear unchanged, it does not set the overall speed ratio."),
+  makeGearAssessmentQuestion("GEAR-AS-005", "small_to_large_speed", "A 15-tooth gear drives a 45-tooth gear. Which gear turns faster?", ["The 15-tooth gear", "The 45-tooth gear", "They turn at the same speed", "Speed cannot be compared"], "A", "The smaller gear turns faster; the larger gear turns more slowly."),
+  makeGearAssessmentQuestion("GEAR-AS-006", "large_to_small_speed", "A 40-tooth gear drives a 10-tooth gear. Compared with the driver, the 10-tooth gear turns:", ["Four times faster", "Four times slower", "At the same speed", "Twice as fast"], "A", "The driven gear has one quarter as many teeth, so it turns four times faster."),
+  makeGearAssessmentQuestion("GEAR-AS-007", "simple_ratio", "A 15-tooth driver turns at 120 rpm and drives a 45-tooth gear. What is the output speed?", ["40 rpm", "120 rpm", "240 rpm", "360 rpm"], "A", "The driven gear has three times as many teeth, so it turns at one-third the speed: 40 rpm."),
+  makeGearAssessmentQuestion("GEAR-AS-008", "simple_ratio", "A 40-tooth driver turns at 50 rpm and drives a 10-tooth gear. What is the output speed?", ["200 rpm", "100 rpm", "50 rpm", "12.5 rpm"], "A", "The driven gear has one quarter as many teeth, so it turns four times faster: 200 rpm."),
+  makeGearAssessmentQuestion("GEAR-AS-009", "direction_and_speed", "Gear A has 20 teeth and turns clockwise at 100 rpm. It directly drives 40-tooth Gear B. Which statement is correct?", ["Gear B turns anticlockwise at 50 rpm", "Gear B turns clockwise at 50 rpm", "Gear B turns anticlockwise at 200 rpm", "Gear B turns clockwise at 200 rpm"], "A", "Direct contact reverses direction, and the 40-tooth driven gear turns at half the speed."),
+  makeGearAssessmentQuestion("GEAR-AS-010", "idler_ratio", "Gear A has 20 teeth and turns clockwise at 120 rpm. It drives 10-tooth Gear B, which drives 40-tooth Gear C. Which statement about Gear C is correct?", ["It turns clockwise at 60 rpm", "It turns anticlockwise at 60 rpm", "It turns clockwise at 240 rpm", "It turns anticlockwise at 240 rpm"], "A", "Two contacts mean Gear C turns the same way as Gear A. The overall ratio depends on A and C: 20 to 40 gives 60 rpm."),
 ];
 
 const mixedMechanicalPracticeQuestions: MvpQuestion[] = [
@@ -412,13 +448,13 @@ function moduleOption(questionId: string, label: "A" | "B" | "C" | "D", text: st
   return { optionId: `${questionId}-${label}`, label, text };
 }
 
-function makeMiniCheck(questionId: string, stem: string, options: string[], correctLabel: "A" | "B" | "C" | "D", explanation: string): LearningMiniCheck {
-  const labels: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"];
+function makeMiniCheck(questionId: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): LearningMiniCheck {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
   return {
     questionId,
     stem,
-    options: labels.map((label, index) => moduleOption(questionId, label, options[index])),
-    correctOptionId: `${questionId}-${correctLabel}`,
+    options: prepared.options,
+    correctOptionId: prepared.correctOptionId,
     explanation,
   };
 }
@@ -566,6 +602,9 @@ function createMixedMechanicalPracticeSession(): AssessmentSession {
 }
 function createGuidedGearPracticeSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "guided_gear_practice", pathwayId: "fire_service", startedAt: now(), questionIds: guidedGearPracticeQuestions.map((q) => q.questionId) };
+}
+function createGearAssessmentSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "gear_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: gearAssessmentQuestions.map((q) => q.questionId) };
 }
 function createAssessmentResponse(sessionId: string, question: MvpQuestion, selectedOptionId: string | null, responseTimeMs: number, notSureSelected: boolean): AssessmentResponse {
   return { responseId: id("response"), sessionId, questionId: question.questionId, selectedOptionId, correct: selectedOptionId === question.correctOptionId, responseTimeMs, notSureSelected, answeredAt: now() };
@@ -910,8 +949,17 @@ function completeGuidedGearPractice(journey: MvpGuestJourney, sessionId: string)
   let whyInterpretation = "This suggests the gear foundation concepts are beginning to transfer into practice. The next useful evidence check is mixed mechanical practice.";
 
   if (summary.accuracy >= 0.8) {
-    debriefSummary = "Gear-direction and gear-train reasoning appeared consistent during guided practice.";
-    interpretation = "This is an encouraging early signal. The next step is to return to mixed mechanical practice and check whether gear reasoning remains stable alongside other mechanical topics.";
+    recommendationType = "begin_gear_assessment";
+    recommendationTitle = "Take the Gear Check";
+    recommendationSummary = "Test whether your gear reasoning holds up without immediate feedback or guided cues.";
+    actionLabel = "Start Gear Check";
+    currentFocus = "Gear reasoning";
+    readinessLabel = "Developing evidence — ready for a gear check";
+    readinessExplanation = "Guided practice was strong enough to justify a short assessment-style check with less support.";
+    debriefSummary = "Gear-direction, idler and gear-speed reasoning appeared consistent during guided practice.";
+    interpretation = "This is an encouraging practice signal. The next step is a short Gear Check with no immediate feedback, so the result reflects more independent reasoning.";
+    whyObservation = "Guided Gear Practice showed consistent gear reasoning.";
+    whyInterpretation = "This suggests the core gear concepts are ready to be checked under less-supported, assessment-style conditions.";
   } else if (summary.accuracy >= 0.5) {
     recommendationType = "continue_guided_gear_practice";
     recommendationTitle = "Continue Guided Gear Practice";
@@ -963,6 +1011,157 @@ function completeGuidedGearPractice(journey: MvpGuestJourney, sessionId: string)
     readinessSnapshots: [...journey.readinessSnapshots, readiness],
     milestones: [...journey.milestones, milestone],
     dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: currentFocus, readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() },
+    updatedAt: now(),
+  };
+}
+
+
+function calculateGearAssessmentSummary(session: AssessmentSession, responses: AssessmentResponse[]): PracticeSummary {
+  const categories = [
+    { concept: "direction", concepts: ["direct_mesh_direction", "three_gear_direction", "four_gear_direction", "idler_effect"] },
+    { concept: "speed", concepts: ["small_to_large_speed", "large_to_small_speed"] },
+    { concept: "ratios", concepts: ["simple_ratio", "direction_and_speed", "idler_ratio"] },
+  ];
+  const conceptBreakdown = categories.map((category) => {
+    const questionIds = new Set(gearAssessmentQuestions.filter((q) => category.concepts.includes(q.concept)).map((q) => q.questionId));
+    const categoryResponses = responses.filter((r) => questionIds.has(r.questionId));
+    const attempted = categoryResponses.length;
+    const correct = categoryResponses.filter((r) => r.correct).length;
+    return { concept: category.concept, attempted, correct, accuracy: attempted ? correct / attempted : 0 };
+  });
+  const attempted = responses.length;
+  const correct = responses.filter((r) => r.correct).length;
+  return { summaryId: id("summary"), sessionId: session.sessionId, sessionType: "gear_assessment", attempted, correct, accuracy: attempted ? correct / attempted : 0, conceptBreakdown, createdAt: now() };
+}
+
+function completeGearAssessment(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId);
+  if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculateGearAssessmentSummary(completedSession, responses);
+  const weakest = [...summary.conceptBreakdown].sort((a, b) => a.accuracy - b.accuracy)[0];
+  const weakestLabel = weakest?.concept === "direction" ? "gear direction" : weakest?.concept === "speed" ? "relative speed" : "gear ratios";
+
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+
+  let recommendationType: Recommendation["recommendationType"] = "return_to_mixed_mechanical_practice";
+  let recommendationTitle = "Return to Mixed Mechanical Practice";
+  let recommendationSummary = "Recheck gear reasoning alongside hydraulics, pulleys and levers.";
+  let actionLabel = "Start mixed practice";
+  let currentFocus = "Mechanical reasoning integration";
+  let readinessLabel = "Developing evidence — gear pathway completed";
+  let readinessExplanation = "Your Gear Check was strong enough to move back into mixed mechanical practice.";
+  let debriefTitle = "Gear Check complete";
+  let debriefSummary = "Your gear reasoning held up under a less-supported, assessment-style check.";
+  let interpretation = "This is good evidence that the core gear pathway has done its job. The next useful test is whether the skill remains available when gear questions are mixed with other mechanical topics.";
+  let whyObservation = "The Gear Check showed consistent independent gear reasoning.";
+  let whyInterpretation = "The result is strong enough to move from isolated gear practice back to mixed mechanical reasoning.";
+
+  if (summary.accuracy < 0.8 && summary.accuracy >= 0.6) {
+    recommendationType = "continue_guided_gear_practice";
+    recommendationTitle = "Target the Weakest Gear Pattern";
+    recommendationSummary = `Do another short guided gear session, with extra attention to ${weakestLabel}, before repeating an assessment-style check.`;
+    actionLabel = "Continue gear practice";
+    currentFocus = "Gear reasoning";
+    readinessLabel = "Developing evidence — one more consolidation step";
+    readinessExplanation = "The Gear Check showed useful learning, but one or two patterns are not yet consistent enough to close the pathway.";
+    debriefSummary = "The Gear Check showed useful progress, but the result was not yet consistently strong.";
+    interpretation = `The weakest area was ${weakestLabel}. A short targeted return to guided practice is more useful than simply repeating the same test immediately.`;
+    whyObservation = `The Gear Check was partly successful, with the weakest evidence in ${weakestLabel}.`;
+    whyInterpretation = "A brief targeted practice step should improve the specific pattern before another independent check.";
+  } else if (summary.accuracy < 0.6) {
+    recommendationType = "review_gear_fundamentals";
+    recommendationTitle = "Review Gear Fundamentals";
+    recommendationSummary = `Revisit the core gear method, especially ${weakestLabel}, before continuing.`;
+    actionLabel = "Review Gear Fundamentals";
+    currentFocus = "Gear reasoning";
+    readinessLabel = "Early evidence — gear pathway not yet secure";
+    readinessExplanation = "The Gear Check suggests the core method is not yet stable enough under assessment-style conditions.";
+    debriefSummary = "The Gear Check exposed an active gear-reasoning gap.";
+    interpretation = `The weakest area was ${weakestLabel}. Returning to the fundamentals is likely to be more efficient than adding more unsupported questions.`;
+    whyObservation = `The Gear Check did not yet show stable independent gear reasoning, especially in ${weakestLabel}.`;
+    whyInterpretation = "The next step should restore the core method before further assessment-style practice.";
+  }
+
+  const why: WhyExplanation = {
+    whyExplanationId: id("why"),
+    title: `Why ${recommendationTitle} is recommended`,
+    observation: whyObservation,
+    evidence: `Gear Check: ${summary.correct} of ${summary.attempted} correct.`,
+    interpretation: whyInterpretation,
+    recommendation: `${recommendationTitle} is recommended as the next step.`,
+    confidence: "Moderate. This recommendation is based on one short assessment-style gear check.",
+    createdAt: now(),
+  };
+  const recommendation: Recommendation = {
+    recommendationId: id("rec"),
+    recommendationType,
+    title: recommendationTitle,
+    summary: recommendationSummary,
+    actionLabel,
+    confidence: "moderate",
+    whyExplanationId: why.whyExplanationId,
+    status: "active",
+    createdAt: now(),
+  };
+  const readiness: ReadinessSnapshot = {
+    readinessSnapshotId: id("readiness"),
+    state: summary.accuracy >= 0.8 ? "developing_evidence" : summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence",
+    label: readinessLabel,
+    explanation: readinessExplanation,
+    confidence: "moderate",
+    createdAt: now(),
+  };
+  const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "gear_assessment_completed", label: "Gear Check completed", createdAt: now() };
+  const pathwayMilestone: Milestone | undefined = summary.accuracy >= 0.8 ? { milestoneId: id("milestone"), type: "gear_pathway_completed", label: "Gear pathway completed", createdAt: now() } : undefined;
+  const newMilestones = pathwayMilestone ? [completedMilestone, pathwayMilestone] : [completedMilestone];
+  const debrief: Debrief = {
+    debriefId: id("debrief"),
+    sessionId,
+    title: debriefTitle,
+    summary: debriefSummary,
+    comparison: `Gear Check: ${summary.correct} of ${summary.attempted} correct (${Math.round(summary.accuracy * 100)}%).`,
+    interpretation,
+    recommendationId: recommendation.recommendationId,
+    confidence: "moderate",
+    whyExplanationId: why.whyExplanationId,
+    createdAt: now(),
+  };
+  const evidence: CompetencyEvidence = {
+    evidenceId: id("evidence"),
+    domain: "mechanical",
+    subcompetency: "gears",
+    attempted: summary.attempted,
+    correct: summary.correct,
+    accuracy: summary.accuracy,
+    evidenceStrength: evidenceStrength(summary.attempted),
+    sourceSessionId: sessionId,
+    updatedAt: now(),
+  };
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-6);
+
+  return {
+    ...journey,
+    sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s),
+    practiceSummaries: [...journey.practiceSummaries, summary],
+    debriefs: [...journey.debriefs, debrief],
+    competencyEvidence: [...journey.competencyEvidence, evidence],
+    recommendations: [...updatedRecommendations, recommendation],
+    whyExplanations: [...journey.whyExplanations, why],
+    readinessSnapshots: [...journey.readinessSnapshots, readiness],
+    milestones: [...journey.milestones, ...newMilestones],
+    dashboardState: {
+      ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }),
+      currentRecommendationId: recommendation.recommendationId,
+      currentFocusLabel: currentFocus,
+      readinessSnapshotId: readiness.readinessSnapshotId,
+      recentMilestoneIds,
+      baselineSummary: journey.dashboardState?.baselineSummary,
+      saveStatus: "local_only",
+      updatedAt: now(),
+    },
     updatedAt: now(),
   };
 }
@@ -1033,6 +1232,31 @@ function completeMixedMechanicalPractice(journey: MvpGuestJourney, sessionId: st
 
 function getLatestDebrief(journey: MvpGuestJourney) {
   return journey.debriefs[journey.debriefs.length - 1];
+}
+
+type ResumeState = { screen: AppScreen; activeSessionId?: string; activeQuestionIndex: number };
+
+function getResumeState(journey: MvpGuestJourney): ResumeState {
+  const incompleteSession = [...journey.sessions].reverse().find((session) => !session.completedAt);
+  if (incompleteSession) {
+    const answered = journey.responses.filter((response) => response.sessionId === incompleteSession.sessionId).length;
+    const screenBySessionType: Record<AssessmentSession["sessionType"], AppScreen> = {
+      mechanical_starting_point: "mechanical-baseline-question",
+      guided_hydraulic_practice: "guided-hydraulic-practice-question",
+      mixed_mechanical_practice: "mixed-mechanical-practice-question",
+      guided_gear_practice: "guided-gear-practice-question",
+      gear_assessment: "gear-assessment-question",
+    };
+    return {
+      screen: screenBySessionType[incompleteSession.sessionType],
+      activeSessionId: incompleteSession.sessionId,
+      activeQuestionIndex: Math.min(answered, Math.max(incompleteSession.questionIds.length - 1, 0)),
+    };
+  }
+  if (journey.dashboardState) return { screen: "dashboard", activeQuestionIndex: 0 };
+  if (journey.preparationContext) return { screen: "mechanical-baseline-intro", activeQuestionIndex: 0 };
+  if (journey.selectedPathwayId) return { screen: "preparation-context", activeQuestionIndex: 0 };
+  return { screen: "landing", activeQuestionIndex: 0 };
 }
 
 function createDemoPreparationContext(): PreparationContext {
@@ -1227,7 +1451,7 @@ function TestScenarioPanel({ onLoad }: { onLoad: (scenario: TestScenario) => voi
     {
       scenario: "gear_guided_strong",
       title: "Strong guided gear practice",
-      description: "Loads a journey where gear practice is complete and mixed practice is recommended next.",
+      description: "Loads a journey where strong guided gear practice leads to the Gear Check.",
     },
     {
       scenario: "guided_moderate_improvement",
@@ -1273,190 +1497,7 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 function Shell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) { return <main className="min-h-screen bg-[#111418] text-[#F4F6F8]"><header className="border-b border-white/5"><div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6"><div><div className="text-xl font-semibold tracking-wide">FloSpatial</div><div className="mt-1 text-xs tracking-[0.18em] text-[#6E7A88]">Preparation intelligence</div></div><div className="text-sm text-[#8D98A6]">{right ?? "Progress saved locally"}</div></div></header>{children}</main>; }
 function Badge({ children }: { children: React.ReactNode }) { return <span className="rounded-full border border-[#5ED3F3]/20 bg-[#5ED3F3]/10 px-3 py-1 text-xs font-medium text-[#BFF3FF]">{children}</span>; }
 
-
-type TimelineEntry = {
-  id: string;
-  title: string;
-  detail: string;
-  completedAt?: string;
-  current?: boolean;
-};
-
-function formatTimelineDate(value?: string) {
-  if (!value) return "";
-  try {
-    return new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" }).format(new Date(value));
-  } catch {
-    return "";
-  }
-}
-
-function firstSessionCompletedAt(journey: MvpGuestJourney, sessionType: AssessmentSession["sessionType"]) {
-  return journey.sessions.find((session) => session.sessionType === sessionType && session.completedAt)?.completedAt;
-}
-
-function firstModuleCompletedAt(journey: MvpGuestJourney, moduleId: LearningModuleId) {
-  return journey.moduleCompletions.find((completion) => completion.moduleId === moduleId)?.completedAt;
-}
-
-function hasRecommendation(journey: MvpGuestJourney, types: Recommendation["recommendationType"][]) {
-  return journey.recommendations.some((recommendation) => types.includes(recommendation.recommendationType));
-}
-
-function buildAdvisorTimelineEntries(journey: MvpGuestJourney): TimelineEntry[] {
-  const entries: TimelineEntry[] = [];
-  const baselineCompletedAt = firstSessionCompletedAt(journey, "mechanical_starting_point");
-  const hydraulicModuleAt = firstModuleCompletedAt(journey, "hydraulic_fundamentals");
-  const gearModuleAt = firstModuleCompletedAt(journey, "gear_fundamentals");
-  const guidedHydraulicAt = firstSessionCompletedAt(journey, "guided_hydraulic_practice");
-  const mixedAt = firstSessionCompletedAt(journey, "mixed_mechanical_practice");
-  const guidedGearAt = firstSessionCompletedAt(journey, "guided_gear_practice");
-  const currentRecommendation = getCurrentRecommendation(journey);
-
-  if (baselineCompletedAt || journey.competencyEvidence.length > 0) {
-    entries.push({
-      id: "initial-assessment",
-      title: "Initial Assessment completed",
-      completedAt: baselineCompletedAt,
-      detail: "FloSpatial gathered starting evidence across mechanical reasoning areas and used it to identify an initial preparation direction rather than simply showing a score.",
-    });
-  }
-
-  if (journey.constraints.some((constraint) => constraint.subcompetency === "hydraulics") || hasRecommendation(journey, ["start_hydraulic_fundamentals", "begin_guided_hydraulic_practice", "start_applied_hydraulic_problems", "begin_mixed_mechanical_practice"])) {
-    entries.push({
-      id: "hydraulic-focus",
-      title: "Hydraulic focus identified",
-      completedAt: journey.milestones.find((milestone) => milestone.type === "first_focus_identified")?.createdAt,
-      detail: "The early evidence suggested hydraulic-force reasoning was the most useful first preparation focus. Hydraulic Fundamentals was recommended to address that specific foundation area.",
-    });
-  }
-
-  if (hydraulicModuleAt) {
-    entries.push({
-      id: "hydraulic-fundamentals",
-      title: "Hydraulic Fundamentals completed",
-      completedAt: hydraulicModuleAt,
-      detail: "Core hydraulic concepts were completed. FloSpatial then recommended guided practice to check whether those concepts were beginning to transfer into problem solving.",
-    });
-  }
-
-  if (guidedHydraulicAt || journey.practiceSummaries.some((summary) => summary.sessionType === "guided_hydraulic_practice")) {
-    entries.push({
-      id: "guided-hydraulic-practice",
-      title: "Guided Hydraulic Practice completed",
-      completedAt: guidedHydraulicAt,
-      detail: "Guided practice added follow-up evidence after the hydraulic learning module. The advisor used this to decide whether to continue practice, review fundamentals, or move toward applied/mixed practice.",
-    });
-  }
-
-  if (hasRecommendation(journey, ["begin_mixed_mechanical_practice", "start_gear_fundamentals", "return_to_mixed_mechanical_practice"])) {
-    entries.push({
-      id: "hydraulic-transfer",
-      title: "Hydraulic transfer checked",
-      completedAt: journey.milestones.find((milestone) => milestone.type === "first_improvement_signal")?.createdAt,
-      detail: "FloSpatial treated the hydraulic pathway as an evidence loop: learn the concept, practise it, then check whether it remains stable when the context becomes less guided.",
-    });
-  }
-
-  if (mixedAt || journey.practiceSummaries.some((summary) => summary.sessionType === "mixed_mechanical_practice")) {
-    entries.push({
-      id: "mixed-mechanical-practice",
-      title: "Mixed Mechanical Practice completed",
-      completedAt: mixedAt,
-      detail: "Mixed practice reintroduced hydraulics, gears, pulleys and levers together. This helped the advisor look for the next useful preparation focus rather than staying fixed on the first one.",
-    });
-  }
-
-  if (hasRecommendation(journey, ["start_gear_fundamentals", "begin_guided_gear_practice", "continue_guided_gear_practice", "review_gear_fundamentals", "return_to_mixed_mechanical_practice"])) {
-    entries.push({
-      id: "gear-focus",
-      title: "Gear focus identified",
-      completedAt: journey.milestones.find((milestone) => milestone.type === "second_focus_identified")?.createdAt,
-      detail: "After mixed mechanical practice, gear reasoning became the next preparation focus. This is a second-stage recommendation, showing that FloSpatial can move beyond the original hydraulic pathway.",
-    });
-  }
-
-  if (gearModuleAt) {
-    entries.push({
-      id: "gear-fundamentals",
-      title: "Gear Fundamentals completed",
-      completedAt: gearModuleAt,
-      detail: "Gear direction, idler gears, gear trains and gear-size concepts were reviewed. FloSpatial then recommended guided gear practice to check whether those concepts transfer into practice.",
-    });
-  }
-
-  if (guidedGearAt || journey.practiceSummaries.some((summary) => summary.sessionType === "guided_gear_practice")) {
-    entries.push({
-      id: "guided-gear-practice",
-      title: "Guided Gear Practice completed",
-      completedAt: guidedGearAt,
-      detail: "Guided gear practice added direct evidence about direction changes, idlers and gear-size reasoning. The advisor can now decide whether to return to mixed practice or continue strengthening gears.",
-    });
-  }
-
-  if (currentRecommendation) {
-    entries.push({
-      id: "current-recommendation",
-      title: currentRecommendation.title,
-      current: true,
-      detail: "This is the current next step. FloSpatial is recommending it because of the evidence gathered so far, not simply because it is the next item in a fixed course sequence.",
-    });
-  }
-
-  return entries;
-}
-
-function AdvisorTimelineCard({ journey }: { journey: MvpGuestJourney }) {
-  const entries = buildAdvisorTimelineEntries(journey);
-  const [expandedId, setExpandedId] = useState<string | null>(entries[0]?.id ?? null);
-
-  if (!entries.length) {
-    return null;
-  }
-
-  return (
-    <Card className="lg:col-span-2">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Your preparation journey</div>
-          <h3 className="mt-3 text-2xl font-semibold">What FloSpatial has learned so far</h3>
-        </div>
-        <Badge>{entries.length} steps</Badge>
-      </div>
-      <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[#9AA3B2]">
-        This timeline shows the reasoning story behind your current recommendation. It focuses on evidence and next steps rather than raw scores.
-      </p>
-      <div className="mt-7 space-y-3">
-        {entries.map((entry) => {
-          const isExpanded = expandedId === entry.id;
-          return (
-            <button
-              key={entry.id}
-              type="button"
-              onClick={() => setExpandedId(isExpanded ? null : entry.id)}
-              className={`w-full rounded-2xl border p-4 text-left transition ${entry.current ? "border-[#5ED3F3]/35 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-white/20"}`}
-            >
-              <div className="flex items-start gap-4">
-                <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${entry.current ? "border-[#5ED3F3]/50 bg-[#5ED3F3]/15 text-[#D9F8FF]" : "border-white/15 bg-white/5 text-[#BFF3FF]"}`}>
-                  {entry.current ? "→" : "✓"}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="font-semibold text-[#E8EEF5]">{entry.title}</div>
-                    {entry.completedAt && <div className="text-xs uppercase tracking-[0.14em] text-[#6E7A88]">{formatTimelineDate(entry.completedAt)}</div>}
-                  </div>
-                  {isExpanded && <p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">{entry.detail}</p>}
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </Card>
-  );
-}
-
-function LandingScreen({ onBegin, onLoadTestScenario }: { onBegin: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) { return <Shell><section className="mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-center px-8 py-20"><div className="max-w-2xl"><Badge>No account or email required to begin</Badge><h1 className="mt-8 text-5xl font-semibold leading-tight tracking-tight md:text-6xl">Prepare smarter for selection assessments.</h1><p className="mt-8 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">FloSpatial helps you identify what to work on, why it matters, and what to do next.</p><div className="mt-12"><PrimaryButton onClick={onBegin}>Begin preparation</PrimaryButton></div></div><div className="mt-20 grid gap-5 md:grid-cols-3"><Card><h3 className="text-lg font-semibold">Find your focus</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">FloSpatial looks for the preparation area most likely to matter next.</p></Card><Card><h3 className="text-lg font-semibold">Understand why</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Every major recommendation includes a clear explanation.</p></Card><Card><h3 className="text-lg font-semibold">Track progress</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Your preparation journey is saved on this device.</p></Card></div><div className="mt-10"><TestScenarioPanel onLoad={onLoadTestScenario} /></div></section></Shell>; }
+function LandingScreen({ onBegin, onLoadTestScenario }: { onBegin: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) { return <Shell><section className="mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-center px-8 py-20"><div className="max-w-2xl"><Badge>No account or email required to begin</Badge><h1 className="mt-8 text-5xl font-semibold leading-tight tracking-tight md:text-6xl">Prepare smarter for selection assessments.</h1><p className="mt-8 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">FloSpatial helps you identify what to work on, why it matters, and what to do next.</p><div className="mt-12"><PrimaryButton onClick={onBegin}>Begin preparation</PrimaryButton></div></div><div className="mt-20 grid gap-5 md:grid-cols-3"><Card><h3 className="text-lg font-semibold">Find your focus</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">FloSpatial looks for the preparation area most likely to matter next.</p></Card><Card><h3 className="text-lg font-semibold">Understand why</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Every major recommendation includes a clear explanation.</p></Card><Card><h3 className="text-lg font-semibold">Track progress</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Your preparation journey is saved on this device.</p></Card></div>{SHOW_TEST_SCENARIOS && <div className="mt-10"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</section></Shell>; }
 function PathwaySelectionScreen({ onSelect }: { onSelect: () => void }) { return <Shell><section className="mx-auto max-w-5xl px-8 py-16"><h1 className="text-4xl font-semibold">Choose your preparation pathway</h1><p className="mt-5 max-w-2xl text-[#9AA3B2]">FloSpatial adapts recommendations to the type of selection assessment you are preparing for.</p><div className="mt-10 grid gap-5 md:grid-cols-2"><Card className="border-[#5ED3F3]/20"><div className="flex justify-between gap-4"><h2 className="text-2xl font-semibold">Fire Service</h2><Badge>Available</Badge></div><p className="mt-5 text-[#AAB4C0]">Mechanical, numerical and spatial reasoning preparation for Fire Service-style selection assessments.</p><div className="mt-8"><PrimaryButton onClick={onSelect}>Select Fire Service</PrimaryButton></div></Card>{["Military Aircrew", "Police Selection", "Defence Officer", "Emergency Services"].map((name) => <Card key={name} className="opacity-55"><div className="flex justify-between"><h2 className="text-xl font-semibold">{name}</h2><span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8D98A6]">Coming soon</span></div><p className="mt-5 text-sm text-[#8D98A6]">This pathway will be added later.</p></Card>)}</div><p className="mt-10 text-sm text-[#6E7A88]">FloSpatial is not affiliated with or endorsed by any specific employer, agency or selection body.</p></section></Shell>; }
 function OptionGroup<T extends string>({ label, value, options, onChange }: { label: string; value?: T; options: { label: string; value: T }[]; onChange: (value: T) => void }) { return <div><div className="mb-3 text-sm font-medium text-[#C8D2DD]">{label}</div><div className="grid gap-3 sm:grid-cols-2">{options.map((o) => <button key={o.value} onClick={() => onChange(o.value)} className={`rounded-xl border p-4 text-left text-sm transition ${value === o.value ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10 text-[#E8FBFF]" : "border-white/10 bg-[#111418] text-[#AAB4C0] hover:border-white/20"}`}>{o.label}</button>)}</div></div>; }
 function PreparationContextScreen({ onSave }: { onSave: (context: PreparationContext) => void }) {
@@ -1480,7 +1521,7 @@ function MechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer 
 function AssessmentCompleteScreen({ onView }: { onView: () => void }) { return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><h1 className="text-4xl font-semibold">Starting point assessment complete</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">FloSpatial has reviewed your responses and prepared your first preparation insight.</p><div className="mt-10"><PrimaryButton onClick={onView}>View insight</PrimaryButton></div></Card></section></Shell>; }
 function WhyModal({ why, onClose }: { why?: WhyExplanation; onClose: () => void }) { if (!why) return null; const sections = [["Observation", why.observation], ["Evidence", why.evidence], ["Interpretation", why.interpretation], ["Recommendation", why.recommendation], ["Confidence", why.confidence]]; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-[32px] border border-white/10 bg-[#171C23] p-8 shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="text-xs uppercase tracking-[0.22em] text-[#6E7A88]">Why explanation</p><h2 className="mt-3 text-3xl font-semibold">{why.title}</h2></div><button onClick={onClose} className="rounded-lg px-3 py-2 text-sm text-[#8D98A6] hover:text-white">Close</button></div><div className="mt-8 space-y-6">{sections.map(([label, text]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{label}</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{text}</p></div>)}</div><p className="mt-6 text-sm text-[#6E7A88]">FloSpatial uses this explanation to keep recommendations transparent and evidence-based.</p></div></div>; }
 function FirstAdvisorInsightScreen({ journey, onWhy, onDashboard }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void }) { const rec = getCurrentRecommendation(journey); const focus = journey.dashboardState?.currentFocusLabel ?? "Preparation focus"; return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Your first preparation insight</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{focus === "Hydraulic-force reasoning" ? "Hydraulic-force reasoning currently appears to be your highest-value preparation focus." : rec?.recommendationType === "start_mechanical_foundations" ? "Mechanical reasoning foundations appear to need broader attention." : "FloSpatial does not yet have one clear preparation focus."}</h1><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "moderate" ? "Moderate confidence" : rec?.confidence === "high" ? "High confidence" : "Low confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>; }
-function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGuidedPractice, onStartMixedPractice, onStartGearFundamentals, onStartGuidedGearPractice, onLoadTestScenario }: { journey: MvpGuestJourney; onWhy: () => void; onReset: () => void; onStartHydraulics: () => void; onStartGuidedPractice: () => void; onStartMixedPractice: () => void; onStartGearFundamentals: () => void; onStartGuidedGearPractice: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) {
+function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGuidedPractice, onStartMixedPractice, onStartGearFundamentals, onStartGuidedGearPractice, onStartGearAssessment, onLoadTestScenario }: { journey: MvpGuestJourney; onWhy: () => void; onReset: () => void; onStartHydraulics: () => void; onStartGuidedPractice: () => void; onStartMixedPractice: () => void; onStartGearFundamentals: () => void; onStartGuidedGearPractice: () => void; onStartGearAssessment: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) {
   const rec = getCurrentRecommendation(journey);
   const readiness = getCurrentReadiness(journey);
   const milestones = getRecentMilestones(journey);
@@ -1489,7 +1530,8 @@ function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGu
   const canStartMixed = rec?.recommendationType === "begin_mixed_mechanical_practice" || rec?.title?.toLowerCase().includes("mixed mechanical practice") || rec?.actionLabel?.toLowerCase().includes("mixed practice");
   const canStartGear = rec?.recommendationType === "start_gear_fundamentals" || rec?.title?.toLowerCase().includes("gear fundamentals") || rec?.actionLabel?.toLowerCase().includes("gear fundamentals");
   const canStartGuidedGear = rec?.recommendationType === "begin_guided_gear_practice" || rec?.recommendationType === "continue_guided_gear_practice" || rec?.title?.toLowerCase().includes("guided gear practice") || rec?.actionLabel?.toLowerCase().includes("gear practice");
-  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin gear practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><AdvisorTimelineCard journey={journey} /><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card><div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div></div></section></Shell>;
+  const canStartGearAssessment = rec?.recommendationType === "begin_gear_assessment" || rec?.recommendationType === "repeat_gear_assessment" || rec?.actionLabel?.toLowerCase().includes("gear check");
+  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin gear practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
 }
 
 
@@ -1840,7 +1882,7 @@ function GuidedGearQuestionScreen({ journey, sessionId, questionIndex, onAnswer 
           <div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {guidedGearPracticeQuestions.length}<br /><span className="text-xs">{answered} saved</span></div>
         </div>
         <Card>
-          <GearMiniDiagram concept={question.concept} />
+          <GearQuestionDiagram question={question} mode="guided" />
           <p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p>
           <div className="mt-8 grid gap-4">
             {question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}
@@ -1869,22 +1911,176 @@ function GuidedGearPracticeDebriefScreen({ journey, onWhy, onDashboard }: { jour
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Gear practice debrief</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title ?? "Guided Gear Practice complete"}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p><div className="mt-8 grid gap-5"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Practice evidence</div><p className="mt-3 text-[#C8D2DD]">{debrief?.comparison}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>Moderate confidence</Badge></div></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
 }
 
-function GearMiniDiagram({ concept }: { concept: string }) {
-  const isLongTrain = concept.includes("four") || concept.includes("count");
-  const isSize = concept.includes("size") || concept.includes("speed");
-  const isIdler = concept.includes("idler");
-  if (isSize) return <GearSizeDiagram />;
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Practice diagram</div><svg viewBox="0 0 760 270" role="img" aria-label="Gear practice diagram" className="h-auto w-full"><defs><marker id="practiceGearArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" /></marker></defs>{[170, 320, 470, 620].slice(0, isLongTrain ? 4 : 3).map((cx, idx) => <g key={cx} opacity={idx === 2 && !isLongTrain && !isIdler && concept.includes("direct") ? 0 : 1}><circle cx={cx} cy="130" r="56" fill="#171C23" stroke="rgba(255,255,255,0.22)" strokeWidth="4" />{Array.from({length:12}).map((_,i)=>{ const a=i*30*Math.PI/180; return <line key={`${cx}-${i}`} x1={cx+Math.cos(a)*60} y1={130+Math.sin(a)*60} x2={cx+Math.cos(a)*72} y2={130+Math.sin(a)*72} stroke="rgba(255,255,255,0.22)" strokeWidth="4" strokeLinecap="round" /> })}<text x={cx} y="137" textAnchor="middle" fill="#F4F6F8" fontSize="22" fontWeight="700">{String.fromCharCode(65+idx)}</text>{isIdler && idx === 1 && <text x={cx} y="216" textAnchor="middle" fill="#5ED3F3" fontSize="16">Idler</text>}</g>)}<path d="M 120 62 C 86 105 86 155 120 198" fill="none" stroke="#5ED3F3" strokeWidth="5" markerEnd="url(#practiceGearArrow)" /><text x="170" y="240" textAnchor="middle" fill="#AAB4C0" fontSize="16">Driver</text><text x="520" y="240" textAnchor="middle" fill="#6E7A88" fontSize="15">Count each contact reversal</text></svg></div>;
+type GearDiagramMode = "guided" | "assessment";
+type GearDirection = "clockwise" | "anticlockwise";
+type GearDiagramSpec = {
+  teeth: number[];
+  yOffsets?: number[];
+  driverIndex: number;
+  driverDirection: GearDirection;
+  showTeeth?: boolean;
+  helper?: string;
+};
+
+function getGearDiagramSpec(questionId: string): GearDiagramSpec {
+  const specs: Record<string, GearDiagramSpec> = {
+    "GEAR-GP-001": { teeth: [20, 20], driverIndex: 0, driverDirection: "clockwise", helper: "Start with Gear A, then trace one direct contact." },
+    "GEAR-GP-002": { teeth: [20, 20, 20], driverIndex: 0, driverDirection: "anticlockwise", helper: "Trace the direction one contact at a time." },
+    "GEAR-GP-003": { teeth: [20, 20, 20, 20], driverIndex: 0, driverDirection: "clockwise", helper: "Count contacts, not gears." },
+    "GEAR-GP-004": { teeth: [20, 20, 20, 20, 20], driverIndex: 0, driverDirection: "anticlockwise", helper: "Keep alternating direction through the whole train." },
+    "GEAR-GP-005": { teeth: [20, 20, 20], driverIndex: 0, driverDirection: "clockwise", helper: "Look at what changes when a middle gear adds one more contact." },
+    "GEAR-GP-006": { teeth: [12, 28, 36], driverIndex: 0, driverDirection: "clockwise", showTeeth: true, helper: "Compare the first and last gears when thinking about overall speed ratio." },
+    "GEAR-GP-007": { teeth: [12, 36], driverIndex: 0, driverDirection: "clockwise", showTeeth: true, helper: "Compare the tooth counts before deciding which gear completes more revolutions." },
+    "GEAR-GP-008": { teeth: [36, 12], driverIndex: 0, driverDirection: "clockwise", showTeeth: true, helper: "A smaller driven gear needs fewer teeth to pass for one full revolution." },
+    "GEAR-GP-009": { teeth: [12, 36], driverIndex: 0, driverDirection: "clockwise", showTeeth: true, helper: "Use the inverse relationship between tooth count and rotational speed." },
+    "GEAR-GP-010": { teeth: [30, 15], driverIndex: 0, driverDirection: "clockwise", showTeeth: true, helper: "Solve direction and speed separately, then combine them." },
+
+    "GEAR-AS-001": { teeth: [20, 20], yOffsets: [34, -34], driverIndex: 0, driverDirection: "anticlockwise" },
+    "GEAR-AS-002": { teeth: [20, 20, 20], yOffsets: [-28, 28, -28], driverIndex: 0, driverDirection: "clockwise" },
+    "GEAR-AS-003": { teeth: [20, 20, 20, 20], yOffsets: [22, -22, 22, -22], driverIndex: 0, driverDirection: "anticlockwise" },
+    "GEAR-AS-004": { teeth: [20, 20, 20], yOffsets: [0, -34, 0], driverIndex: 0, driverDirection: "clockwise" },
+    "GEAR-AS-005": { teeth: [15, 45], yOffsets: [18, -18], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+    "GEAR-AS-006": { teeth: [40, 10], yOffsets: [-18, 18], driverIndex: 0, driverDirection: "anticlockwise", showTeeth: true },
+    "GEAR-AS-007": { teeth: [15, 45], yOffsets: [-24, 24], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+    "GEAR-AS-008": { teeth: [40, 10], yOffsets: [24, -24], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+    "GEAR-AS-009": { teeth: [20, 40], yOffsets: [-20, 20], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+    "GEAR-AS-010": { teeth: [20, 10, 40], yOffsets: [18, -24, 18], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+  };
+  return specs[questionId] ?? { teeth: [20, 20], driverIndex: 0, driverDirection: "clockwise" };
+}
+
+function buildGearDiagramNodes(spec: GearDiagramSpec) {
+  const rawRadii = spec.teeth.map((teeth) => Math.max(43, Math.min(86, 34 + teeth * 1.15)));
+  const rawOffsets = spec.yOffsets ?? spec.teeth.map(() => 0);
+  const rawDistances = rawRadii.slice(0, -1).map((radius, index) => {
+    const nextRadius = rawRadii[index + 1];
+    const dy = rawOffsets[index + 1] - rawOffsets[index];
+    const contactDistance = radius + nextRadius + 6;
+    return Math.sqrt(Math.max(contactDistance * contactDistance - dy * dy, 1));
+  });
+  const rawSpan = rawRadii[0] + rawDistances.reduce((sum, distance) => sum + distance, 0) + rawRadii[rawRadii.length - 1];
+  const scale = Math.min(1, 670 / rawSpan);
+  const radii = rawRadii.map((radius) => radius * scale);
+  const offsets = rawOffsets.map((offset) => offset * scale);
+  const distances = rawDistances.map((distance) => distance * scale);
+  const span = radii[0] + distances.reduce((sum, distance) => sum + distance, 0) + radii[radii.length - 1];
+  let x = (760 - span) / 2 + radii[0];
+
+  return radii.map((radius, index) => {
+    if (index > 0) x += distances[index - 1];
+    return {
+      cx: x,
+      cy: 150 + offsets[index],
+      radius,
+      teeth: spec.teeth[index],
+      label: String.fromCharCode(65 + index),
+    };
+  });
+}
+
+function GearQuestionDiagram({ question, mode }: { question: MvpQuestion; mode: GearDiagramMode }) {
+  const spec = getGearDiagramSpec(question.questionId);
+  const nodes = buildGearDiagramNodes(spec);
+  const driver = nodes[spec.driverIndex];
+  const markerId = `gear-arrow-${question.questionId}`;
+  const arrowRadius = driver.radius + 25;
+  const clockwisePath = `M ${driver.cx - arrowRadius * 0.72} ${driver.cy - arrowRadius * 0.68} A ${arrowRadius} ${arrowRadius} 0 1 1 ${driver.cx + arrowRadius * 0.76} ${driver.cy + arrowRadius * 0.62}`;
+  const anticlockwisePath = `M ${driver.cx + arrowRadius * 0.72} ${driver.cy - arrowRadius * 0.68} A ${arrowRadius} ${arrowRadius} 0 1 0 ${driver.cx - arrowRadius * 0.76} ${driver.cy + arrowRadius * 0.62}`;
+  const aria = `${nodes.length}-gear diagram. Gear ${driver.label} turns ${spec.driverDirection}.`;
+
+  return (
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-4 sm:p-6">
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{mode === "guided" ? "Guided diagram" : "Gear diagram"}</div>
+        {mode === "assessment" && <div className="text-xs text-[#6E7A88]">No hints</div>}
+      </div>
+      <svg viewBox="0 0 760 315" role="img" aria-label={aria} className="h-auto w-full">
+        <defs>
+          <marker id={markerId} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" />
+          </marker>
+        </defs>
+        {nodes.map((node) => {
+          const toothCount = Math.max(10, Math.min(24, Math.round(node.teeth / 2)));
+          const toothInner = node.radius + 4;
+          const toothOuter = node.radius + 15;
+          return (
+            <g key={node.label}>
+              <circle cx={node.cx} cy={node.cy} r={node.radius} fill="#171C23" stroke="rgba(255,255,255,0.24)" strokeWidth="4" />
+              {Array.from({ length: toothCount }).map((_, toothIndex) => {
+                const angle = (toothIndex * (360 / toothCount) * Math.PI) / 180;
+                return <line key={`${node.label}-${toothIndex}`} x1={node.cx + Math.cos(angle) * toothInner} y1={node.cy + Math.sin(angle) * toothInner} x2={node.cx + Math.cos(angle) * toothOuter} y2={node.cy + Math.sin(angle) * toothOuter} stroke="rgba(255,255,255,0.24)" strokeWidth="4" strokeLinecap="round" />;
+              })}
+              <text x={node.cx} y={node.cy + (spec.showTeeth ? -4 : 7)} textAnchor="middle" fill="#F4F6F8" fontSize="24" fontWeight="700">{node.label}</text>
+              {spec.showTeeth && <text x={node.cx} y={node.cy + 23} textAnchor="middle" fill="#9AA3B2" fontSize="15">{node.teeth} teeth</text>}
+            </g>
+          );
+        })}
+        <path d={spec.driverDirection === "clockwise" ? clockwisePath : anticlockwisePath} fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd={`url(#${markerId})`} />
+        <text x={driver.cx} y="292" textAnchor="middle" fill="#D9F8FF" fontSize="16">Gear {driver.label}: {spec.driverDirection}</text>
+      </svg>
+      {mode === "guided" && spec.helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{spec.helper}</p>}
+    </div>
+  );
+}
+
+function GearAssessmentIntroScreen({ onStart }: { onStart: () => void }) {
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Assessment-style check</p><h1 className="mt-5 text-4xl font-semibold">Gear Check</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Ten diagram-based questions. There is no immediate feedback, so the result gives a cleaner picture of what you can do independently.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["10 questions", "No immediate feedback", "Untimed"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Work at a steady pace. You can use the diagram, but no hints or worked feedback will appear until the check is complete.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Start Gear Check</PrimaryButton></div></Card></section></Shell>;
+}
+
+function GearAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); }, [questionIndex]);
+  const question = gearAssessmentQuestions[questionIndex];
+  if (!question) return null;
+  const progress = ((questionIndex + 1) / gearAssessmentQuestions.length) * 100;
+  const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
+
+  function next() {
+    if (!selectedOptionId) return;
+    const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false);
+    onAnswer(response, questionIndex === gearAssessmentQuestions.length - 1);
+  }
+
+  return (
+    <Shell right="Gear Check">
+      <section className="mx-auto max-w-5xl px-8 py-12">
+        <div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div>
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Gear Check</p><h1 className="mt-3 text-3xl font-semibold">Assessment-style gear reasoning</h1></div>
+          <div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {gearAssessmentQuestions.length}<br /><span className="text-xs">{answered} saved</span></div>
+        </div>
+        <Card>
+          <GearQuestionDiagram question={question} mode="assessment" />
+          <p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p>
+          <div className="mt-8 grid gap-4">
+            {question.options.map((option) => <button key={option.optionId} onClick={() => setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}
+          </div>
+          <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === gearAssessmentQuestions.length - 1 ? "Finish Gear Check" : "Next question"}</PrimaryButton></div>
+        </Card>
+      </section>
+    </Shell>
+  );
+}
+
+function GearAssessmentDebriefScreen({ journey, onWhy, onDashboard }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void }) {
+  const debrief = getLatestDebrief(journey);
+  const rec = getCurrentRecommendation(journey);
+  const summary = [...journey.practiceSummaries].reverse().find((item) => item.sessionType === "gear_assessment");
+  const labels: Record<string, string> = { direction: "Direction", speed: "Relative speed", ratios: "Ratios & integration" };
+
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Gear Check debrief</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title ?? "Gear Check complete"}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p>{summary && <div className="mt-8 grid gap-4 sm:grid-cols-3">{summary.conceptBreakdown.map((item) => <div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{labels[item.concept] ?? item.concept}</div><div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div></div>)}</div>}<div className="mt-8 grid gap-5"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Result</div><p className="mt-3 text-[#C8D2DD]">{debrief?.comparison}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>Moderate confidence</Badge></div></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
 }
 
 function PasswordGate({ onUnlock }: { onUnlock: () => void }) { const [password, setPassword] = useState(""); const [error, setError] = useState(false); return <main className="flex min-h-screen items-center justify-center bg-[#111418] p-8 text-[#F4F6F8]"><section className="w-full max-w-md rounded-[32px] border border-white/5 bg-[#171C23] p-10 shadow-2xl"><div className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">FloSpatial</div><h1 className="mt-6 text-4xl font-semibold">Private testing access</h1><p className="mt-5 text-[#9AA3B2]">Enter the shared testing password to continue.</p><form onSubmit={(e) => { e.preventDefault(); if (password.trim() === TEST_ACCESS_PASSWORD) { window.localStorage.setItem("flospatial.accessGranted.v1", "true"); onUnlock(); } else setError(true); }} className="mt-8"><input value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} type="password" autoFocus className="w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-4 outline-none focus:border-[#5ED3F3]/50" placeholder="Password" />{error && <p className="mt-3 text-sm text-[#FF9A9A]">That password did not match.</p>}<button className="mt-6 w-full rounded-xl border border-[#5ED3F3]/30 bg-[#5ED3F3]/10 px-7 py-4 font-medium text-[#D9F8FF]">Enter</button></form></section></main>; }
 
 export default function FloSpatialPrototype() {
   const [accessGranted, setAccessGranted] = useState(() => !ENABLE_PASSWORD_GATE || (typeof window !== "undefined" && window.localStorage.getItem("flospatial.accessGranted.v1") === "true"));
-  const [screen, setScreen] = useState<AppScreen>("landing");
   const [journey, setJourney] = useState<MvpGuestJourney>(() => loadMvpGuestJourney());
-  const [activeSessionId, setActiveSessionId] = useState<string | undefined>();
-  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const [screen, setScreen] = useState<AppScreen>(() => getResumeState(journey).screen);
+  const [activeSessionId, setActiveSessionId] = useState<string | undefined>(() => getResumeState(journey).activeSessionId);
+  const [activeQuestionIndex, setActiveQuestionIndex] = useState(() => getResumeState(journey).activeQuestionIndex);
   const [showWhy, setShowWhy] = useState(false);
 
   useEffect(() => { saveMvpGuestJourney(journey); }, [journey]);
@@ -1921,6 +2117,13 @@ export default function FloSpatialPrototype() {
     if (final && activeSessionId) { const completed = completeGuidedGearPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("guided-gear-practice-debrief"); return; }
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
+  function openGearAssessmentIntro() { setShowWhy(false); setScreen("gear-assessment-intro"); }
+  function startGearAssessment() { const session = createGearAssessmentSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("gear-assessment-question"); }
+  function handleGearAssessmentAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeGearAssessment(withResponse, activeSessionId); updateJourney(completed); setScreen("gear-assessment-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
   function startMixedPractice() { const session = createMixedMechanicalPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("mixed-mechanical-practice-question"); }
   function handleMixedAnswer(response: AssessmentResponse, final: boolean) {
     const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
@@ -1929,5 +2132,5 @@ export default function FloSpatialPrototype() {
   }
 
   const why = getCurrentWhy(journey);
-  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}</>;
+  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}</>;
 }
