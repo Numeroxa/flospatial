@@ -27,7 +27,18 @@ type AppScreen =
   | "gear-independent-practice-debrief"
   | "gear-assessment-intro"
   | "gear-assessment-question"
-  | "gear-assessment-debrief";
+  | "gear-assessment-debrief"
+  | "pulley-fundamentals"
+  | "pulley-fundamentals-complete"
+  | "guided-pulley-practice-intro"
+  | "guided-pulley-practice-question"
+  | "guided-pulley-practice-debrief"
+  | "pulley-independent-practice-intro"
+  | "pulley-independent-practice-question"
+  | "pulley-independent-practice-debrief"
+  | "pulley-assessment-intro"
+  | "pulley-assessment-question"
+  | "pulley-assessment-debrief";
 
 type TestScenario =
   | "hydraulic_baseline"
@@ -38,7 +49,10 @@ type TestScenario =
   | "mixed_gear_focus"
   | "gear_guided_ready"
   | "gear_guided_strong"
-  | "gear_independent_strong";
+  | "gear_independent_strong"
+  | "pulley_guided_ready"
+  | "pulley_guided_strong"
+  | "pulley_independent_strong";
 
 type PathwayId = "fire_service";
 type MechanicalSubcompetency = "hydraulics" | "gears" | "pulleys" | "levers";
@@ -55,7 +69,7 @@ type PreparationContext = {
 type QuestionOption = { optionId: string; label: "A" | "B" | "C" | "D"; text: string };
 type MvpQuestion = {
   questionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment";
   pathwayId: PathwayId;
   domain: "mechanical";
   subcompetency: MechanicalSubcompetency;
@@ -70,7 +84,7 @@ type MvpQuestion = {
 
 type AssessmentSession = {
   sessionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment";
   pathwayId: PathwayId;
   startedAt: string;
   completedAt?: string;
@@ -135,7 +149,14 @@ type Recommendation = {
     | "review_gear_fundamentals"
     | "return_to_mixed_mechanical_practice"
     | "begin_gear_assessment"
-    | "repeat_gear_assessment";
+    | "repeat_gear_assessment"
+    | "begin_guided_pulley_practice"
+    | "continue_guided_pulley_practice"
+    | "begin_pulley_independent_practice"
+    | "continue_pulley_independent_practice"
+    | "review_pulley_fundamentals"
+    | "begin_pulley_assessment"
+    | "repeat_pulley_assessment";
   title: string;
   summary: string;
   actionLabel: string;
@@ -180,7 +201,12 @@ type Milestone = {
     | "gear_independent_practice_completed"
     | "gear_improvement_signal"
     | "gear_assessment_completed"
-    | "gear_pathway_completed";
+    | "gear_pathway_completed"
+    | "guided_pulley_practice_completed"
+    | "pulley_independent_practice_completed"
+    | "pulley_improvement_signal"
+    | "pulley_assessment_completed"
+    | "pulley_pathway_completed";
   label: string;
   createdAt: string;
 };
@@ -196,7 +222,7 @@ type DashboardState = {
   updatedAt: string;
 };
 
-type LearningModuleId = "hydraulic_fundamentals" | "gear_fundamentals";
+type LearningModuleId = "hydraulic_fundamentals" | "gear_fundamentals" | "pulley_fundamentals";
 
 type LearningMiniCheck = {
   questionId: string;
@@ -250,7 +276,7 @@ type ModuleCompletion = {
 type PracticeSummary = {
   summaryId: string;
   sessionId: string;
-  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment";
+  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment";
   attempted: number;
   correct: number;
   accuracy: number;
@@ -298,7 +324,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Gear Independent Practice v1.1";
+const BUILD_LABEL = "Pulley Pathway v1 Alpha";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -507,6 +533,76 @@ const gearAssessmentQuestions: MvpQuestion[] = [
   makeGearAssessmentQuestion("GEAR-AS-010", "idler_ratio", "Gear A has 20 teeth and turns clockwise at 120 rpm. It drives 10-tooth Gear B, which drives 40-tooth Gear C. Which statement about Gear C is correct?", ["It turns clockwise at 60 rpm", "It turns anticlockwise at 60 rpm", "It turns clockwise at 240 rpm", "It turns anticlockwise at 240 rpm"], "A", "Two contacts mean Gear C turns the same way as Gear A. The overall ratio depends on A and C: 20 to 40 gives 60 rpm."),
 ];
 
+
+function makeGuidedPulleyQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string, feedbackCue: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "guided_pulley_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency: "pulleys", concept, difficulty: "developing", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation, feedbackCue };
+}
+
+const guidedPulleyPracticeQuestions: MvpQuestion[] = [
+  makeGuidedPulleyQuestion("PULL-GP-001", "fixed_pulley_direction", "A single fixed pulley is attached to the ceiling. If you pull the free end down, what is the main effect?", ["The load rises while the effort direction changes", "The load becomes weightless", "The effort is automatically halved", "The pulley stores force"], "A", "A fixed pulley mainly changes the direction of effort. Pulling down can lift the load upward.", "A fixed pulley changes direction more than force."),
+  makeGuidedPulleyQuestion("PULL-GP-002", "supporting_strands", "A movable pulley is supported by two rope sections. In an ideal system, how many rope sections share the load?", ["Two", "One", "Three", "Four"], "A", "Both rope sections attached around the moving pulley share the load.", "Count only rope sections that pull upward on the moving part."),
+  makeGuidedPulleyQuestion("PULL-GP-003", "supporting_strands", "The moving block in the diagram is supported by three rope sections. What is the ideal mechanical advantage?", ["3", "1", "2", "6"], "A", "In an ideal pulley system, mechanical advantage is approximately the number of rope sections supporting the moving load.", "Count the supporting strands, not every visible length of rope."),
+  makeGuidedPulleyQuestion("PULL-GP-004", "supporting_strands", "A block-and-tackle arrangement has four rope sections supporting the moving block. What is the ideal mechanical advantage?", ["4", "2", "6", "8"], "A", "Four supporting rope sections give an ideal mechanical advantage of four.", "Count upward-supporting rope sections attached to the moving assembly."),
+  makeGuidedPulleyQuestion("PULL-GP-005", "free_end", "The free end of the rope hangs downward for the person to pull. Should that free end be counted as supporting the load?", ["No, unless it directly pulls upward on the moving block", "Yes, every visible rope section always counts", "Only if it is the longest section", "Only when the load is light"], "A", "The free end is not automatically a supporting strand. Count only rope sections that directly support the moving assembly.", "Ask whether this rope section pulls upward on the moving part."),
+  makeGuidedPulleyQuestion("PULL-GP-006", "fixed_vs_movable", "Which arrangement provides force advantage in the ideal diagrams shown here?", ["The arrangement with a movable pulley supported by multiple rope sections", "A single fixed pulley by itself", "Any pulley regardless of rope path", "Only a pulley that turns clockwise"], "A", "A movable pulley can share the load across multiple rope sections. A single fixed pulley mainly changes direction.", "Look for rope sections lifting the moving block."),
+  makeGuidedPulleyQuestion("PULL-GP-007", "force_calculation", "A 200 N load is supported by two rope sections in an ideal pulley system. About how much effort is needed?", ["100 N", "200 N", "400 N", "50 N"], "A", "With two supporting strands, the ideal effort is 200 ÷ 2 = 100 N.", "Divide the load by the number of supporting strands."),
+  makeGuidedPulleyQuestion("PULL-GP-008", "force_calculation", "A 300 N load is supported by three rope sections. What is the ideal effort?", ["100 N", "150 N", "300 N", "900 N"], "A", "Three supporting strands share the 300 N load, so the ideal effort is 100 N.", "Load ÷ supporting strands = ideal effort."),
+  makeGuidedPulleyQuestion("PULL-GP-009", "distance_tradeoff", "A pulley system has a mechanical advantage of four. To raise the load by 1 metre, approximately how much rope must be pulled in an ideal system?", ["4 metres", "1 metre", "0.25 metres", "8 metres"], "A", "A four-to-one force advantage usually means pulling about four times as much rope distance.", "Mechanical advantage trades lower effort for greater rope movement."),
+  makeGuidedPulleyQuestion("PULL-GP-010", "integrated", "A 400 N load is supported by four rope sections. Which statement is correct for an ideal system?", ["About 100 N effort is needed, and more rope must be pulled than the load rises", "About 400 N effort is needed and rope distance is unchanged", "About 1600 N effort is needed", "The load becomes weightless"], "A", "Four supporting strands reduce ideal effort to 100 N, with a corresponding distance tradeoff.", "Combine strand count with the effort-distance tradeoff."),
+];
+
+function makePulleyIndependentQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string, feedbackCue: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "pulley_independent_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency: "pulleys", concept, difficulty: "applied", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation, feedbackCue };
+}
+
+const pulleyIndependentPracticeQuestions: MvpQuestion[] = [
+  makePulleyIndependentQuestion("PULL-IP-001", "fixed_pulley_direction", "A worker pulls down on the free end of a rope passing over a single fixed pulley. What happens to the load?", ["It rises", "It falls", "It remains stationary", "It moves sideways"], "A", "The fixed pulley changes the direction of effort: pulling down raises the load.", "Trace the rope direction over the fixed pulley."),
+  makePulleyIndependentQuestion("PULL-IP-002", "fixed_pulley_advantage", "What is the ideal mechanical advantage of a single fixed pulley?", ["1", "2", "3", "4"], "A", "A single fixed pulley changes direction but does not ideally reduce the force required.", "A fixed pulley alone does not multiply force."),
+  makePulleyIndependentQuestion("PULL-IP-003", "supporting_strands", "How many rope sections support the moving block in the diagram?", ["2", "1", "3", "4"], "A", "Two rope sections pull upward on the moving block.", "Count upward forces on the moving assembly."),
+  makePulleyIndependentQuestion("PULL-IP-004", "supporting_strands", "The moving block is lifted by three supporting rope sections. What is the ideal mechanical advantage?", ["3", "1", "2", "6"], "A", "Three supporting strands give an ideal mechanical advantage of three.", "Mechanical advantage follows the number of supporting strands."),
+  makePulleyIndependentQuestion("PULL-IP-005", "supporting_strands", "The lower block is supported by four rope sections. What is the ideal mechanical advantage?", ["4", "2", "8", "16"], "A", "Four supporting strands give an ideal mechanical advantage of four.", "Count the strands attached to the moving block."),
+  makePulleyIndependentQuestion("PULL-IP-006", "free_end", "Which rope section should not be counted when finding mechanical advantage?", ["A free end that does not pull upward on the moving block", "A strand directly supporting the moving block", "A strand attached to the moving block", "A strand carrying tension upward from the lower pulley"], "A", "A free end is not counted unless it directly supports the moving load.", "Count function, not appearance."),
+  makePulleyIndependentQuestion("PULL-IP-007", "force_calculation", "A 240 N load is supported by two rope sections. What is the ideal effort?", ["120 N", "240 N", "480 N", "60 N"], "A", "240 ÷ 2 = 120 N.", "Divide load by supporting strands."),
+  makePulleyIndependentQuestion("PULL-IP-008", "force_calculation", "A 360 N load is supported by three rope sections. What is the ideal effort?", ["120 N", "180 N", "360 N", "1080 N"], "A", "360 ÷ 3 = 120 N.", "Load ÷ mechanical advantage."),
+  makePulleyIndependentQuestion("PULL-IP-009", "force_calculation", "A 600 N load is supported by four rope sections. What is the ideal effort?", ["150 N", "300 N", "600 N", "2400 N"], "A", "600 ÷ 4 = 150 N.", "Use the number of supporting strands."),
+  makePulleyIndependentQuestion("PULL-IP-010", "load_calculation", "A person applies 80 N of effort to an ideal system with two supporting strands. What load can be balanced?", ["160 N", "80 N", "40 N", "320 N"], "A", "Two supporting strands can ideally balance twice the effort: 160 N.", "Effort × supporting strands = ideal load."),
+  makePulleyIndependentQuestion("PULL-IP-011", "load_calculation", "An ideal system has three supporting strands and an effort of 90 N. What load can be balanced?", ["270 N", "180 N", "90 N", "30 N"], "A", "90 × 3 = 270 N.", "Multiply effort by the strand count."),
+  makePulleyIndependentQuestion("PULL-IP-012", "load_calculation", "An ideal four-strand system is pulled with 75 N. What load can be balanced?", ["300 N", "150 N", "75 N", "600 N"], "A", "75 × 4 = 300 N.", "Mechanical advantage multiplies the ideal load capacity."),
+  makePulleyIndependentQuestion("PULL-IP-013", "distance_tradeoff", "A two-strand pulley system raises a load 2 m. Approximately how much rope must be pulled ideally?", ["4 m", "2 m", "1 m", "8 m"], "A", "With a two-to-one mechanical advantage, the rope moves about twice the load distance.", "Force advantage is exchanged for rope distance."),
+  makePulleyIndependentQuestion("PULL-IP-014", "distance_tradeoff", "A three-strand system raises a load by 0.5 m. Approximately how much rope is pulled?", ["1.5 m", "0.5 m", "3 m", "0.17 m"], "A", "Three supporting strands mean about three times as much rope movement: 1.5 m.", "Multiply load travel by mechanical advantage."),
+  makePulleyIndependentQuestion("PULL-IP-015", "distance_tradeoff", "A four-strand system requires 8 m of rope pull. Approximately how far does the load rise?", ["2 m", "4 m", "8 m", "32 m"], "A", "8 ÷ 4 = 2 m of load movement.", "Rope distance ÷ mechanical advantage = load travel."),
+  makePulleyIndependentQuestion("PULL-IP-016", "fixed_vs_movable", "Which change would reduce ideal effort most?", ["Increase the number of rope sections supporting the moving block", "Add another fixed pulley that only changes direction", "Use a longer free end", "Pull faster"], "A", "More supporting strands increase mechanical advantage. A fixed direction-change pulley alone does not.", "Look for additional upward support on the moving block."),
+  makePulleyIndependentQuestion("PULL-IP-017", "same_tension", "In an ideal continuous rope, what is assumed about tension in each section of that rope?", ["It is approximately the same", "It is zero at the top", "It doubles at every pulley", "It depends only on rope colour"], "A", "Ideal pulley reasoning assumes approximately equal tension throughout one continuous rope.", "One continuous ideal rope carries the same tension."),
+  makePulleyIndependentQuestion("PULL-IP-018", "anchor_point", "One end of the rope is attached directly to the moving block, and two other rope sections also support it. How many supporting sections are there?", ["3", "2", "1", "4"], "A", "The attached rope end also pulls upward on the moving block, so it counts as a supporting section.", "An anchored end counts if it directly supports the moving part."),
+  makePulleyIndependentQuestion("PULL-IP-019", "unusual_layout", "The pulleys are drawn at an angle, but three rope sections still pull on the moving block. What determines ideal mechanical advantage?", ["The number of supporting rope sections", "Whether the diagram is vertical", "The colour of the rope", "The size of the load box"], "A", "Diagram orientation does not change the basic method: count supporting rope sections.", "Ignore surface orientation; find the support relationship."),
+  makePulleyIndependentQuestion("PULL-IP-020", "compound_system", "A fixed pulley redirects the free end after a two-strand movable pulley. What is the ideal mechanical advantage?", ["2", "1", "3", "4"], "A", "The extra fixed pulley changes pull direction but does not add another supporting strand to the moving load.", "Do not count direction-change pulleys as extra force advantage."),
+  makePulleyIndependentQuestion("PULL-IP-021", "effort_direction", "A fixed pulley is added above the free end of a four-strand block-and-tackle so the person can pull downward. What changes?", ["The effort direction changes, but the ideal mechanical advantage remains 4", "The mechanical advantage becomes 5", "The load doubles", "The rope tension becomes zero"], "A", "A fixed direction-change pulley alters convenience, not the number of strands supporting the moving block.", "Separate effort direction from force advantage."),
+  makePulleyIndependentQuestion("PULL-IP-022", "comparison", "System A has two supporting strands. System B has four. For the same load, which needs less ideal effort?", ["System B", "System A", "Both need the same effort", "Neither can lift"], "A", "Four supporting strands share the load more than two, so System B needs less ideal effort.", "More supporting strands means lower ideal effort."),
+  makePulleyIndependentQuestion("PULL-IP-023", "comparison", "System A has a fixed pulley only. System B has one movable pulley with two supporting strands. Which provides greater ideal force advantage?", ["System B", "System A", "They are identical", "Neither has any rope tension"], "A", "The movable pulley system has two supporting strands and an ideal mechanical advantage of two.", "A fixed pulley redirects; a movable pulley can multiply force."),
+  makePulleyIndependentQuestion("PULL-IP-024", "integrated", "A 480 N load is lifted by an ideal four-strand system. Which statement is correct?", ["About 120 N effort is needed and about four times the load travel in rope must be pulled", "About 480 N effort is needed with no distance tradeoff", "About 1920 N effort is needed", "The free end must support the load directly"], "A", "480 ÷ 4 = 120 N, and the force advantage is exchanged for greater rope travel.", "Combine force and distance consequences."),
+  makePulleyIndependentQuestion("PULL-IP-025", "integrated", "A worker can pull with 100 N and needs to balance a 300 N load ideally. What minimum number of supporting rope sections is required?", ["3", "2", "4", "1"], "A", "300 ÷ 100 = 3, so at least three supporting strands are required ideally.", "Required mechanical advantage = load ÷ effort."),
+];
+
+function makePulleyAssessmentQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "pulley_assessment", pathwayId: "fire_service", domain: "mechanical", subcompetency: "pulleys", concept, difficulty: "applied", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
+}
+
+const pulleyAssessmentQuestions: MvpQuestion[] = [
+  makePulleyAssessmentQuestion("PULL-AS-001", "system_recognition", "What is the main effect of the fixed pulley shown?", ["It changes the direction of effort", "It halves the required force", "It doubles the load", "It prevents rope movement"], "A", "A single fixed pulley mainly changes effort direction."),
+  makePulleyAssessmentQuestion("PULL-AS-002", "supporting_strands", "How many rope sections directly support the moving block?", ["2", "1", "3", "4"], "A", "Two rope sections support the moving block."),
+  makePulleyAssessmentQuestion("PULL-AS-003", "supporting_strands", "What is the ideal mechanical advantage of the pulley arrangement shown?", ["3", "1", "2", "6"], "A", "Three supporting strands give an ideal mechanical advantage of three."),
+  makePulleyAssessmentQuestion("PULL-AS-004", "supporting_strands", "What is the ideal mechanical advantage of this block-and-tackle?", ["4", "2", "6", "8"], "A", "Four rope sections support the moving block."),
+  makePulleyAssessmentQuestion("PULL-AS-005", "force", "A 360 N load is supported by three rope sections. What ideal effort is required?", ["120 N", "180 N", "360 N", "1080 N"], "A", "360 ÷ 3 = 120 N."),
+  makePulleyAssessmentQuestion("PULL-AS-006", "force", "A 500 N load is supported by four rope sections. What ideal effort is required?", ["125 N", "250 N", "500 N", "2000 N"], "A", "500 ÷ 4 = 125 N."),
+  makePulleyAssessmentQuestion("PULL-AS-007", "distance", "A four-strand system raises a load by 1.5 m. Approximately how much rope is pulled ideally?", ["6 m", "1.5 m", "3 m", "0.375 m"], "A", "1.5 × 4 = 6 m of rope movement."),
+  makePulleyAssessmentQuestion("PULL-AS-008", "anchor_point", "One rope end is attached to the moving block and two other sections support it. What is the ideal mechanical advantage?", ["3", "2", "1", "4"], "A", "The anchored end counts because it directly supports the moving block."),
+  makePulleyAssessmentQuestion("PULL-AS-009", "fixed_vs_movable", "A fixed pulley is added only to redirect the free end of a two-strand movable-pulley system. What is the ideal mechanical advantage?", ["2", "3", "1", "4"], "A", "The fixed pulley changes direction but adds no extra supporting strand."),
+  makePulleyAssessmentQuestion("PULL-AS-010", "integrated", "A person pulls 4 m of rope to raise a 400 N load by 1 m in an ideal system. Which statement best fits?", ["The system has mechanical advantage 4 and needs about 100 N effort", "The system has mechanical advantage 1 and needs 400 N effort", "The system has mechanical advantage 2 and needs 200 N effort", "The system has mechanical advantage 8 and needs 50 N effort"], "A", "A 4:1 distance ratio indicates mechanical advantage 4, so ideal effort is 400 ÷ 4 = 100 N."),
+];
+
 const mixedMechanicalPracticeQuestions: MvpQuestion[] = [
   makeMixedQuestion("MIX-HYD-001", "hydraulics", "pressure_transfer", "A sealed hydraulic system has a small input piston connected to a larger output piston. What carries the effect of the input force to the output piston?", ["Pressure transmitted through the fluid", "Air above the piston", "The weight of the load", "The size of the handle only"], "A", "In a sealed hydraulic system, pressure is transmitted through the fluid.", "Trace the pressure path through the fluid."),
   makeMixedQuestion("MIX-HYD-002", "hydraulics", "piston_area_force", "The same pressure acts on two output pistons. One piston has a larger area. Which produces greater force?", ["The larger-area piston", "The smaller-area piston", "Both produce no force", "Area does not matter"], "A", "The same pressure acting over a larger area produces greater force.", "When force is the question, compare piston area."),
@@ -678,6 +774,73 @@ const gearFundamentalsModule: LearningModule = {
   ],
 };
 
+
+const pulleyFundamentalsModule: LearningModule = {
+  moduleId: "pulley_fundamentals",
+  title: "Pulley Fundamentals",
+  subtitle: "Fixed pulleys, movable pulleys, supporting strands, force and distance",
+  targetDomain: "mechanical",
+  targetSubcompetency: "pulleys",
+  estimatedMinutes: 10,
+  sections: [
+    {
+      sectionId: "pulley-fund-001",
+      title: "What pulleys do",
+      body: "Pulleys use a rope and one or more wheels to change how a force is applied. In aptitude questions, you are usually asked about direction of effort, the number of rope sections supporting a load, ideal mechanical advantage, or the force-distance tradeoff.",
+      keyPoint: "First decide whether the pulley only changes direction or whether the moving load is supported by multiple rope sections.",
+      miniCheck: makeMiniCheck("PULL-FUND-MC-001", "What is the main effect of a single fixed pulley?", ["It changes the direction of effort", "It always halves the effort", "It makes the load weightless", "It removes rope tension"], "A", "A single fixed pulley mainly changes the direction of effort."),
+    },
+    {
+      sectionId: "pulley-fund-002",
+      title: "Fixed and movable pulleys",
+      body: "A fixed pulley stays attached to the support above the load. By itself, it mainly makes pulling more convenient by changing direction. A movable pulley rises with the load. When more than one rope section pulls upward on that moving assembly, the load is shared between them.",
+      keyPoint: "Fixed pulley → direction change. Movable pulley → possible force advantage.",
+      miniCheck: makeMiniCheck("PULL-FUND-MC-002", "Which arrangement can provide an ideal force advantage?", ["A movable pulley supported by multiple rope sections", "A single fixed pulley only", "Any wheel regardless of rope path", "A pulley that turns clockwise"], "A", "A movable pulley can share the load across multiple supporting rope sections."),
+    },
+    {
+      sectionId: "pulley-fund-003",
+      title: "Count the supporting strands",
+      body: "The most useful rule is simple: count the rope sections that directly pull upward on the moving load or moving pulley block. Do not count every visible part of the rope. A free end used for pulling does not automatically support the load.",
+      keyPoint: "Count support, not rope appearance.",
+      miniCheck: makeMiniCheck("PULL-FUND-MC-003", "Which rope sections should be counted for ideal mechanical advantage?", ["Sections that directly support the moving load", "Every visible rope section", "Only the free end", "Only the longest section"], "A", "Count rope sections that directly support the moving assembly."),
+    },
+    {
+      sectionId: "pulley-fund-004",
+      title: "Mechanical advantage",
+      body: "In the ideal pulley diagrams used here, mechanical advantage is approximately the number of rope sections supporting the moving load. Two supporting sections give an ideal advantage of 2. Three give 3. Four give 4.",
+      keyPoint: "Ideal mechanical advantage ≈ number of supporting strands.",
+      miniCheck: makeMiniCheck("PULL-FUND-MC-004", "A moving block is supported by four rope sections. What is the ideal mechanical advantage?", ["4", "2", "8", "16"], "A", "Four supporting strands give an ideal mechanical advantage of four."),
+    },
+    {
+      sectionId: "pulley-fund-005",
+      title: "Force calculations",
+      body: "For simple ideal questions, divide the load by the number of supporting strands. A 300 N load supported by three strands needs about 100 N effort. Real systems lose some force to friction, but aptitude tests usually use the ideal relationship unless told otherwise.",
+      keyPoint: "Ideal effort = load ÷ supporting strands.",
+      miniCheck: makeMiniCheck("PULL-FUND-MC-005", "A 240 N load is supported by two rope sections. What is the ideal effort?", ["120 N", "240 N", "480 N", "60 N"], "A", "240 ÷ 2 = 120 N."),
+    },
+    {
+      sectionId: "pulley-fund-006",
+      title: "The distance tradeoff",
+      body: "Pulley systems do not create energy. If the effort is reduced by a factor of four, you usually pull about four times as much rope distance as the load rises. This is the same force-distance tradeoff seen in other simple machines.",
+      keyPoint: "Less effort usually means more rope movement.",
+      miniCheck: makeMiniCheck("PULL-FUND-MC-006", "A four-strand system raises a load by 1 m. Approximately how much rope is pulled ideally?", ["4 m", "1 m", "0.25 m", "8 m"], "A", "A four-to-one force advantage usually requires about four times the rope travel."),
+    },
+    {
+      sectionId: "pulley-fund-007",
+      title: "Solving method",
+      body: "Use this sequence for pulley questions:\n\n1. Identify the moving load or moving block.\n2. Trace the rope path.\n3. Count rope sections that directly support the moving part.\n4. Ignore direction-change pulleys when counting force advantage.\n5. Apply the force or distance tradeoff if needed.",
+      keyPoint: "Find the moving part first, then count the strands that support it.",
+      miniCheck: makeMiniCheck("PULL-FUND-MC-007", "What is usually the best first step in a pulley mechanical-advantage question?", ["Identify the moving load or moving block", "Count every pulley wheel", "Choose the longest rope", "Assume the largest pulley gives the most force"], "A", "Finding the moving part lets you count only the rope sections that actually support it."),
+    },
+    {
+      sectionId: "pulley-fund-008",
+      title: "Completion",
+      body: "You have completed Pulley Fundamentals. The next step is Guided Pulley Practice, where the diagrams help you apply the strand-count method before the support is reduced.",
+      keyPoint: "Pulley Fundamentals complete. Guided Pulley Practice comes next.",
+    },
+  ],
+};
+
 function createMechanicalBaselineSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "mechanical_starting_point", pathwayId: "fire_service", startedAt: now(), questionIds: mechanicalQuestions.map((q) => q.questionId) };
 }
@@ -695,6 +858,15 @@ function createGearIndependentPracticeSession(): AssessmentSession {
 }
 function createGearAssessmentSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "gear_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: gearAssessmentQuestions.map((q) => q.questionId) };
+}
+function createGuidedPulleyPracticeSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "guided_pulley_practice", pathwayId: "fire_service", startedAt: now(), questionIds: guidedPulleyPracticeQuestions.map((q) => q.questionId) };
+}
+function createPulleyIndependentPracticeSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "pulley_independent_practice", pathwayId: "fire_service", startedAt: now(), questionIds: pulleyIndependentPracticeQuestions.map((q) => q.questionId) };
+}
+function createPulleyAssessmentSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "pulley_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: pulleyAssessmentQuestions.map((q) => q.questionId) };
 }
 function createAssessmentResponse(sessionId: string, question: MvpQuestion, selectedOptionId: string | null, responseTimeMs: number, notSureSelected: boolean): AssessmentResponse {
   return { responseId: id("response"), sessionId, questionId: question.questionId, selectedOptionId, correct: selectedOptionId === question.correctOptionId, responseTimeMs, notSureSelected, answeredAt: now() };
@@ -874,6 +1046,135 @@ function completeGearFundamentals(journey: MvpGuestJourney): MvpGuestJourney {
     dashboardState: { dashboardStateId: id("dash"), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Gear reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds: [...(journey.dashboardState?.recentMilestoneIds ?? []).slice(-3), milestone.milestoneId], baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() },
     updatedAt: now(),
   };
+}
+
+
+function getCurrentPulleyProgress(journey: MvpGuestJourney) {
+  return journey.moduleProgress.find((progress) => progress.moduleId === "pulley_fundamentals" && !progress.completedAt);
+}
+function startPulleyFundamentals(journey: MvpGuestJourney): MvpGuestJourney {
+  if (getCurrentPulleyProgress(journey)) return journey;
+  const alreadyCompleted = journey.moduleCompletions.some((completion) => completion.moduleId === "pulley_fundamentals");
+  if (alreadyCompleted) return journey;
+  const progress: ModuleProgress = { moduleProgressId: id("module-progress"), moduleId: "pulley_fundamentals", currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
+  return { ...journey, moduleProgress: [...journey.moduleProgress, progress], updatedAt: now() };
+}
+function updatePulleyProgress(journey: MvpGuestJourney, nextProgress: ModuleProgress): MvpGuestJourney {
+  return { ...journey, moduleProgress: journey.moduleProgress.map((progress) => progress.moduleProgressId === nextProgress.moduleProgressId ? nextProgress : progress), updatedAt: now() };
+}
+function completePulleyFundamentals(journey: MvpGuestJourney): MvpGuestJourney {
+  const activeProgress = getCurrentPulleyProgress(journey);
+  const completedAt = now();
+  const completedProgress = activeProgress ? { ...activeProgress, currentSectionIndex: pulleyFundamentalsModule.sections.length - 1, completedAt, updatedAt: completedAt } : undefined;
+  const completion: ModuleCompletion = { moduleCompletionId: id("module-completion"), moduleId: "pulley_fundamentals", completedAt };
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: "Why Guided Pulley Practice is recommended", observation: "Pulley Fundamentals has been completed.", evidence: "You completed the foundation module covering fixed and movable pulleys, supporting strands, force and distance.", interpretation: "Guided diagram practice is the next useful step before support is reduced.", recommendation: "Guided Pulley Practice is recommended next.", confidence: "High. This is the planned next stage after the fundamentals module.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType: "begin_guided_pulley_practice", title: "Begin Guided Pulley Practice", summary: "Apply the supporting-strand method to guided pulley diagrams.", actionLabel: "Begin Guided Pulley Practice", confidence: "high", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "first_learning_action_completed", label: "Pulley Fundamentals completed", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: "developing_evidence", label: "Developing evidence — pulley practice not yet checked", explanation: "Pulley Fundamentals is complete, but practice evidence is still needed.", confidence: "high", createdAt: now() };
+  return { ...journey, moduleProgress: completedProgress ? journey.moduleProgress.map((progress) => progress.moduleProgressId === completedProgress.moduleProgressId ? completedProgress : progress) : journey.moduleProgress, moduleCompletions: [...journey.moduleCompletions, completion], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, milestone], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Pulley reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds: [...(journey.dashboardState?.recentMilestoneIds ?? []).slice(-4), milestone.milestoneId], baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+function calculatePulleySummary(session: AssessmentSession, responses: AssessmentResponse[], questions: MvpQuestion[], sessionType: PracticeSummary["sessionType"], categories: { concept: string; concepts: string[] }[]): PracticeSummary {
+  const conceptBreakdown = categories.map((category) => {
+    const ids = new Set(questions.filter((q) => category.concepts.includes(q.concept)).map((q) => q.questionId));
+    const categoryResponses = responses.filter((r) => ids.has(r.questionId));
+    const attempted = categoryResponses.length;
+    const correct = categoryResponses.filter((r) => r.correct).length;
+    return { concept: category.concept, attempted, correct, accuracy: attempted ? correct / attempted : 0 };
+  });
+  const attempted = responses.length;
+  const correct = responses.filter((r) => r.correct).length;
+  return { summaryId: id("summary"), sessionId: session.sessionId, sessionType, attempted, correct, accuracy: attempted ? correct / attempted : 0, conceptBreakdown, createdAt: now() };
+}
+
+function completeGuidedPulleyPractice(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId);
+  if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculatePulleySummary(completedSession, responses, guidedPulleyPracticeQuestions, "guided_pulley_practice", [
+    { concept: "recognition", concepts: ["fixed_pulley_direction", "fixed_vs_movable", "free_end"] },
+    { concept: "strand_count", concepts: ["supporting_strands"] },
+    { concept: "force_distance", concepts: ["force_calculation", "distance_tradeoff", "integrated"] },
+  ]);
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "begin_pulley_independent_practice";
+  let title = "Begin Independent Pulley Practice";
+  let summaryText = "Apply the same pulley method across a larger set of less-supported diagrams.";
+  let actionLabel = "Start independent practice";
+  let interpretation = "The guided result is strong enough to reduce support and broaden the question set.";
+  if (summary.accuracy < 0.8 && summary.accuracy >= 0.5) { recommendationType = "continue_guided_pulley_practice"; title = "Continue Guided Pulley Practice"; summaryText = "Strengthen strand counting and force calculations before reducing support."; actionLabel = "Continue guided practice"; interpretation = "The core method is emerging, but more guided practice is useful before moving on."; }
+  else if (summary.accuracy < 0.5) { recommendationType = "review_pulley_fundamentals"; title = "Review Pulley Fundamentals"; summaryText = "Revisit the support-strand method before continuing."; actionLabel = "Review Pulley Fundamentals"; interpretation = "The guided result suggests the core method is not yet secure enough for less-supported practice."; }
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Guided Pulley Practice: ${summary.correct} of ${summary.attempted} correct.`, evidence: `Accuracy ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one guided pulley set.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.5 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — ready for less support" : "Developing evidence — pulley method still consolidating", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: summary.accuracy >= 0.8 ? "pulley_improvement_signal" : "guided_pulley_practice_completed", label: summary.accuracy >= 0.8 ? "Pulley improvement signal detected" : "Guided Pulley Practice completed", createdAt: now() };
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Guided Pulley Practice complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Guided pulley practice: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), milestone.milestoneId].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, milestone], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Pulley reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+function completePulleyIndependentPractice(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId);
+  if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculatePulleySummary(completedSession, responses, pulleyIndependentPracticeQuestions, "pulley_independent_practice", [
+    { concept: "recognition", concepts: ["fixed_pulley_direction", "fixed_pulley_advantage", "fixed_vs_movable", "free_end", "same_tension", "anchor_point", "unusual_layout", "compound_system", "effort_direction", "comparison"] },
+    { concept: "strand_count", concepts: ["supporting_strands"] },
+    { concept: "force_distance", concepts: ["force_calculation", "load_calculation", "distance_tradeoff", "integrated"] },
+  ]);
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "begin_pulley_assessment";
+  let title = "Begin Pulley Check";
+  let summaryText = "Check whether pulley reasoning remains stable without immediate feedback.";
+  let actionLabel = "Start Pulley Check";
+  let interpretation = "Independent practice is strong enough to move to an assessment-style check.";
+  if (summary.accuracy < 0.8 && summary.accuracy >= 0.6) { recommendationType = "continue_pulley_independent_practice"; title = "Continue Independent Pulley Practice"; summaryText = "Consolidate the weaker pulley patterns before the check."; actionLabel = "Continue independent practice"; interpretation = "The method is useful but not yet consistent enough for the check."; }
+  else if (summary.accuracy < 0.6) { recommendationType = "continue_guided_pulley_practice"; title = "Return to Guided Pulley Practice"; summaryText = "Restore the support-strand method with guided feedback before continuing independently."; actionLabel = "Start guided practice"; interpretation = "The less-supported set exposed a gap that guided practice can address more efficiently."; }
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Independent Pulley Practice: ${summary.correct} of ${summary.attempted} correct.`, evidence: `Accuracy ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one independent pulley set.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — ready for Pulley Check" : "Developing evidence — pulley practice continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "pulley_independent_practice_completed", label: "Independent Pulley Practice completed", createdAt: now() };
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Independent Pulley Practice complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Independent pulley practice: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), milestone.milestoneId].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, milestone], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Pulley reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+function completePulleyAssessment(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId);
+  if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculatePulleySummary(completedSession, responses, pulleyAssessmentQuestions, "pulley_assessment", [
+    { concept: "recognition", concepts: ["system_recognition", "fixed_vs_movable", "anchor_point"] },
+    { concept: "mechanical_advantage", concepts: ["supporting_strands"] },
+    { concept: "force_distance", concepts: ["force", "distance", "integrated"] },
+  ]);
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "return_to_mixed_mechanical_practice";
+  let title = "Return to Mixed Mechanical Practice";
+  let summaryText = "Recheck pulley reasoning alongside gears, hydraulics and levers.";
+  let actionLabel = "Start mixed practice";
+  let currentFocus = "Mechanical reasoning integration";
+  let interpretation = "The Pulley Check is strong enough to move back into mixed mechanical reasoning.";
+  if (summary.accuracy < 0.8 && summary.accuracy >= 0.6) { recommendationType = "continue_pulley_independent_practice"; title = "Target the Weakest Pulley Pattern"; summaryText = "Do another independent pulley set before repeating the check."; actionLabel = "Continue independent practice"; currentFocus = "Pulley reasoning"; interpretation = "The check showed useful learning, but one more consolidation step is appropriate."; }
+  else if (summary.accuracy < 0.6) { recommendationType = "continue_guided_pulley_practice"; title = "Return to Guided Pulley Practice"; summaryText = "Rebuild the pulley method with immediate feedback before another check."; actionLabel = "Start guided practice"; currentFocus = "Pulley reasoning"; interpretation = "The assessment-style check suggests the pulley method is not yet stable enough without support."; }
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Pulley Check: ${summary.correct} of ${summary.attempted} correct.`, evidence: `Accuracy ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one short assessment-style pulley check.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — pulley pathway completed" : "Developing evidence — pulley pathway continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "pulley_assessment_completed", label: "Pulley Check completed", createdAt: now() };
+  const pathwayMilestone: Milestone | undefined = summary.accuracy >= 0.8 ? { milestoneId: id("milestone"), type: "pulley_pathway_completed", label: "Pulley pathway completed", createdAt: now() } : undefined;
+  const newMilestones = pathwayMilestone ? [completedMilestone, pathwayMilestone] : [completedMilestone];
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Pulley Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Pulley Check: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const evidence: CompetencyEvidence = { evidenceId: id("evidence"), domain: "mechanical", subcompetency: "pulleys", attempted: summary.attempted, correct: summary.correct, accuracy: summary.accuracy, evidenceStrength: evidenceStrength(summary.attempted), sourceSessionId: sessionId, updatedAt: now() };
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], competencyEvidence: [...journey.competencyEvidence, evidence], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, ...newMilestones], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: currentFocus, readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
 }
 
 function calculateGuidedPracticeSummary(session: AssessmentSession, responses: AssessmentResponse[]): PracticeSummary {
@@ -1433,6 +1734,9 @@ function getResumeState(journey: MvpGuestJourney): ResumeState {
       guided_gear_practice: "guided-gear-practice-question",
       gear_independent_practice: "gear-independent-practice-question",
       gear_assessment: "gear-assessment-question",
+      guided_pulley_practice: "guided-pulley-practice-question",
+      pulley_independent_practice: "pulley-independent-practice-question",
+      pulley_assessment: "pulley-assessment-question",
     };
     return {
       screen: screenBySessionType[incompleteSession.sessionType],
@@ -1593,6 +1897,23 @@ function createGearIndependentStrongDemoJourney(): MvpGuestJourney {
   return completeGearIndependentPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
 }
 
+
+function createPulleyGuidedReadyDemoJourney(): MvpGuestJourney {
+  return completePulleyFundamentals(createMixedGearFocusDemoJourney());
+}
+function createPulleyGuidedStrongDemoJourney(): MvpGuestJourney {
+  const ready = createPulleyGuidedReadyDemoJourney();
+  const session = createGuidedPulleyPracticeSession();
+  const responses = guidedPulleyPracticeQuestions.map((question, index) => createAssessmentResponse(session.sessionId, question, index < 9 ? question.correctOptionId : getNonCorrectOptionId(question), 17000 + index * 500, false));
+  return completeGuidedPulleyPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
+}
+function createPulleyIndependentStrongDemoJourney(): MvpGuestJourney {
+  const ready = createPulleyGuidedStrongDemoJourney();
+  const session = createPulleyIndependentPracticeSession();
+  const responses = pulleyIndependentPracticeQuestions.map((question, index) => createAssessmentResponse(session.sessionId, question, index < 22 ? question.correctOptionId : getNonCorrectOptionId(question), 15500 + index * 420, false));
+  return completePulleyIndependentPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
+}
+
 function createTestScenarioJourney(scenario: TestScenario): MvpGuestJourney {
   switch (scenario) {
     case "hydraulic_module_complete":
@@ -1611,6 +1932,12 @@ function createTestScenarioJourney(scenario: TestScenario): MvpGuestJourney {
       return createGearGuidedStrongDemoJourney();
     case "gear_independent_strong":
       return createGearIndependentStrongDemoJourney();
+    case "pulley_guided_ready":
+      return createPulleyGuidedReadyDemoJourney();
+    case "pulley_guided_strong":
+      return createPulleyGuidedStrongDemoJourney();
+    case "pulley_independent_strong":
+      return createPulleyIndependentStrongDemoJourney();
     case "hydraulic_baseline":
     default:
       return createHydraulicBaselineDemoJourney();
@@ -1653,6 +1980,21 @@ function TestScenarioPanel({ onLoad }: { onLoad: (scenario: TestScenario) => voi
       scenario: "gear_independent_strong",
       title: "Strong independent gear practice",
       description: "Loads a journey where independent gear practice is complete and the Gear Check is recommended next.",
+    },
+    {
+      scenario: "pulley_guided_ready",
+      title: "After Pulley Fundamentals",
+      description: "Loads a journey where Guided Pulley Practice is recommended next.",
+    },
+    {
+      scenario: "pulley_guided_strong",
+      title: "Strong guided pulley practice",
+      description: "Loads a journey where Independent Pulley Practice is recommended next.",
+    },
+    {
+      scenario: "pulley_independent_strong",
+      title: "Strong independent pulley practice",
+      description: "Loads a journey where the Pulley Check is recommended next.",
     },
     {
       scenario: "guided_moderate_improvement",
@@ -1722,20 +2064,23 @@ function MechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer 
 function AssessmentCompleteScreen({ onView }: { onView: () => void }) { return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><h1 className="text-4xl font-semibold">Starting point assessment complete</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">FloSpatial has reviewed your responses and prepared your first preparation insight.</p><div className="mt-10"><PrimaryButton onClick={onView}>View insight</PrimaryButton></div></Card></section></Shell>; }
 function WhyModal({ why, onClose }: { why?: WhyExplanation; onClose: () => void }) { if (!why) return null; const sections = [["Observation", why.observation], ["Evidence", why.evidence], ["Interpretation", why.interpretation], ["Recommendation", why.recommendation], ["Confidence", why.confidence]]; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-[32px] border border-white/10 bg-[#171C23] p-8 shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="text-xs uppercase tracking-[0.22em] text-[#6E7A88]">Why explanation</p><h2 className="mt-3 text-3xl font-semibold">{why.title}</h2></div><button onClick={onClose} className="rounded-lg px-3 py-2 text-sm text-[#8D98A6] hover:text-white">Close</button></div><div className="mt-8 space-y-6">{sections.map(([label, text]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{label}</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{text}</p></div>)}</div><p className="mt-6 text-sm text-[#6E7A88]">FloSpatial uses this explanation to keep recommendations transparent and evidence-based.</p></div></div>; }
 function FirstAdvisorInsightScreen({ journey, onWhy, onDashboard }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void }) { const rec = getCurrentRecommendation(journey); const focus = journey.dashboardState?.currentFocusLabel ?? "Preparation focus"; return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Your first preparation insight</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{focus === "Hydraulic-force reasoning" ? "Hydraulic-force reasoning currently appears to be your highest-value preparation focus." : rec?.recommendationType === "start_mechanical_foundations" ? "Mechanical reasoning foundations appear to need broader attention." : "FloSpatial does not yet have one clear preparation focus."}</h1><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "moderate" ? "Moderate confidence" : rec?.confidence === "high" ? "High confidence" : "Low confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>; }
-function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGuidedPractice, onStartMixedPractice, onStartGearFundamentals, onStartGuidedGearPractice, onStartGearIndependentPractice, onStartGearAssessment, onLoadTestScenario }: { journey: MvpGuestJourney; onWhy: () => void; onReset: () => void; onStartHydraulics: () => void; onStartGuidedPractice: () => void; onStartMixedPractice: () => void; onStartGearFundamentals: () => void; onStartGuidedGearPractice: () => void; onStartGearIndependentPractice: () => void; onStartGearAssessment: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) {
+function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGuidedPractice, onStartMixedPractice, onStartGearFundamentals, onStartGuidedGearPractice, onStartGearIndependentPractice, onStartGearAssessment, onStartPulleyFundamentals, onStartGuidedPulleyPractice, onStartPulleyIndependentPractice, onStartPulleyAssessment, onLoadTestScenario }: { journey: MvpGuestJourney; onWhy: () => void; onReset: () => void; onStartHydraulics: () => void; onStartGuidedPractice: () => void; onStartMixedPractice: () => void; onStartGearFundamentals: () => void; onStartGuidedGearPractice: () => void; onStartGearIndependentPractice: () => void; onStartGearAssessment: () => void; onStartPulleyFundamentals: () => void; onStartGuidedPulleyPractice: () => void; onStartPulleyIndependentPractice: () => void; onStartPulleyAssessment: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) {
   const rec = getCurrentRecommendation(journey);
   const readiness = getCurrentReadiness(journey);
   const milestones = getRecentMilestones(journey);
   const canStartHydraulics = rec?.recommendationType === "start_hydraulic_fundamentals";
-  const canStartGuided = rec?.recommendationType === "begin_guided_hydraulic_practice" || rec?.recommendationType === "continue_guided_hydraulic_practice" || rec?.title?.toLowerCase().includes("guided hydraulic practice") || rec?.actionLabel?.toLowerCase().includes("guided practice");
-  const canStartMixed = rec?.recommendationType === "begin_mixed_mechanical_practice" || rec?.title?.toLowerCase().includes("mixed mechanical practice") || rec?.actionLabel?.toLowerCase().includes("mixed practice");
-  const canStartGear = rec?.recommendationType === "start_gear_fundamentals" || rec?.title?.toLowerCase().includes("gear fundamentals") || rec?.actionLabel?.toLowerCase().includes("gear fundamentals");
+  const canStartGuided = rec?.recommendationType === "begin_guided_hydraulic_practice" || rec?.recommendationType === "continue_guided_hydraulic_practice" || rec?.title?.toLowerCase().includes("guided hydraulic practice");
+  const canStartMixed = rec?.recommendationType === "begin_mixed_mechanical_practice" || rec?.recommendationType === "return_to_mixed_mechanical_practice" || rec?.title?.toLowerCase().includes("mixed mechanical practice");
+  const canStartGear = rec?.recommendationType === "start_gear_fundamentals" || rec?.recommendationType === "review_gear_fundamentals" || rec?.title?.toLowerCase().includes("gear fundamentals");
   const canStartGuidedGear = rec?.recommendationType === "begin_guided_gear_practice" || rec?.recommendationType === "continue_guided_gear_practice" || rec?.title?.toLowerCase().includes("guided gear practice");
-  const canStartIndependentGear = rec?.recommendationType === "begin_gear_independent_practice" || rec?.recommendationType === "continue_gear_independent_practice" || rec?.title?.toLowerCase().includes("independent gear practice") || rec?.actionLabel?.toLowerCase().includes("independent practice");
+  const canStartIndependentGear = rec?.recommendationType === "begin_gear_independent_practice" || rec?.recommendationType === "continue_gear_independent_practice" || rec?.title?.toLowerCase().includes("independent gear practice");
   const canStartGearAssessment = rec?.recommendationType === "begin_gear_assessment" || rec?.recommendationType === "repeat_gear_assessment" || rec?.actionLabel?.toLowerCase().includes("gear check");
-  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin guided practice</PrimaryButton> : canStartIndependentGear ? <PrimaryButton onClick={onStartGearIndependentPractice}>Start independent practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Alpha pathway access</div><h3 className="mt-3 text-2xl font-semibold">Gear pathway</h3><p className="mt-3 max-w-3xl text-[#9AA3B2]">Direct access is temporarily available while the Gear pathway is being tested. You can open each stage without changing the current recommendation.</p><p className="mt-3 text-xs text-[#6E7A88]">Build: {BUILD_LABEL}</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartGearFundamentals}>Gear Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedGearPractice}>Guided Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearIndependentPractice}>Independent Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearAssessment}>Gear Check</SecondaryButton></div></Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
+  const canStartPulley = rec?.recommendationType === "start_pulley_fundamentals" || rec?.recommendationType === "review_pulley_fundamentals" || rec?.title?.toLowerCase().includes("pulley fundamentals");
+  const canStartGuidedPulley = rec?.recommendationType === "begin_guided_pulley_practice" || rec?.recommendationType === "continue_guided_pulley_practice" || rec?.title?.toLowerCase().includes("guided pulley practice");
+  const canStartIndependentPulley = rec?.recommendationType === "begin_pulley_independent_practice" || rec?.recommendationType === "continue_pulley_independent_practice" || rec?.title?.toLowerCase().includes("independent pulley practice");
+  const canStartPulleyAssessment = rec?.recommendationType === "begin_pulley_assessment" || rec?.recommendationType === "repeat_pulley_assessment" || rec?.actionLabel?.toLowerCase().includes("pulley check");
+  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin guided practice</PrimaryButton> : canStartIndependentGear ? <PrimaryButton onClick={onStartGearIndependentPractice}>Start independent practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : canStartPulley ? <PrimaryButton onClick={onStartPulleyFundamentals}>Start module</PrimaryButton> : canStartGuidedPulley ? <PrimaryButton onClick={onStartGuidedPulleyPractice}>Begin guided practice</PrimaryButton> : canStartIndependentPulley ? <PrimaryButton onClick={onStartPulleyIndependentPractice}>Start independent practice</PrimaryButton> : canStartPulleyAssessment ? <PrimaryButton onClick={onStartPulleyAssessment}>Start Pulley Check</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Alpha pathway access</div><h3 className="mt-3 text-2xl font-semibold">Mechanical pathways</h3><p className="mt-3 max-w-3xl text-[#9AA3B2]">Direct access remains available while the pathways are being tested. These buttons do not change the current recommendation until a stage is completed.</p><p className="mt-3 text-xs text-[#6E7A88]">Build: {BUILD_LABEL}</p><div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Gear pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartGearFundamentals}>Gear Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedGearPractice}>Guided Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearIndependentPractice}>Independent Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearAssessment}>Gear Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Pulley pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartPulleyFundamentals}>Pulley Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedPulleyPractice}>Guided Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyIndependentPractice}>Independent Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyAssessment}>Pulley Check</SecondaryButton></div></div></Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
 }
-
 
 function HydraulicWorkedExampleDiagram() {
   return (
@@ -2352,6 +2697,77 @@ function GearAssessmentDebriefScreen({ journey, onWhy, onDashboard }: { journey:
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Gear Check debrief</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title ?? "Gear Check complete"}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p>{summary && <div className="mt-8 grid gap-4 sm:grid-cols-3">{summary.conceptBreakdown.map((item) => <div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{labels[item.concept] ?? item.concept}</div><div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div></div>)}</div>}<div className="mt-8 grid gap-5"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Result</div><p className="mt-3 text-[#C8D2DD]">{debrief?.comparison}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>Moderate confidence</Badge></div></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
 }
 
+
+function PulleyConceptDiagram() {
+  return <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Supporting-strand example</div><svg viewBox="0 0 760 330" role="img" aria-label="A moving pulley block supported by four rope sections" className="h-auto w-full"><line x1="90" y1="55" x2="670" y2="55" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/><text x="380" y="35" textAnchor="middle" fill="#8D98A6" fontSize="16">Fixed support</text>{[250,335,425,510].map((x,i)=><g key={x}><line x1={x} y1="65" x2={x} y2="215" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/><text x={x} y="115" textAnchor="middle" fill="#D9F8FF" fontSize="17">{i+1}</text></g>)}<rect x="210" y="210" width="340" height="60" rx="20" fill="#171C23" stroke="rgba(255,255,255,0.24)" strokeWidth="4"/><text x="380" y="247" textAnchor="middle" fill="#F4F6F8" fontSize="22" fontWeight="700">Moving block</text><rect x="305" y="270" width="150" height="42" rx="10" fill="#252C35"/><text x="380" y="298" textAnchor="middle" fill="#C8D2DD" fontSize="18">Load</text></svg><p className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">The useful question is not “How many pieces of rope can I see?” It is “How many rope sections directly support the moving block?”</p></div>;
+}
+
+function PulleyFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
+  const existingProgress = getCurrentPulleyProgress(journey);
+  const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "pulley_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const section = pulleyFundamentalsModule.sections[progress.currentSectionIndex];
+  const miniCheck = section.miniCheck;
+  const selectedCorrect = Boolean(miniCheck && selectedOptionId === miniCheck.correctOptionId);
+  const isFinalSection = progress.currentSectionIndex === pulleyFundamentalsModule.sections.length - 1;
+  function persistProgress(nextProgress: ModuleProgress) { const nextJourney = journey.moduleProgress.some((item) => item.moduleProgressId === nextProgress.moduleProgressId) ? updatePulleyProgress(journey, nextProgress) : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() }; onSaveJourney(nextJourney); }
+  function answerMiniCheck(optionId: string) { if (!miniCheck || showFeedback) return; setSelectedOptionId(optionId); setShowFeedback(true); const response: ModuleMiniCheckResponse = { questionId: miniCheck.questionId, selectedOptionId: optionId, correct: optionId === miniCheck.correctOptionId, answeredAt: now() }; persistProgress({ ...progress, miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response], updatedAt: now() }); }
+  function goNext() { if (isFinalSection) { onComplete(); return; } const nextProgress = { ...progress, currentSectionIndex: Math.min(progress.currentSectionIndex + 1, pulleyFundamentalsModule.sections.length - 1), updatedAt: now() }; setSelectedOptionId(null); setShowFeedback(false); persistProgress(nextProgress); }
+  function goBack() { const nextProgress = { ...progress, currentSectionIndex: Math.max(progress.currentSectionIndex - 1, 0), updatedAt: now() }; setSelectedOptionId(null); setShowFeedback(false); persistProgress(nextProgress); }
+  return <Shell><section className="mx-auto max-w-5xl px-8 py-12"><div className="mb-6 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / pulleyFundamentalsModule.sections.length) * 100}%` }} /></div><div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Pulley Fundamentals</p><h1 className="mt-3 text-4xl font-semibold">{pulleyFundamentalsModule.title}</h1><p className="mt-3 text-[#9AA3B2]">{pulleyFundamentalsModule.subtitle}</p></div><Badge>Section {progress.currentSectionIndex + 1} of {pulleyFundamentalsModule.sections.length}</Badge></div><Card><h2 className="text-3xl font-semibold">{section.title}</h2><p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-[#C8D2DD]">{section.body}</p>{(section.sectionId === "pulley-fund-003" || section.sectionId === "pulley-fund-004") && <PulleyConceptDiagram />}{section.keyPoint && <div className="mt-8 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Key point</div><p className="mt-3 text-[#D9F8FF]">{section.keyPoint}</p></div>}{miniCheck && <div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div><p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p><div className="mt-5 grid gap-3">{miniCheck.options.map((option) => <button key={option.optionId} onClick={() => answerMiniCheck(option.optionId)} className={`rounded-xl border p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"}`}><span className="font-semibold text-[#D9F8FF]">{option.label}.</span> <span className="text-[#C8D2DD]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}><p className="font-medium">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p></div>}</div>}<div className="mt-9 flex flex-col gap-3 pb-4 sm:flex-row sm:justify-between sm:pb-0"><PrimaryButton className="sm:order-2" onClick={goNext}>{isFinalSection ? "Complete module" : "Continue"}</PrimaryButton><SecondaryButton className="sm:order-1" onClick={goBack}>Back</SecondaryButton></div></Card></section></Shell>;
+}
+
+function PulleyFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuidedPulleyPractice }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuidedPulleyPractice: () => void }) {
+  const rec = getCurrentRecommendation(journey);
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Pulley Fundamentals complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">The next stage is guided diagram practice using the same support-strand method.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuidedPulleyPractice}>Begin pulley practice</PrimaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+}
+
+type PulleyQuestionMode = "guided" | "independent" | "assessment";
+const pulleySupportCounts: Record<string, number> = {
+  "PULL-GP-001": 1, "PULL-GP-002": 2, "PULL-GP-003": 3, "PULL-GP-004": 4, "PULL-GP-005": 2, "PULL-GP-006": 2, "PULL-GP-007": 2, "PULL-GP-008": 3, "PULL-GP-009": 4, "PULL-GP-010": 4,
+  "PULL-IP-001": 1, "PULL-IP-002": 1, "PULL-IP-003": 2, "PULL-IP-004": 3, "PULL-IP-005": 4, "PULL-IP-006": 2, "PULL-IP-007": 2, "PULL-IP-008": 3, "PULL-IP-009": 4, "PULL-IP-010": 2, "PULL-IP-011": 3, "PULL-IP-012": 4, "PULL-IP-013": 2, "PULL-IP-014": 3, "PULL-IP-015": 4, "PULL-IP-016": 4, "PULL-IP-017": 2, "PULL-IP-018": 3, "PULL-IP-019": 3, "PULL-IP-020": 2, "PULL-IP-021": 4, "PULL-IP-022": 4, "PULL-IP-023": 2, "PULL-IP-024": 4, "PULL-IP-025": 3,
+  "PULL-AS-001": 1, "PULL-AS-002": 2, "PULL-AS-003": 3, "PULL-AS-004": 4, "PULL-AS-005": 3, "PULL-AS-006": 4, "PULL-AS-007": 4, "PULL-AS-008": 3, "PULL-AS-009": 2, "PULL-AS-010": 4,
+};
+function PulleyQuestionDiagram({ question, mode }: { question: MvpQuestion; mode: PulleyQuestionMode }) {
+  const count = pulleySupportCounts[question.questionId] ?? 2;
+  const fixedOnly = count === 1;
+  const helper = mode === "guided" ? question.feedbackCue : undefined;
+  if (fixedOnly) return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div><svg viewBox="0 0 760 330" role="img" aria-label="Single fixed pulley with a load on one side and a free end on the other" className="h-auto w-full"><line x1="170" y1="52" x2="590" y2="52" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/><circle cx="380" cy="100" r="48" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="5"/><path d="M 285 260 L 285 100 Q 285 52 333 52 L 427 52 Q 475 52 475 100 L 475 275" fill="none" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/><rect x="230" y="245" width="110" height="55" rx="12" fill="#252C35"/><text x="285" y="278" textAnchor="middle" fill="#F4F6F8" fontSize="20">Load</text><path d="M 475 210 L 475 285" stroke="#D9F8FF" strokeWidth="5"/><path d="M 460 268 L 475 292 L 490 268" fill="#D9F8FF"/><text x="525" y="265" fill="#AAB4C0" fontSize="18">Pull down</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+  const xs = Array.from({ length: count }, (_, i) => 250 + (i * 260) / Math.max(count - 1, 1));
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div><svg viewBox="0 0 760 350" role="img" aria-label={`Moving pulley block supported by ${count} rope sections`} className="h-auto w-full"><line x1="100" y1="55" x2="650" y2="55" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/>{xs.map((x,i)=><g key={x}><line x1={x} y1="70" x2={x} y2="220" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/>{mode === "guided" && <text x={x} y="135" textAnchor="middle" fill="#D9F8FF" fontSize="17">{i+1}</text>}</g>)}<rect x="205" y="215" width="350" height="62" rx="20" fill="#171C23" stroke="rgba(255,255,255,0.24)" strokeWidth="4"/><circle cx="300" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><circle cx="460" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><text x="380" y="256" textAnchor="middle" fill="#F4F6F8" fontSize="20" fontWeight="700">Moving block</text><rect x="300" y="280" width="160" height="48" rx="12" fill="#252C35"/><text x="380" y="311" textAnchor="middle" fill="#C8D2DD" fontSize="19">Load</text><line x1="600" y1="70" x2="600" y2="270" stroke="#8D98A6" strokeWidth="5" strokeDasharray="10 9"/><path d="M 586 252 L 600 276 L 614 252" fill="#8D98A6"/>{mode === "guided" && <text x="620" y="185" fill="#8D98A6" fontSize="16">Free end</text>}</svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+}
+
+function PulleyPracticeIntroScreen({ stage, onStart }: { stage: "guided" | "independent" | "assessment"; onStart: () => void }) {
+  const config = stage === "guided" ? { eyebrow: "Guided practice", title: "Guided Pulley Practice", body: "Ten diagram-based questions with immediate feedback. The diagrams help you apply the supporting-strand method.", items: ["10 questions", "Immediate feedback", "Guided diagrams"], button: "Begin guided practice" } : stage === "independent" ? { eyebrow: "Independent practice", title: "Independent Pulley Practice", body: "Twenty-five less-supported questions covering recognition, strand counting, force calculations and the distance tradeoff.", items: ["25 questions", "Immediate feedback", "Less support"], button: "Begin independent practice" } : { eyebrow: "Assessment-style check", title: "Pulley Check", body: "Ten questions with no immediate feedback. This gives a cleaner picture of what remains available independently.", items: ["10 questions", "No immediate feedback", "Untimed"], button: "Start Pulley Check" };
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item)=><div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
+}
+
+function PulleyPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: PulleyQuestionMode }) {
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); setShowFeedback(false); }, [questionIndex]);
+  const question = questions[questionIndex]; if (!question) return null;
+  const progress = ((questionIndex + 1) / questions.length) * 100;
+  const answered = journey.responses.filter((r) => r.sessionId === sessionId).length;
+  const immediate = stage !== "assessment";
+  const selectedCorrect = selectedOptionId === question.correctOptionId;
+  function select(optionId: string) { if (immediate && showFeedback) return; setSelectedOptionId(optionId); if (immediate) setShowFeedback(true); }
+  function next() { if (!selectedOptionId) return; const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false); onAnswer(response, questionIndex === questions.length - 1); }
+  const title = stage === "guided" ? "Guided Pulley Practice" : stage === "independent" ? "Independent Pulley Practice" : "Pulley Check";
+  return <Shell right={title}><section className={`mx-auto max-w-5xl px-8 pt-12 ${immediate ? "pb-44 sm:pb-12" : "pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Pulley reasoning</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><PulleyQuestionDiagram question={question} mode={stage}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{immediate && showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl sm:static sm:mt-7 sm:rounded-2xl sm:border sm:p-5 sm:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === questions.length - 1 ? `Complete ${stage === "guided" ? "guided practice" : "independent practice"}` : "Next question"}</PrimaryButton></div></div></div></div>}{!immediate && <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === questions.length - 1 ? "Finish Pulley Check" : "Next question"}</PrimaryButton></div>}</Card></section></Shell>;
+}
+
+function PulleyDebriefScreen({ journey, stage, onWhy, onDashboard, onNext }: { journey: MvpGuestJourney; stage: "guided" | "independent" | "assessment"; onWhy: () => void; onDashboard: () => void; onNext?: () => void }) {
+  const debrief = getLatestDebrief(journey); const rec = getCurrentRecommendation(journey);
+  const sessionType = stage === "guided" ? "guided_pulley_practice" : stage === "independent" ? "pulley_independent_practice" : "pulley_assessment";
+  const summary = [...journey.practiceSummaries].reverse().find((item) => item.sessionType === sessionType);
+  const labels: Record<string,string> = { recognition: "System recognition", strand_count: "Supporting strands", force_distance: "Force & distance", mechanical_advantage: "Mechanical advantage" };
+  const canUseNext = stage === "guided" ? rec?.recommendationType === "begin_pulley_independent_practice" : stage === "independent" ? rec?.recommendationType === "begin_pulley_assessment" : false;
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{stage === "assessment" ? "Pulley Check debrief" : "Pulley practice debrief"}</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p>{summary && <div className="mt-8 grid gap-4 sm:grid-cols-3">{summary.conceptBreakdown.map((item)=><div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{labels[item.concept] ?? item.concept}</div><div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div></div>)}</div>}<div className="mt-8 grid gap-5"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton>{canUseNext && onNext && <PrimaryButton onClick={onNext}>{stage === "guided" ? "Start Independent Pulley Practice" : "Start Pulley Check"}</PrimaryButton>}<PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+}
+
 function PasswordGate({ onUnlock }: { onUnlock: () => void }) { const [password, setPassword] = useState(""); const [error, setError] = useState(false); return <main className="flex min-h-screen items-center justify-center bg-[#111418] p-8 text-[#F4F6F8]"><section className="w-full max-w-md rounded-[32px] border border-white/5 bg-[#171C23] p-10 shadow-2xl"><div className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">FloSpatial</div><h1 className="mt-6 text-4xl font-semibold">Private testing access</h1><p className="mt-5 text-[#9AA3B2]">Enter the shared testing password to continue.</p><form onSubmit={(e) => { e.preventDefault(); if (password.trim() === TEST_ACCESS_PASSWORD) { window.localStorage.setItem("flospatial.accessGranted.v1", "true"); onUnlock(); } else setError(true); }} className="mt-8"><input value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} type="password" autoFocus className="w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-4 outline-none focus:border-[#5ED3F3]/50" placeholder="Password" />{error && <p className="mt-3 text-sm text-[#FF9A9A]">That password did not match.</p>}<button className="mt-6 w-full rounded-xl border border-[#5ED3F3]/30 bg-[#5ED3F3]/10 px-7 py-4 font-medium text-[#D9F8FF]">Enter</button></form></section></main>; }
 
 export default function FloSpatialPrototype() {
@@ -2410,6 +2826,29 @@ export default function FloSpatialPrototype() {
     if (final && activeSessionId) { const completed = completeGearAssessment(withResponse, activeSessionId); updateJourney(completed); setScreen("gear-assessment-debrief"); return; }
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
+  function openPulleyFundamentals() { const next = startPulleyFundamentals(journey); updateJourney(next); setShowWhy(false); setScreen("pulley-fundamentals"); }
+  function completePulleyModule() { const next = completePulleyFundamentals(journey); updateJourney(next); setShowWhy(false); setScreen("pulley-fundamentals-complete"); }
+  function openGuidedPulleyPracticeIntro() { setShowWhy(false); setScreen("guided-pulley-practice-intro"); }
+  function startGuidedPulleyPractice() { const session = createGuidedPulleyPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("guided-pulley-practice-question"); }
+  function handleGuidedPulleyAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeGuidedPulleyPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("guided-pulley-practice-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+  function openPulleyIndependentPracticeIntro() { setShowWhy(false); setScreen("pulley-independent-practice-intro"); }
+  function startPulleyIndependentPractice() { const session = createPulleyIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("pulley-independent-practice-question"); }
+  function handlePulleyIndependentPracticeAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completePulleyIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("pulley-independent-practice-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+  function openPulleyAssessmentIntro() { setShowWhy(false); setScreen("pulley-assessment-intro"); }
+  function startPulleyAssessment() { const session = createPulleyAssessmentSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("pulley-assessment-question"); }
+  function handlePulleyAssessmentAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completePulleyAssessment(withResponse, activeSessionId); updateJourney(completed); setScreen("pulley-assessment-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
   function startMixedPractice() { const session = createMixedMechanicalPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("mixed-mechanical-practice-question"); }
   function handleMixedAnswer(response: AssessmentResponse, final: boolean) {
     const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
@@ -2418,5 +2857,5 @@ export default function FloSpatialPrototype() {
   }
 
   const why = getCurrentWhy(journey);
-  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}</>;
+  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}</>;
 }
