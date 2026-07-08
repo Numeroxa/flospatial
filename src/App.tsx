@@ -63,7 +63,18 @@ type AppScreen =
   | "numerical-independent-practice-debrief"
   | "numerical-assessment-intro"
   | "numerical-assessment-question"
-  | "numerical-assessment-debrief";
+  | "numerical-assessment-debrief"
+  | "abstract-logical-fundamentals"
+  | "abstract-logical-fundamentals-complete"
+  | "guided-abstract-logical-practice-intro"
+  | "guided-abstract-logical-practice-question"
+  | "guided-abstract-logical-practice-debrief"
+  | "abstract-logical-independent-practice-intro"
+  | "abstract-logical-independent-practice-question"
+  | "abstract-logical-independent-practice-debrief"
+  | "abstract-logical-assessment-intro"
+  | "abstract-logical-assessment-question"
+  | "abstract-logical-assessment-debrief";
 
 type TestScenario =
   | "hydraulic_baseline"
@@ -81,14 +92,19 @@ type TestScenario =
   | "lever_guided_ready"
   | "lever_guided_strong"
   | "lever_independent_strong"
-  | "mixed_assessment_pulley_focus";
+  | "mixed_assessment_pulley_focus"
+  | "abstract_guided_ready"
+  | "abstract_guided_strong"
+  | "abstract_independent_strong";
 
 type PathwayId = "fire_service";
 type MechanicalSubcompetency = "hydraulics" | "gears" | "pulleys" | "levers";
 type NumericalSubcompetency = "arithmetic_estimation" | "percentages_ratios" | "rates_proportion" | "tables_data";
-type Domain = "mechanical" | "numerical";
-type Subcompetency = MechanicalSubcompetency | NumericalSubcompetency;
+type AbstractLogicalSubcompetency = "pattern_sequences" | "matrices_rules" | "classification_relationships" | "deductive_reasoning";
+type Domain = "mechanical" | "numerical" | "abstract_logical";
+type Subcompetency = MechanicalSubcompetency | NumericalSubcompetency | AbstractLogicalSubcompetency;
 type NumericalDataTable = { headers: string[]; rows: string[][] };
+type AbstractVisual = { kind: "sequence" | "matrix" | "set"; rows: string[][]; caption?: string };
 type Confidence = "low" | "moderate" | "high";
 type EvidenceStrength = "none" | "early" | "emerging" | "strong" | "established";
 
@@ -102,7 +118,7 @@ type PreparationContext = {
 type QuestionOption = { optionId: string; label: "A" | "B" | "C" | "D"; text: string };
 type MvpQuestion = {
   questionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment" | "guided_abstract_logical_practice" | "abstract_logical_independent_practice" | "abstract_logical_assessment" | "guided_abstract_logical_practice" | "abstract_logical_independent_practice" | "abstract_logical_assessment";
   pathwayId: PathwayId;
   domain: Domain;
   subcompetency: Subcompetency;
@@ -114,11 +130,12 @@ type MvpQuestion = {
   explanation: string;
   feedbackCue?: string;
   dataTable?: NumericalDataTable;
+  abstractVisual?: AbstractVisual;
 };
 
 type AssessmentSession = {
   sessionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment" | "guided_abstract_logical_practice" | "abstract_logical_independent_practice" | "abstract_logical_assessment" | "guided_abstract_logical_practice" | "abstract_logical_independent_practice" | "abstract_logical_assessment";
   pathwayId: PathwayId;
   startedAt: string;
   completedAt?: string;
@@ -208,7 +225,16 @@ type Recommendation = {
     | "review_numerical_fundamentals"
     | "begin_numerical_assessment"
     | "repeat_numerical_assessment"
-    | "continue_numerical_practice";
+    | "continue_numerical_practice"
+    | "start_abstract_logical_fundamentals"
+    | "begin_guided_abstract_logical_practice"
+    | "continue_guided_abstract_logical_practice"
+    | "begin_abstract_logical_independent_practice"
+    | "continue_abstract_logical_independent_practice"
+    | "review_abstract_logical_fundamentals"
+    | "begin_abstract_logical_assessment"
+    | "repeat_abstract_logical_assessment"
+    | "continue_abstract_logical_practice";
   title: string;
   summary: string;
   actionLabel: string;
@@ -268,7 +294,11 @@ type Milestone = {
     | "guided_numerical_practice_completed"
     | "numerical_independent_practice_completed"
     | "numerical_assessment_completed"
-    | "numerical_pathway_completed";
+    | "numerical_pathway_completed"
+    | "guided_abstract_logical_practice_completed"
+    | "abstract_logical_independent_practice_completed"
+    | "abstract_logical_assessment_completed"
+    | "abstract_logical_pathway_completed";
   label: string;
   createdAt: string;
 };
@@ -284,7 +314,7 @@ type DashboardState = {
   updatedAt: string;
 };
 
-type LearningModuleId = "hydraulic_fundamentals" | "gear_fundamentals" | "pulley_fundamentals" | "lever_fundamentals" | "numerical_fundamentals";
+type LearningModuleId = "hydraulic_fundamentals" | "gear_fundamentals" | "pulley_fundamentals" | "lever_fundamentals" | "numerical_fundamentals" | "abstract_logical_fundamentals";
 
 type LearningMiniCheck = {
   questionId: string;
@@ -338,7 +368,7 @@ type ModuleCompletion = {
 type PracticeSummary = {
   summaryId: string;
   sessionId: string;
-  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment";
+  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment" | "guided_abstract_logical_practice" | "abstract_logical_independent_practice" | "abstract_logical_assessment";
   attempted: number;
   correct: number;
   accuracy: number;
@@ -386,7 +416,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Numerical Reasoning Pathway v1 Alpha";
+const BUILD_LABEL = "Abstract & Logical Reasoning Pathway v1 Alpha";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -895,6 +925,93 @@ const numericalAssessmentQuestions: MvpQuestion[] = [
   makeNumericalQuestion("NUM-A-012", "numerical_assessment", "tables_data", "table_average", "What is the average of the four recorded values?", ["24", "23", "25", "26"], "A", "(18 + 22 + 26 + 30) ÷ 4 = 24.", "applied", undefined, {"headers": ["Record", "Value"], "rows": [["1", "18"], ["2", "22"], ["3", "26"], ["4", "30"]]}),
 ];
 
+
+function makeAbstractLogicalQuestion(
+  questionId: string,
+  subcompetency: AbstractLogicalSubcompetency,
+  concept: string,
+  stem: string,
+  options: string[],
+  correctLabel: OptionLabel,
+  explanation: string,
+  feedbackCue?: string,
+  abstractVisual?: AbstractVisual,
+  sessionType: "guided_abstract_logical_practice" | "abstract_logical_independent_practice" | "abstract_logical_assessment" = "guided_abstract_logical_practice"
+): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return {
+    questionId,
+    sessionType,
+    pathwayId: "fire_service",
+    domain: "abstract_logical",
+    subcompetency,
+    concept,
+    difficulty: sessionType === "guided_abstract_logical_practice" ? "developing" : "applied",
+    stem,
+    options: prepared.options,
+    correctOptionId: prepared.correctOptionId,
+    explanation,
+    feedbackCue,
+    abstractVisual,
+  };
+}
+
+const guidedAbstractLogicalPracticeQuestions: MvpQuestion[] = [
+  makeAbstractLogicalQuestion("ABS-G-001", "pattern_sequences", "alternating_pattern", "What should replace the question mark?", ["▲", "○", "■", "◆"], "A", "The sequence alternates ▲, ○, ▲, ○, so the next symbol is ▲.", "Look first for a simple repeating cycle.", {"kind": "sequence", "rows": [["▲", "○", "▲", "○", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-G-002", "pattern_sequences", "count_progression", "What should replace the question mark?", ["●●●●", "●●●", "●●●●●", "●"], "A", "The number of dots increases by one each time: 1, 2, 3, then 4.", "Count what changes from one step to the next.", {"kind": "sequence", "rows": [["●", "●●", "●●●", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-G-003", "pattern_sequences", "rotation", "Which arrow comes next?", ["←", "↑", "→", "↓"], "A", "Each arrow rotates 90° clockwise: ↑, →, ↓, ←.", "Track direction separately from shape.", {"kind": "sequence", "rows": [["↑", "→", "↓", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-G-004", "pattern_sequences", "two_rule_sequence", "What should replace the question mark?", ["▲▲▲▲▲", "○○○○○", "▲▲▲▲", "○○○○○○"], "A", "Shape alternates triangle, circle while the count increases by one. The fifth term is five triangles.", "When one rule is not enough, separate shape from number.", {"kind": "sequence", "rows": [["▲", "○○", "▲▲▲", "○○○○", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-G-005", "matrices_rules", "row_progression", "What belongs in the missing cell?", ["○○○", "○○", "○○○○", "●●●"], "A", "Each row increases from one symbol to two, then three. The missing cell is three circles.", "Check whether each row follows the same relationship.", {"kind": "matrix", "rows": [["▲", "▲▲", "▲▲▲"], ["○", "○○", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-G-006", "matrices_rules", "combination_rule", "What belongs in the missing cell?", ["■□", "■■", "□□", "■"], "A", "In each row, the third cell combines the first two cells. ■ and □ therefore become ■□.", "Compare the first two cells with the third.", {"kind": "matrix", "rows": [["▲", "○", "▲○"], ["■", "□", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-G-007", "classification_relationships", "odd_one_out", "Which item is the odd one out?", ["○", "▲", "■", "◆"], "A", "The circle is the only shape with no straight sides.", "Look for the property shared by three options, not the one that merely looks unusual.", {"kind": "set", "rows": [["▲", "■", "◆", "○"]]}),
+  makeAbstractLogicalQuestion("ABS-G-008", "classification_relationships", "analogy", "▲ becomes △. Using the same rule, what should ■ become?", ["□", "◆", "●", "▲"], "A", "The rule changes a filled shape to its outline version. Filled square becomes outline square.", "Name the transformation before applying it.", {"kind": "sequence", "rows": [["▲", "→", "△", "   ", "■", "→", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-G-009", "deductive_reasoning", "must_follow", "All rescue pumps are machines. Which statement must be true?", ["All rescue pumps are machines", "All machines are rescue pumps", "Some machines are not rescue pumps", "All rescue pumps are portable"], "A", "The only statement guaranteed by the information is the original relationship: every rescue pump is a machine.", "Choose only what must follow, not what might be true.", undefined),
+  makeAbstractLogicalQuestion("ABS-G-010", "deductive_reasoning", "ordering", "Ali finishes before Ben. Ben finishes before Chen. Who must finish last?", ["Chen", "Ben", "Ali", "Cannot be known"], "A", "The order is Ali, then Ben, then Chen. Chen must be last.", "Build the order explicitly before answering.", undefined),
+].map((question) => ({ ...question, sessionType: "guided_abstract_logical_practice" as const }));
+
+const abstractLogicalIndependentPracticeQuestions: MvpQuestion[] = [
+  makeAbstractLogicalQuestion("ABS-IP-001", "pattern_sequences", "alternating_pattern", "What comes next?", ["◆", "○", "■", "▲"], "A", "The pattern alternates ◆ and ○.", undefined, {"kind": "sequence", "rows": [["◆", "○", "◆", "○", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-002", "pattern_sequences", "count_progression", "What comes next?", ["■■", "■", "■■■", "□□□□"], "A", "The count falls by one: five, four, three, then two squares.", undefined, {"kind": "sequence", "rows": [["■■■■■", "■■■■", "■■■", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-003", "pattern_sequences", "rotation", "Which arrow comes next?", ["↖", "↘", "↙", "↑"], "A", "The arrow rotates 90° clockwise: ↗, ↘, ↙, ↖.", undefined, {"kind": "sequence", "rows": [["↗", "↘", "↙", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-004", "pattern_sequences", "alternating_fill", "What comes next?", ["▲▲▲▲▲", "△△△△△", "▲▲▲▲", "△△△△"], "A", "Fill alternates and the count increases by one: filled 1, outline 2, filled 3, outline 4, so the fifth term is five filled triangles.", undefined, {"kind": "sequence", "rows": [["▲", "△△", "▲▲▲", "△△△△", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-005", "pattern_sequences", "cycle", "What comes next?", ["■", "▲", "○", "◆"], "A", "The three-symbol cycle repeats ▲, ○, ■.", undefined, {"kind": "sequence", "rows": [["▲", "○", "■", "▲", "○", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-006", "pattern_sequences", "two_rule_sequence", "What comes next?", ["○○○○○○", "▲▲▲▲▲▲", "○○○○○", "▲▲▲▲▲"], "A", "Shape alternates triangle/circle and count rises from 1 to 6, so the sixth term is six circles.", undefined, {"kind": "sequence", "rows": [["▲", "○○", "▲▲▲", "○○○○", "▲▲▲▲▲", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-007", "matrices_rules", "row_progression", "What belongs in the missing cell?", ["■■■■", "■■■", "■■", "■"], "A", "Each row increases by one symbol from left to right: two, three, four.", undefined, {"kind": "matrix", "rows": [["▲", "▲▲", "▲▲▲"], ["■■", "■■■", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-008", "matrices_rules", "combination_rule", "What belongs in the missing cell?", ["○◆", "○○", "◆◆", "○"], "A", "The third cell combines the first and second cells. ○ and ◆ become ○◆.", undefined, {"kind": "matrix", "rows": [["▲", "■", "▲■"], ["○", "◆", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-009", "matrices_rules", "alternating_rule", "What belongs in the missing cell?", ["○", "▲", "■", "◆"], "A", "Each row alternates the two symbols: ▲ ○ ▲ and ○ ▲ ○.", undefined, {"kind": "matrix", "rows": [["▲", "○", "▲"], ["○", "▲", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-010", "matrices_rules", "column_progression", "What belongs in the missing cell?", ["●●●", "●●", "●●●●", "○○○"], "A", "Each column follows 1, 2, 3 symbols from top to bottom. The final cell needs three dots.", undefined, {"kind": "matrix", "rows": [["▲", "●"], ["▲▲", "●●"], ["▲▲▲", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-011", "matrices_rules", "subtraction_rule", "What belongs in the missing cell?", ["▲", "▲▲", "▲▲▲", "○"], "A", "In each row the third cell shows what remains when the second count is removed from the first: 3−2=1 and 4−3=1.", undefined, {"kind": "matrix", "rows": [["▲▲▲", "▲▲", "▲"], ["▲▲▲▲", "▲▲▲", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-012", "classification_relationships", "odd_one_out", "Which item is the odd one out?", ["○", "△", "□", "◇"], "A", "The circle is the only figure without corners.", undefined, {"kind": "set", "rows": [["△", "□", "◇", "○"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-013", "classification_relationships", "odd_one_out", "Which pair is the odd one out?", ["▲ → ▲", "▲ → △", "■ → □", "● → ○"], "A", "Three pairs change a filled shape to an outline shape. ▲ → ▲ does not change.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-IP-014", "classification_relationships", "analogy", "↑ becomes →. Using the same rule, what should ← become?", ["↑", "↓", "→", "←"], "A", "The rule is a 90° clockwise rotation. ← becomes ↑.", undefined, {"kind": "sequence", "rows": [["↑", "→", "→", "   ", "←", "→", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-015", "classification_relationships", "analogy", "▲▲ becomes ▲▲▲▲. Using the same rule, what should ●●● become?", ["●●●●●●", "●●●●", "●●", "●●●●●"], "A", "The quantity doubles. Three dots become six dots.", undefined, {"kind": "sequence", "rows": [["▲▲", "→", "▲▲▲▲", "   ", "●●●", "→", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-016", "classification_relationships", "shared_property", "Which option belongs with the group shown?", ["□", "○", "△", "◇"], "A", "The group contains four-sided shapes, so the square belongs with it.", undefined, {"kind": "set", "rows": [["▭", "◇", "▱", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-017", "deductive_reasoning", "syllogism", "All valves are components. No components are living things. What must follow?", ["No valves are living things", "All living things are valves", "Some components are valves", "No components are valves"], "A", "If all valves are components and no components are living things, then no valves are living things.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-IP-018", "deductive_reasoning", "some_not_all", "Some technicians are drivers. Which statement must be true?", ["At least one technician is a driver", "All technicians are drivers", "No drivers are technicians", "Most technicians are drivers"], "A", "'Some' guarantees at least one, but not all or most.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-IP-019", "deductive_reasoning", "ordering", "Dana arrives before Eli. Farah arrives after Eli. Who must arrive first?", ["Dana", "Eli", "Farah", "Cannot be known"], "A", "Dana is before Eli, and Farah is after Eli, so Dana must be first.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-IP-020", "deductive_reasoning", "conditional", "If the alarm sounds, the warning light turns on. The alarm sounds. What must follow?", ["The warning light turns on", "The warning light stays off", "The alarm is faulty", "Nothing can be concluded"], "A", "The stated rule directly applies: alarm sounds → warning light on.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-IP-021", "deductive_reasoning", "contrapositive", "If the gate is open, the sensor is active. The sensor is not active. What must follow?", ["The gate is not open", "The gate is open", "The sensor is broken", "Nothing can be concluded"], "A", "If an open gate always activates the sensor, then a non-active sensor means the gate cannot be open.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-IP-022", "deductive_reasoning", "ordering", "Job K must be done before Job L. Job M must be done after Job L. Which order is possible?", ["K, L, M", "L, K, M", "M, K, L", "L, M, K"], "A", "K must precede L, and M must follow L, giving K, L, M.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-IP-023", "deductive_reasoning", "syllogism", "All inspectors are trained. All trained staff carry identification. What must follow?", ["All inspectors carry identification", "All people with identification are inspectors", "Some trained staff are not inspectors", "No inspectors are trained"], "A", "The two universal statements link: inspector → trained → carries identification.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-IP-024", "pattern_sequences", "two_rule_sequence", "What comes next?", ["□□□□□", "■■■■■", "□□□□", "■■■■"], "A", "Fill alternates outline/filled while count increases. The fifth term is five outline squares.", undefined, {"kind": "sequence", "rows": [["□", "■■", "□□□", "■■■■", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-025", "matrices_rules", "integrated_matrix", "What belongs in the missing cell?", ["▲▲○", "▲○", "▲▲▲○", "○○▲"], "A", "In each row the final cell combines the symbols in the first two cells. ▲▲ and ○ become ▲▲○.", undefined, {"kind": "matrix", "rows": [["▲", "○○", "▲○○"], ["▲▲", "○", "?"]]}),
+].map((question) => ({ ...question, sessionType: "abstract_logical_independent_practice" as const }));
+
+const abstractLogicalAssessmentQuestions: MvpQuestion[] = [
+  makeAbstractLogicalQuestion("ABS-A-001", "pattern_sequences", "rotation", "Which symbol comes next?", ["→", "↓", "←", "↑"], "A", "The arrow rotates 90° clockwise each step.", undefined, {"kind": "sequence", "rows": [["→", "↓", "←", "↑", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-002", "matrices_rules", "combination_rule", "What belongs in the missing cell?", ["■○", "■■", "○○", "■"], "A", "The third cell combines the first two cells in each row.", undefined, {"kind": "matrix", "rows": [["▲", "◆", "▲◆"], ["■", "○", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-003", "classification_relationships", "odd_one_out", "Which item is the odd one out?", ["○", "△", "□", "⬟"], "A", "The circle is the only item without straight sides and corners.", undefined, {"kind": "set", "rows": [["△", "□", "⬟", "○"]]}),
+  makeAbstractLogicalQuestion("ABS-A-004", "deductive_reasoning", "syllogism", "All breathing apparatus units are equipment. No equipment is a person. What must follow?", ["No breathing apparatus unit is a person", "All people are equipment", "Some equipment is a person", "All equipment is breathing apparatus"], "A", "Every breathing apparatus unit is equipment, and no equipment is a person.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-A-005", "pattern_sequences", "count_progression", "What comes next?", ["●●●●●", "●●●●", "●●●●●●", "●"], "A", "The count increases by one each step.", undefined, {"kind": "sequence", "rows": [["●", "●●", "●●●", "●●●●", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-006", "matrices_rules", "row_progression", "What belongs in the missing cell?", ["◇◇◇", "◇◇", "◇◇◇◇", "◆◆◆"], "A", "Each row progresses from one to two to three of the same symbol.", undefined, {"kind": "matrix", "rows": [["▲", "▲▲", "▲▲▲"], ["◇", "◇◇", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-007", "classification_relationships", "analogy", "● becomes ○. Using the same rule, what should ◆ become?", ["◇", "■", "▲", "◆"], "A", "The rule changes filled to outline; ◆ becomes ◇.", undefined, {"kind": "sequence", "rows": [["●", "→", "○", "   ", "◆", "→", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-008", "deductive_reasoning", "ordering", "Rina is before Sam. Tariq is after Sam. Who must be last?", ["Tariq", "Sam", "Rina", "Cannot be known"], "A", "The order must be Rina, Sam, Tariq.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-A-009", "pattern_sequences", "two_rule_sequence", "What comes next?", ["○○○○○○", "▲▲▲▲▲▲", "○○○○○", "▲▲▲▲▲"], "A", "Shape alternates and count increases by one, so the sixth term is six circles.", undefined, {"kind": "sequence", "rows": [["▲", "○○", "▲▲▲", "○○○○", "▲▲▲▲▲", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-010", "matrices_rules", "column_progression", "What belongs in the missing cell?", ["■■■", "■■", "■■■■", "□□□"], "A", "Each column increases from one to two to three symbols.", undefined, {"kind": "matrix", "rows": [["○", "■"], ["○○", "■■"], ["○○○", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-011", "classification_relationships", "shared_property", "Which option belongs with the group?", ["⬡", "○", "△", "□"], "A", "The displayed group contains shapes with six sides, so the hexagon belongs.", undefined, {"kind": "set", "rows": [["⬢", "⬡", "⌬", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-012", "deductive_reasoning", "conditional", "If a test is complete, a result is recorded. No result has been recorded. What must follow?", ["The test is not complete", "The test is complete", "The result was deleted", "Nothing can be concluded"], "A", "Under the stated rule, a completed test would produce a recorded result. No result means the test is not complete.", undefined, undefined),
+].map((question) => ({ ...question, sessionType: "abstract_logical_assessment" as const }));
+
 const hydraulicFundamentalsModule: LearningModule = {
   moduleId: "hydraulic_fundamentals",
   title: "Hydraulic Fundamentals",
@@ -1276,6 +1393,15 @@ function createNumericalIndependentPracticeSession(): AssessmentSession {
 function createNumericalAssessmentSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "numerical_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: numericalAssessmentQuestions.map((q) => q.questionId) };
 }
+function createGuidedAbstractLogicalPracticeSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "guided_abstract_logical_practice", pathwayId: "fire_service", startedAt: now(), questionIds: guidedAbstractLogicalPracticeQuestions.map((q) => q.questionId) };
+}
+function createAbstractLogicalIndependentPracticeSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "abstract_logical_independent_practice", pathwayId: "fire_service", startedAt: now(), questionIds: abstractLogicalIndependentPracticeQuestions.map((q) => q.questionId) };
+}
+function createAbstractLogicalAssessmentSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "abstract_logical_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: abstractLogicalAssessmentQuestions.map((q) => q.questionId) };
+}
 function createAssessmentResponse(sessionId: string, question: MvpQuestion, selectedOptionId: string | null, responseTimeMs: number, notSureSelected: boolean): AssessmentResponse {
   return { responseId: id("response"), sessionId, questionId: question.questionId, selectedOptionId, correct: selectedOptionId === question.correctOptionId, responseTimeMs, notSureSelected, answeredAt: now() };
 }
@@ -1363,6 +1489,73 @@ function getCurrentRecommendation(journey: MvpGuestJourney) { return journey.rec
 function getCurrentReadiness(journey: MvpGuestJourney) { return journey.readinessSnapshots.find((r) => r.readinessSnapshotId === journey.dashboardState?.readinessSnapshotId); }
 function getCurrentWhy(journey: MvpGuestJourney) { const rec = getCurrentRecommendation(journey); return journey.whyExplanations.find((w) => w.whyExplanationId === rec?.whyExplanationId); }
 function getRecentMilestones(journey: MvpGuestJourney) { const ids = new Set(journey.dashboardState?.recentMilestoneIds ?? []); return journey.milestones.filter((m) => ids.has(m.milestoneId)); }
+
+
+const abstractLogicalFundamentalsModule: LearningModule = {
+  moduleId: "abstract_logical_fundamentals",
+  title: "Abstract & Logical Fundamentals",
+  subtitle: "Patterns, matrices, classification and deduction",
+  targetDomain: "abstract_logical",
+  targetSubcompetency: "pattern_sequences",
+  estimatedMinutes: 12,
+  sections: [
+    {
+      sectionId: "abs-fund-001",
+      title: "Find what changes — and what does not",
+      body: "Abstract reasoning questions are usually built from a small number of deliberate changes. The first task is not to guess the answer. It is to separate the features that change from the features that stay constant.",
+      keyPoint: "Track each feature separately: shape, number, direction, position and fill.",
+      miniCheck: makeMiniCheck("ABS-FUND-MC-001", "A sequence changes direction each step but keeps the same shape. What should you track first?", ["Direction", "Shape name only", "The size of the page", "Answer position"], "A", "The changing feature is direction, so track direction before looking for a more complicated rule."),
+    },
+    {
+      sectionId: "abs-fund-002",
+      title: "Start with the simplest rule",
+      body: "Many difficult-looking questions use a simple repeating cycle, a steady increase, or a fixed rotation. Test the simplest plausible rule before inventing a complex one.",
+      keyPoint: "Simple cycle → steady change → two interacting rules.",
+      miniCheck: makeMiniCheck("ABS-FUND-MC-002", "▲ ○ ▲ ○ ? is best approached first as:", ["A repeating two-item cycle", "A random sequence", "A numerical equation", "A verbal analogy"], "A", "The simplest rule is a two-item alternating cycle."),
+    },
+    {
+      sectionId: "abs-fund-003",
+      title: "Separate two rules",
+      body: "Some sequences change in two ways at once. A shape may alternate while the number of shapes increases. Track each feature on its own, then combine the rules.",
+      keyPoint: "Do not force one rule to explain two independent changes.",
+      miniCheck: makeMiniCheck("ABS-FUND-MC-003", "In ▲, ○○, ▲▲▲, ○○○○, what two features change?", ["Shape alternates and count increases", "Only colour changes", "Only position changes", "Nothing follows a rule"], "A", "The shape alternates between triangle and circle while the count increases by one."),
+    },
+    {
+      sectionId: "abs-fund-004",
+      title: "Matrices repeat relationships",
+      body: "In a matrix, do not look only for the missing picture. Compare the relationship across a row or down a column. Ask whether the same operation is repeated.",
+      keyPoint: "Compare cell 1 → cell 2 → cell 3, then test the same relationship elsewhere.",
+      miniCheck: makeMiniCheck("ABS-FUND-MC-004", "In a matrix, the third cell in each row combines the first two. If the row shows ■, □, ?, what belongs last?", ["■□", "■■", "□□", "○"], "A", "The repeated row rule combines the first two symbols."),
+    },
+    {
+      sectionId: "abs-fund-005",
+      title: "Classify by relationship",
+      body: "Odd-one-out and analogy questions are not solved by choosing the item that merely looks different. Find the property or transformation shared by the others.",
+      keyPoint: "Describe the shared rule before selecting the exception.",
+      miniCheck: makeMiniCheck("ABS-FUND-MC-005", "▲, ■ and ◆ all have straight sides. Which item does not share that property?", ["○", "▲", "■", "◆"], "A", "The circle is the only shape without straight sides."),
+    },
+    {
+      sectionId: "abs-fund-006",
+      title: "Use the same transformation",
+      body: "Analogy questions ask you to identify what happened to the first item and apply the same change to another. Common transformations include rotation, reflection, count change and filled-to-outline change.",
+      keyPoint: "Name the transformation before applying it.",
+      miniCheck: makeMiniCheck("ABS-FUND-MC-006", "If ▲ becomes △, what should ■ become under the same rule?", ["□", "●", "◆", "▲"], "A", "The rule changes a filled shape into its outline version."),
+    },
+    {
+      sectionId: "abs-fund-007",
+      title: "Deduction means must, not might",
+      body: "Logical reasoning questions often include statements that are possible but not guaranteed. Choose only conclusions that must follow from the information given.",
+      keyPoint: "Do not add outside knowledge or assumptions.",
+      miniCheck: makeMiniCheck("ABS-FUND-MC-007", "All pumps are machines. What must be true?", ["Every pump is a machine", "Every machine is a pump", "Every pump is portable", "Some machines are not pumps"], "A", "Only the stated relationship is guaranteed."),
+    },
+    {
+      sectionId: "abs-fund-008",
+      title: "A repeatable solving method",
+      body: "Use a short routine:\n\n1. Identify the question type.\n2. List the features that may change.\n3. Test the simplest rule.\n4. Check the rule across every available step.\n5. For logic questions, choose only what must follow.\n\nThe next stage applies this method with immediate feedback.",
+      keyPoint: "Identify → separate features → test rule → verify → answer.",
+    },
+  ],
+};
 
 function getCurrentHydraulicProgress(journey: MvpGuestJourney) {
   return journey.moduleProgress.find((progress) => progress.moduleId === "hydraulic_fundamentals" && !progress.completedAt);
@@ -1841,11 +2034,11 @@ function completeNumericalAssessment(journey: MvpGuestJourney, sessionId: string
   const balancedStrong = summary.accuracy >= 0.8 && summary.conceptBreakdown.every((item) => item.correct >= 2);
   const previousRecommendation = getCurrentRecommendation(journey);
   const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
-  let recommendationType: Recommendation["recommendationType"] = "continue_numerical_practice";
-  let title = "Maintain with Numerical Practice";
-  let summaryText = "Your result is strong across all four numerical areas. Keep the skill fresh while you move on to the next aptitude domain.";
-  let actionLabel = "Start numerical practice";
-  let interpretation = "This is a progression recommendation. No single numerical area was weak enough to justify targeted remediation.";
+  let recommendationType: Recommendation["recommendationType"] = "start_abstract_logical_fundamentals";
+  let title = "Begin Abstract & Logical Reasoning";
+  let summaryText = "Your numerical result is strong across all four areas. Move on to patterns, matrices, classification and deduction.";
+  let actionLabel = "Start Abstract & Logical Fundamentals";
+  let interpretation = "This is a progression recommendation. No single numerical area was weak enough to justify targeted remediation, so the next useful step is a new aptitude domain.";
   let recommendationKind: "progression" | "weakness" = "progression";
   if (!balancedStrong && summary.accuracy >= 0.6) { recommendationType = "continue_numerical_independent_practice"; title = `Target ${weakestLabel}`; summaryText = `The overall result is useful, but ${weakestLabel.toLowerCase()} is the clearest remaining numerical focus.`; actionLabel = "Start independent practice"; interpretation = "This is a weakness recommendation based on the lowest numerical area in the check."; recommendationKind = "weakness"; }
   else if (summary.accuracy < 0.6) { recommendationType = "continue_guided_numerical_practice"; title = "Return to Guided Numerical Practice"; summaryText = `Rebuild the core methods, with particular attention to ${weakestLabel.toLowerCase()}.`; actionLabel = "Start guided practice"; interpretation = "The assessment-style check suggests the numerical methods are not yet stable enough without support."; recommendationKind = "weakness"; }
@@ -1860,6 +2053,162 @@ function completeNumericalAssessment(journey: MvpGuestJourney, sessionId: string
   const evidence = numericalEvidenceFromSummary(summary, sessionId);
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
   return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], competencyEvidence: [...journey.competencyEvidence, ...evidence], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, ...newMilestones], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: balancedStrong ? "Numerical reasoning maintenance" : "Numerical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+
+function getCurrentAbstractLogicalProgress(journey: MvpGuestJourney) {
+  return journey.moduleProgress.find((progress) => progress.moduleId === "abstract_logical_fundamentals" && !progress.completedAt);
+}
+function startAbstractLogicalFundamentals(journey: MvpGuestJourney): MvpGuestJourney {
+  if (getCurrentAbstractLogicalProgress(journey)) return journey;
+  const alreadyCompleted = journey.moduleCompletions.some((completion) => completion.moduleId === "abstract_logical_fundamentals");
+  if (alreadyCompleted) return journey;
+  const progress: ModuleProgress = { moduleProgressId: id("module-progress"), moduleId: "abstract_logical_fundamentals", currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
+  return { ...journey, moduleProgress: [...journey.moduleProgress, progress], updatedAt: now() };
+}
+function updateAbstractLogicalProgress(journey: MvpGuestJourney, nextProgress: ModuleProgress): MvpGuestJourney {
+  return { ...journey, moduleProgress: journey.moduleProgress.map((progress) => progress.moduleProgressId === nextProgress.moduleProgressId ? nextProgress : progress), updatedAt: now() };
+}
+function completeAbstractLogicalFundamentals(journey: MvpGuestJourney): MvpGuestJourney {
+  const activeProgress = getCurrentAbstractLogicalProgress(journey);
+  const completedAt = now();
+  const completedProgress = activeProgress ? { ...activeProgress, currentSectionIndex: abstractLogicalFundamentalsModule.sections.length - 1, completedAt, updatedAt: completedAt } : undefined;
+  const completion: ModuleCompletion = { moduleCompletionId: id("module-completion"), moduleId: "abstract_logical_fundamentals", completedAt };
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: "Why Guided Abstract & Logical Practice is recommended", observation: "Abstract & Logical Fundamentals has been completed.", evidence: "You completed the foundation module covering sequences, matrices, classification, analogies and deduction.", interpretation: "Guided practice is the next useful step before support is reduced.", recommendation: "Guided Abstract & Logical Practice is recommended next.", confidence: "High. This is the planned next stage after the fundamentals module.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType: "begin_guided_abstract_logical_practice", title: "Begin Guided Abstract & Logical Practice", summary: "Apply the core rule-finding methods with immediate feedback.", actionLabel: "Begin guided practice", confidence: "high", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "first_learning_action_completed", label: "Abstract & Logical Fundamentals completed", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: "developing_evidence", label: "Developing evidence — abstract reasoning not yet checked", explanation: "The fundamentals module is complete, but practice evidence is still needed.", confidence: "high", createdAt: now() };
+  return {
+    ...journey,
+    moduleProgress: completedProgress ? journey.moduleProgress.map((progress) => progress.moduleProgressId === completedProgress.moduleProgressId ? completedProgress : progress) : journey.moduleProgress,
+    moduleCompletions: [...journey.moduleCompletions, completion],
+    recommendations: [...updatedRecommendations, recommendation],
+    whyExplanations: [...journey.whyExplanations, why],
+    readinessSnapshots: [...journey.readinessSnapshots, readiness],
+    milestones: [...journey.milestones, milestone],
+    dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Abstract & logical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds: [...(journey.dashboardState?.recentMilestoneIds ?? []).slice(-4), milestone.milestoneId], baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() },
+    updatedAt: now(),
+  };
+}
+
+const abstractLogicalCategoryLabels: Record<AbstractLogicalSubcompetency, string> = {
+  pattern_sequences: "Patterns & sequences",
+  matrices_rules: "Matrices & rules",
+  classification_relationships: "Classification & relationships",
+  deductive_reasoning: "Deductive reasoning",
+};
+
+function calculateAbstractLogicalSummary(session: AssessmentSession, responses: AssessmentResponse[], questions: MvpQuestion[], sessionType: PracticeSummary["sessionType"]): PracticeSummary {
+  const categories: AbstractLogicalSubcompetency[] = ["pattern_sequences", "matrices_rules", "classification_relationships", "deductive_reasoning"];
+  const conceptBreakdown = categories.map((category) => {
+    const ids = new Set(questions.filter((q) => q.subcompetency === category).map((q) => q.questionId));
+    const categoryResponses = responses.filter((r) => ids.has(r.questionId));
+    const attempted = categoryResponses.length;
+    const correct = categoryResponses.filter((r) => r.correct).length;
+    return { concept: category, attempted, correct, accuracy: attempted ? correct / attempted : 0 };
+  });
+  const attempted = responses.length;
+  const correct = responses.filter((r) => r.correct).length;
+  return { summaryId: id("summary"), sessionId: session.sessionId, sessionType, attempted, correct, accuracy: attempted ? correct / attempted : 0, conceptBreakdown, createdAt: now() };
+}
+function weakestAbstractLogicalCategory(summary: PracticeSummary) {
+  return [...summary.conceptBreakdown].sort((a, b) => a.accuracy - b.accuracy || b.attempted - a.attempted)[0];
+}
+function abstractLogicalEvidenceFromSummary(summary: PracticeSummary, sessionId: string): CompetencyEvidence[] {
+  return summary.conceptBreakdown.map((item) => ({
+    evidenceId: id("evidence"),
+    domain: "abstract_logical" as const,
+    subcompetency: item.concept as AbstractLogicalSubcompetency,
+    attempted: item.attempted,
+    correct: item.correct,
+    accuracy: item.accuracy,
+    evidenceStrength: evidenceStrength(item.attempted),
+    sourceSessionId: sessionId,
+    updatedAt: now(),
+  }));
+}
+
+function completeGuidedAbstractLogicalPractice(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId); if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculateAbstractLogicalSummary(completedSession, responses, guidedAbstractLogicalPracticeQuestions, "guided_abstract_logical_practice");
+  const weakest = weakestAbstractLogicalCategory(summary);
+  const weakestLabel = abstractLogicalCategoryLabels[weakest.concept as AbstractLogicalSubcompetency];
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "begin_abstract_logical_independent_practice";
+  let title = "Begin Independent Abstract & Logical Practice";
+  let summaryText = "Apply the same rule-finding methods across a larger, less-supported question set.";
+  let actionLabel = "Start independent practice";
+  let interpretation = "Guided practice suggests the core methods are ready for less-supported application.";
+  if (summary.accuracy < 0.8 && summary.accuracy >= 0.5) { recommendationType = "continue_guided_abstract_logical_practice"; title = "Continue Guided Abstract & Logical Practice"; summaryText = `Do another guided set, with extra attention to ${weakestLabel.toLowerCase()}.`; actionLabel = "Continue guided practice"; interpretation = "The method is partly established, but immediate feedback is still useful."; }
+  else if (summary.accuracy < 0.5) { recommendationType = "review_abstract_logical_fundamentals"; title = "Review Abstract & Logical Fundamentals"; summaryText = `Revisit the core methods, especially ${weakestLabel.toLowerCase()}, before continuing.`; actionLabel = "Review fundamentals"; interpretation = "The guided result suggests the foundation should be rebuilt before support is reduced."; }
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Guided Abstract & Logical Practice: ${summary.correct} of ${summary.attempted} correct.`, evidence: `${weakestLabel} was the lowest area in this set.`, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one guided abstract and logical practice set.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.5 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — ready for independent abstract practice" : "Developing evidence — abstract practice continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "guided_abstract_logical_practice_completed", label: "Guided Abstract & Logical Practice completed", createdAt: now() };
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Guided Abstract & Logical Practice complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Guided abstract and logical practice: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), milestone.milestoneId].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, milestone], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Abstract & logical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+function completeAbstractLogicalIndependentPractice(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId); if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculateAbstractLogicalSummary(completedSession, responses, abstractLogicalIndependentPracticeQuestions, "abstract_logical_independent_practice");
+  const weakest = weakestAbstractLogicalCategory(summary);
+  const weakestLabel = abstractLogicalCategoryLabels[weakest.concept as AbstractLogicalSubcompetency];
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "begin_abstract_logical_assessment";
+  let title = "Take the Abstract & Logical Check";
+  let summaryText = "Test whether the rule-finding methods hold up without immediate answer feedback.";
+  let actionLabel = "Start Abstract & Logical Check";
+  let interpretation = "Independent practice suggests the methods are ready for a short assessment-style check.";
+  if (summary.accuracy < 0.8 && summary.accuracy >= 0.6) { recommendationType = "continue_abstract_logical_independent_practice"; title = "Continue Independent Abstract & Logical Practice"; summaryText = `Do another independent set, with extra attention to ${weakestLabel.toLowerCase()}.`; actionLabel = "Continue independent practice"; interpretation = "The methods are developing, but another less-supported practice set is appropriate before the check."; }
+  else if (summary.accuracy < 0.6) { recommendationType = "continue_guided_abstract_logical_practice"; title = "Return to Guided Abstract & Logical Practice"; summaryText = `Rebuild ${weakestLabel.toLowerCase()} with immediate feedback before returning to independent practice.`; actionLabel = "Start guided practice"; interpretation = "Independent practice suggests the methods are not yet stable enough without support."; }
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Independent Abstract & Logical Practice: ${summary.correct} of ${summary.attempted} correct.`, evidence: `${weakestLabel} was the lowest area in this set.`, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one independent abstract and logical practice set.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — ready for Abstract & Logical Check" : "Developing evidence — abstract practice continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "abstract_logical_independent_practice_completed", label: "Independent Abstract & Logical Practice completed", createdAt: now() };
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Independent Abstract & Logical Practice complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Independent abstract and logical practice: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), milestone.milestoneId].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, milestone], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Abstract & logical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+function completeAbstractLogicalAssessment(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId); if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculateAbstractLogicalSummary(completedSession, responses, abstractLogicalAssessmentQuestions, "abstract_logical_assessment");
+  const weakest = weakestAbstractLogicalCategory(summary);
+  const weakestLabel = abstractLogicalCategoryLabels[weakest.concept as AbstractLogicalSubcompetency];
+  const balancedStrong = summary.accuracy >= 0.8 && summary.conceptBreakdown.every((item) => item.correct >= 2);
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "continue_abstract_logical_practice";
+  let title = "Maintain with Abstract & Logical Practice";
+  let summaryText = "Your result is strong across all four abstract and logical areas. Keep the skill fresh while you move on to the next aptitude domain.";
+  let actionLabel = "Start abstract practice";
+  let interpretation = "This is a progression recommendation. No single abstract or logical area was weak enough to justify targeted remediation.";
+  let recommendationKind: "progression" | "weakness" = "progression";
+  if (!balancedStrong && summary.accuracy >= 0.6) { recommendationType = "continue_abstract_logical_independent_practice"; title = `Target ${weakestLabel}`; summaryText = `The overall result is useful, but ${weakestLabel.toLowerCase()} is the clearest remaining focus.`; actionLabel = "Start independent practice"; interpretation = "This is a weakness recommendation based on the lowest area in the check."; recommendationKind = "weakness"; }
+  else if (summary.accuracy < 0.6) { recommendationType = "continue_guided_abstract_logical_practice"; title = "Return to Guided Abstract & Logical Practice"; summaryText = `Rebuild the core methods, with particular attention to ${weakestLabel.toLowerCase()}.`; actionLabel = "Start guided practice"; interpretation = "The assessment-style check suggests the rule-finding methods are not yet stable enough without support."; recommendationKind = "weakness"; }
+  const evidenceText = summary.conceptBreakdown.map((item) => `${abstractLogicalCategoryLabels[item.concept as AbstractLogicalSubcompetency]}: ${item.correct}/${item.attempted}`).join(" · ");
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Abstract & Logical Check: ${summary.correct} of ${summary.attempted} correct.`, evidence: evidenceText, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one 12-question abstract and logical check.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: balancedStrong ? "Developing evidence — abstract and logical pathway completed" : "Developing evidence — abstract and logical pathway continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "abstract_logical_assessment_completed", label: "Abstract & Logical Check completed", createdAt: now() };
+  const pathwayMilestone: Milestone | undefined = balancedStrong ? { milestoneId: id("milestone"), type: "abstract_logical_pathway_completed", label: "Abstract & logical reasoning pathway completed", createdAt: now() } : undefined;
+  const newMilestones = pathwayMilestone ? [completedMilestone, pathwayMilestone] : [completedMilestone];
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Abstract & Logical Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: evidenceText, interpretation: `${recommendationKind === "progression" ? "Progression recommendation" : "Weakness recommendation"}: ${interpretation}`, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const evidence = abstractLogicalEvidenceFromSummary(summary, sessionId);
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], competencyEvidence: [...journey.competencyEvidence, ...evidence], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, ...newMilestones], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: balancedStrong ? "Abstract & logical reasoning maintenance" : "Abstract & logical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
 }
 
 function calculateGuidedPracticeSummary(session: AssessmentSession, responses: AssessmentResponse[]): PracticeSummary {
@@ -2598,6 +2947,9 @@ function getResumeState(journey: MvpGuestJourney): ResumeState {
       guided_numerical_practice: "guided-numerical-practice-question",
       numerical_independent_practice: "numerical-independent-practice-question",
       numerical_assessment: "numerical-assessment-question",
+      guided_abstract_logical_practice: "guided-abstract-logical-practice-question",
+      abstract_logical_independent_practice: "abstract-logical-independent-practice-question",
+      abstract_logical_assessment: "abstract-logical-assessment-question",
     };
     return {
       screen: screenBySessionType[incompleteSession.sessionType],
@@ -2807,6 +3159,25 @@ function createMixedAssessmentPulleyFocusDemoJourney(): MvpGuestJourney {
   return completeMixedMechanicalAssessment({ ...base, sessions: [...base.sessions, session], responses: [...base.responses, ...responses] }, session.sessionId);
 }
 
+
+function createAbstractGuidedReadyDemoJourney(): MvpGuestJourney {
+  const base = createHydraulicBaselineDemoJourney();
+  const started = startAbstractLogicalFundamentals(base);
+  return completeAbstractLogicalFundamentals(started);
+}
+function createAbstractGuidedStrongDemoJourney(): MvpGuestJourney {
+  const ready = createAbstractGuidedReadyDemoJourney();
+  const session = createGuidedAbstractLogicalPracticeSession();
+  const responses = guidedAbstractLogicalPracticeQuestions.map((question, index) => createAssessmentResponse(session.sessionId, question, index < 9 ? question.correctOptionId : getNonCorrectOptionId(question), 9000 + index * 320, false));
+  return completeGuidedAbstractLogicalPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
+}
+function createAbstractIndependentStrongDemoJourney(): MvpGuestJourney {
+  const ready = createAbstractGuidedStrongDemoJourney();
+  const session = createAbstractLogicalIndependentPracticeSession();
+  const responses = abstractLogicalIndependentPracticeQuestions.map((question, index) => createAssessmentResponse(session.sessionId, question, index < 22 ? question.correctOptionId : getNonCorrectOptionId(question), 13500 + index * 390, false));
+  return completeAbstractLogicalIndependentPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
+}
+
 function createTestScenarioJourney(scenario: TestScenario): MvpGuestJourney {
   switch (scenario) {
     case "hydraulic_module_complete":
@@ -2839,6 +3210,12 @@ function createTestScenarioJourney(scenario: TestScenario): MvpGuestJourney {
       return createLeverIndependentStrongDemoJourney();
     case "mixed_assessment_pulley_focus":
       return createMixedAssessmentPulleyFocusDemoJourney();
+    case "abstract_guided_ready":
+      return createAbstractGuidedReadyDemoJourney();
+    case "abstract_guided_strong":
+      return createAbstractGuidedStrongDemoJourney();
+    case "abstract_independent_strong":
+      return createAbstractIndependentStrongDemoJourney();
     case "hydraulic_baseline":
     default:
       return createHydraulicBaselineDemoJourney();
@@ -2918,6 +3295,21 @@ function TestScenarioPanel({ onLoad }: { onLoad: (scenario: TestScenario) => voi
       description: "Loads a completed mixed assessment where pulleys become the clearest weakness recommendation.",
     },
     {
+      scenario: "abstract_guided_ready",
+      title: "After Abstract & Logical Fundamentals",
+      description: "Loads a journey where Guided Abstract & Logical Practice is recommended next.",
+    },
+    {
+      scenario: "abstract_guided_strong",
+      title: "Strong guided abstract practice",
+      description: "Loads a journey where Independent Abstract & Logical Practice is recommended next.",
+    },
+    {
+      scenario: "abstract_independent_strong",
+      title: "Strong independent abstract practice",
+      description: "Loads a journey where the Abstract & Logical Check is recommended next.",
+    },
+    {
       scenario: "guided_moderate_improvement",
       title: "Moderate guided improvement",
       description: "Loads a journey where continued guided practice is recommended.",
@@ -2962,7 +3354,7 @@ function Shell({ children, right }: { children: React.ReactNode; right?: React.R
 function Badge({ children }: { children: React.ReactNode }) { return <span className="rounded-full border border-[#5ED3F3]/20 bg-[#5ED3F3]/10 px-3 py-1 text-xs font-medium text-[#BFF3FF]">{children}</span>; }
 
 function LandingScreen({ onBegin, onLoadTestScenario }: { onBegin: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) { return <Shell><section className="mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-center px-8 py-20"><div className="max-w-2xl"><Badge>No account or email required to begin</Badge><h1 className="mt-8 text-5xl font-semibold leading-tight tracking-tight md:text-6xl">Prepare smarter for selection assessments.</h1><p className="mt-8 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">FloSpatial helps you identify what to work on, why it matters, and what to do next.</p><div className="mt-12"><PrimaryButton onClick={onBegin}>Begin preparation</PrimaryButton></div></div><div className="mt-20 grid gap-5 md:grid-cols-3"><Card><h3 className="text-lg font-semibold">Find your focus</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">FloSpatial looks for the preparation area most likely to matter next.</p></Card><Card><h3 className="text-lg font-semibold">Understand why</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Every major recommendation includes a clear explanation.</p></Card><Card><h3 className="text-lg font-semibold">Track progress</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Your preparation journey is saved on this device.</p></Card></div>{SHOW_TEST_SCENARIOS && <div className="mt-10"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</section></Shell>; }
-function PathwaySelectionScreen({ onSelect }: { onSelect: () => void }) { return <Shell><section className="mx-auto max-w-5xl px-8 py-16"><h1 className="text-4xl font-semibold">Choose your preparation pathway</h1><p className="mt-5 max-w-2xl text-[#9AA3B2]">FloSpatial adapts recommendations to the type of selection assessment you are preparing for.</p><div className="mt-10 grid gap-5 md:grid-cols-2"><Card className="border-[#5ED3F3]/20"><div className="flex justify-between gap-4"><h2 className="text-2xl font-semibold">Fire Service</h2><Badge>Available</Badge></div><p className="mt-5 text-[#AAB4C0]">Mechanical, numerical and spatial reasoning preparation for Fire Service-style selection assessments.</p><div className="mt-8"><PrimaryButton onClick={onSelect}>Select Fire Service</PrimaryButton></div></Card>{["Military Aircrew", "Police Selection", "Defence Officer", "Emergency Services"].map((name) => <Card key={name} className="opacity-55"><div className="flex justify-between"><h2 className="text-xl font-semibold">{name}</h2><span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8D98A6]">Coming soon</span></div><p className="mt-5 text-sm text-[#8D98A6]">This pathway will be added later.</p></Card>)}</div><p className="mt-10 text-sm text-[#6E7A88]">FloSpatial is not affiliated with or endorsed by any specific employer, agency or selection body.</p></section></Shell>; }
+function PathwaySelectionScreen({ onSelect }: { onSelect: () => void }) { return <Shell><section className="mx-auto max-w-5xl px-8 py-16"><h1 className="text-4xl font-semibold">Choose your preparation pathway</h1><p className="mt-5 max-w-2xl text-[#9AA3B2]">FloSpatial adapts recommendations to the type of selection assessment you are preparing for.</p><div className="mt-10 grid gap-5 md:grid-cols-2"><Card className="border-[#5ED3F3]/20"><div className="flex justify-between gap-4"><h2 className="text-2xl font-semibold">Fire Service</h2><Badge>Available</Badge></div><p className="mt-5 text-[#AAB4C0]">Mechanical, numerical, abstract/logical and spatial reasoning preparation for Fire Service-style selection assessments.</p><div className="mt-8"><PrimaryButton onClick={onSelect}>Select Fire Service</PrimaryButton></div></Card>{["Military Aircrew", "Police Selection", "Defence Officer", "Emergency Services"].map((name) => <Card key={name} className="opacity-55"><div className="flex justify-between"><h2 className="text-xl font-semibold">{name}</h2><span className="rounded-full border border-white/10 px-3 py-1 text-xs text-[#8D98A6]">Coming soon</span></div><p className="mt-5 text-sm text-[#8D98A6]">This pathway will be added later.</p></Card>)}</div><p className="mt-10 text-sm text-[#6E7A88]">FloSpatial is not affiliated with or endorsed by any specific employer, agency or selection body.</p></section></Shell>; }
 function OptionGroup<T extends string>({ label, value, options, onChange }: { label: string; value?: T; options: { label: string; value: T }[]; onChange: (value: T) => void }) { return <div><div className="mb-3 text-sm font-medium text-[#C8D2DD]">{label}</div><div className="grid gap-3 sm:grid-cols-2">{options.map((o) => <button key={o.value} onClick={() => onChange(o.value)} className={`rounded-xl border p-4 text-left text-sm transition ${value === o.value ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10 text-[#E8FBFF]" : "border-white/10 bg-[#111418] text-[#AAB4C0] hover:border-white/20"}`}>{o.label}</button>)}</div></div>; }
 function PreparationContextScreen({ onSave }: { onSave: (context: PreparationContext) => void }) {
   const [assessmentTiming, setAssessmentTiming] = useState<PreparationContext["assessmentTiming"]>();
@@ -3009,6 +3401,10 @@ function DashboardScreen({
   onStartGuidedNumericalPractice,
   onStartNumericalIndependentPractice,
   onStartNumericalAssessment,
+  onStartAbstractLogicalFundamentals,
+  onStartGuidedAbstractLogicalPractice,
+  onStartAbstractLogicalIndependentPractice,
+  onStartAbstractLogicalAssessment,
   onLoadTestScenario,
 }: {
   journey: MvpGuestJourney;
@@ -3034,6 +3430,10 @@ function DashboardScreen({
   onStartGuidedNumericalPractice: () => void;
   onStartNumericalIndependentPractice: () => void;
   onStartNumericalAssessment: () => void;
+  onStartAbstractLogicalFundamentals: () => void;
+  onStartGuidedAbstractLogicalPractice: () => void;
+  onStartAbstractLogicalIndependentPractice: () => void;
+  onStartAbstractLogicalAssessment: () => void;
   onLoadTestScenario: (scenario: TestScenario) => void;
 }) {
   const rec = getCurrentRecommendation(journey);
@@ -3059,7 +3459,11 @@ function DashboardScreen({
   const canStartGuidedNumerical = rec?.recommendationType === "begin_guided_numerical_practice" || rec?.recommendationType === "continue_guided_numerical_practice";
   const canStartIndependentNumerical = rec?.recommendationType === "begin_numerical_independent_practice" || rec?.recommendationType === "continue_numerical_independent_practice" || rec?.recommendationType === "continue_numerical_practice";
   const canStartNumericalAssessment = rec?.recommendationType === "begin_numerical_assessment" || rec?.recommendationType === "repeat_numerical_assessment";
-  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin guided practice</PrimaryButton> : canStartIndependentGear ? <PrimaryButton onClick={onStartGearIndependentPractice}>Start independent practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : canStartPulley ? <PrimaryButton onClick={onStartPulleyFundamentals}>Start module</PrimaryButton> : canStartGuidedPulley ? <PrimaryButton onClick={onStartGuidedPulleyPractice}>Begin guided practice</PrimaryButton> : canStartIndependentPulley ? <PrimaryButton onClick={onStartPulleyIndependentPractice}>Start independent practice</PrimaryButton> : canStartPulleyAssessment ? <PrimaryButton onClick={onStartPulleyAssessment}>Start Pulley Check</PrimaryButton> : canStartLever ? <PrimaryButton onClick={onStartLeverFundamentals}>Start module</PrimaryButton> : canStartGuidedLever ? <PrimaryButton onClick={onStartGuidedLeverPractice}>Begin guided practice</PrimaryButton> : canStartIndependentLever ? <PrimaryButton onClick={onStartLeverIndependentPractice}>Start independent practice</PrimaryButton> : canStartLeverAssessment ? <PrimaryButton onClick={onStartLeverAssessment}>Start Lever Check</PrimaryButton> : canStartNumerical ? <PrimaryButton onClick={onStartNumericalFundamentals}>Start Numerical Fundamentals</PrimaryButton> : canStartGuidedNumerical ? <PrimaryButton onClick={onStartGuidedNumericalPractice}>Start guided numerical practice</PrimaryButton> : canStartIndependentNumerical ? <PrimaryButton onClick={onStartNumericalIndependentPractice}>Start independent numerical practice</PrimaryButton> : canStartNumericalAssessment ? <PrimaryButton onClick={onStartNumericalAssessment}>Start Numerical Check</PrimaryButton> : canStartMixedAssessment ? <PrimaryButton onClick={onStartMixedAssessment}>Start Mixed Mechanical Assessment</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Alpha pathway access</div><h3 className="mt-3 text-2xl font-semibold">Mechanical pathways</h3><p className="mt-3 max-w-3xl text-[#9AA3B2]">Direct access remains available while the pathways are being tested. These buttons do not change the current recommendation until a stage is completed.</p><p className="mt-3 text-xs text-[#6E7A88]">Build: {BUILD_LABEL}</p><div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Gear pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartGearFundamentals}>Gear Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedGearPractice}>Guided Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearIndependentPractice}>Independent Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearAssessment}>Gear Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Pulley pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartPulleyFundamentals}>Pulley Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedPulleyPractice}>Guided Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyIndependentPractice}>Independent Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyAssessment}>Pulley Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Lever pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartLeverFundamentals}>Lever Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedLeverPractice}>Guided Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverIndependentPractice}>Independent Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverAssessment}>Lever Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Integrated mechanical assessment</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Mixes gears, pulleys, levers and hydraulics so the candidate must select the right method without being told the category.</p><div className="mt-4"><PrimaryButton onClick={onStartMixedAssessment}>Mixed Mechanical Assessment</PrimaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Numerical reasoning pathway</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Arithmetic, percentages, ratios, rates and data interpretation in the same Learn → Guided → Independent → Check structure.</p><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartNumericalFundamentals}>Numerical Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedNumericalPractice}>Guided Numerical Practice</SecondaryButton><SecondaryButton onClick={onStartNumericalIndependentPractice}>Independent Numerical Practice</SecondaryButton><SecondaryButton onClick={onStartNumericalAssessment}>Numerical Check</SecondaryButton></div></div></Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
+  const canStartAbstractLogical = rec?.recommendationType === "start_abstract_logical_fundamentals" || rec?.recommendationType === "review_abstract_logical_fundamentals" || rec?.title?.toLowerCase().includes("abstract & logical fundamentals");
+  const canStartGuidedAbstractLogical = rec?.recommendationType === "begin_guided_abstract_logical_practice" || rec?.recommendationType === "continue_guided_abstract_logical_practice";
+  const canStartIndependentAbstractLogical = rec?.recommendationType === "begin_abstract_logical_independent_practice" || rec?.recommendationType === "continue_abstract_logical_independent_practice" || rec?.recommendationType === "continue_abstract_logical_practice";
+  const canStartAbstractLogicalAssessment = rec?.recommendationType === "begin_abstract_logical_assessment" || rec?.recommendationType === "repeat_abstract_logical_assessment";
+  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin guided practice</PrimaryButton> : canStartIndependentGear ? <PrimaryButton onClick={onStartGearIndependentPractice}>Start independent practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : canStartPulley ? <PrimaryButton onClick={onStartPulleyFundamentals}>Start module</PrimaryButton> : canStartGuidedPulley ? <PrimaryButton onClick={onStartGuidedPulleyPractice}>Begin guided practice</PrimaryButton> : canStartIndependentPulley ? <PrimaryButton onClick={onStartPulleyIndependentPractice}>Start independent practice</PrimaryButton> : canStartPulleyAssessment ? <PrimaryButton onClick={onStartPulleyAssessment}>Start Pulley Check</PrimaryButton> : canStartLever ? <PrimaryButton onClick={onStartLeverFundamentals}>Start module</PrimaryButton> : canStartGuidedLever ? <PrimaryButton onClick={onStartGuidedLeverPractice}>Begin guided practice</PrimaryButton> : canStartIndependentLever ? <PrimaryButton onClick={onStartLeverIndependentPractice}>Start independent practice</PrimaryButton> : canStartLeverAssessment ? <PrimaryButton onClick={onStartLeverAssessment}>Start Lever Check</PrimaryButton> : canStartNumerical ? <PrimaryButton onClick={onStartNumericalFundamentals}>Start Numerical Fundamentals</PrimaryButton> : canStartGuidedNumerical ? <PrimaryButton onClick={onStartGuidedNumericalPractice}>Start guided numerical practice</PrimaryButton> : canStartIndependentNumerical ? <PrimaryButton onClick={onStartNumericalIndependentPractice}>Start independent numerical practice</PrimaryButton> : canStartNumericalAssessment ? <PrimaryButton onClick={onStartNumericalAssessment}>Start Numerical Check</PrimaryButton> : canStartAbstractLogical ? <PrimaryButton onClick={onStartAbstractLogicalFundamentals}>Start Abstract & Logical Fundamentals</PrimaryButton> : canStartGuidedAbstractLogical ? <PrimaryButton onClick={onStartGuidedAbstractLogicalPractice}>Start guided abstract practice</PrimaryButton> : canStartIndependentAbstractLogical ? <PrimaryButton onClick={onStartAbstractLogicalIndependentPractice}>Start independent abstract practice</PrimaryButton> : canStartAbstractLogicalAssessment ? <PrimaryButton onClick={onStartAbstractLogicalAssessment}>Start Abstract & Logical Check</PrimaryButton> : canStartMixedAssessment ? <PrimaryButton onClick={onStartMixedAssessment}>Start Mixed Mechanical Assessment</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Alpha pathway access</div><h3 className="mt-3 text-2xl font-semibold">Mechanical pathways</h3><p className="mt-3 max-w-3xl text-[#9AA3B2]">Direct access remains available while the pathways are being tested. These buttons do not change the current recommendation until a stage is completed.</p><p className="mt-3 text-xs text-[#6E7A88]">Build: {BUILD_LABEL}</p><div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Gear pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartGearFundamentals}>Gear Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedGearPractice}>Guided Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearIndependentPractice}>Independent Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearAssessment}>Gear Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Pulley pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartPulleyFundamentals}>Pulley Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedPulleyPractice}>Guided Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyIndependentPractice}>Independent Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyAssessment}>Pulley Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Lever pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartLeverFundamentals}>Lever Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedLeverPractice}>Guided Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverIndependentPractice}>Independent Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverAssessment}>Lever Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Integrated mechanical assessment</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Mixes gears, pulleys, levers and hydraulics so the candidate must select the right method without being told the category.</p><div className="mt-4"><PrimaryButton onClick={onStartMixedAssessment}>Mixed Mechanical Assessment</PrimaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Numerical reasoning pathway</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Arithmetic, percentages, ratios, rates and data interpretation in the same Learn → Guided → Independent → Check structure.</p><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartNumericalFundamentals}>Numerical Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedNumericalPractice}>Guided Numerical Practice</SecondaryButton><SecondaryButton onClick={onStartNumericalIndependentPractice}>Independent Numerical Practice</SecondaryButton><SecondaryButton onClick={onStartNumericalAssessment}>Numerical Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Abstract & logical reasoning pathway</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Patterns, matrices, classification, analogies and deduction using the same Learn → Guided → Independent → Check structure.</p><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartAbstractLogicalFundamentals}>Abstract & Logical Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedAbstractLogicalPractice}>Guided Abstract Practice</SecondaryButton><SecondaryButton onClick={onStartAbstractLogicalIndependentPractice}>Independent Abstract Practice</SecondaryButton><SecondaryButton onClick={onStartAbstractLogicalAssessment}>Abstract & Logical Check</SecondaryButton></div></div></Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
 }
 
 function HydraulicWorkedExampleDiagram() {
@@ -3912,8 +4316,87 @@ function NumericalDebriefScreen({ journey, stage, onWhy, onDashboard, onNext }: 
   const sessionType: PracticeSummary["sessionType"] = stage === "guided" ? "guided_numerical_practice" : stage === "independent" ? "numerical_independent_practice" : "numerical_assessment";
   const summary = [...journey.practiceSummaries].reverse().find((item) => item.sessionType === sessionType);
   const canUseNext = stage === "guided" ? rec?.recommendationType === "begin_numerical_independent_practice" : stage === "independent" ? rec?.recommendationType === "begin_numerical_assessment" : false;
-  const isProgression = stage === "assessment" && rec?.recommendationType === "continue_numerical_practice";
+  const isProgression = stage === "assessment" && rec?.recommendationType === "start_abstract_logical_fundamentals";
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-5xl items-center px-8 py-16"><Card><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{stage === "assessment" ? "Numerical Check debrief" : "Numerical practice debrief"}</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p></div>{stage === "assessment" && <Badge>{isProgression ? "Progression recommendation" : "Weakness recommendation"}</Badge>}</div>{summary && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{summary.conceptBreakdown.map((item) => <div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{numericalCategoryLabels[item.concept as NumericalSubcompetency] ?? item.concept}</div><div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div></div>)}</div>}<div className="mt-8 grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Mentor recommendation</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 leading-relaxed text-[#AAB4C0]">{rec?.summary}</p></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton>{canUseNext && onNext && <PrimaryButton onClick={onNext}>{stage === "guided" ? "Start Independent Numerical Practice" : "Start Numerical Check"}</PrimaryButton>}<PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+}
+
+
+function AbstractLogicalFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
+  const existingProgress = getCurrentAbstractLogicalProgress(journey);
+  const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "abstract_logical_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
+  const section = abstractLogicalFundamentalsModule.sections[progress.currentSectionIndex];
+  const miniCheck = section.miniCheck;
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSelectedOptionId(null); setShowFeedback(false); }, [progress.currentSectionIndex]);
+  const selectedCorrect = miniCheck ? selectedOptionId === miniCheck.correctOptionId : false;
+  function answerMiniCheck(optionId: string) {
+    if (!miniCheck || showFeedback) return;
+    setSelectedOptionId(optionId);
+    setShowFeedback(true);
+    const response: ModuleMiniCheckResponse = { questionId: miniCheck.questionId, selectedOptionId: optionId, correct: optionId === miniCheck.correctOptionId, answeredAt: now() };
+    const nextProgress = { ...progress, miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response], updatedAt: now() };
+    onSaveJourney(existingProgress ? updateAbstractLogicalProgress(journey, nextProgress) : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() });
+  }
+  function goNext() {
+    if (miniCheck && !showFeedback) return;
+    if (progress.currentSectionIndex >= abstractLogicalFundamentalsModule.sections.length - 1) { onComplete(); return; }
+    const nextProgress = { ...progress, currentSectionIndex: progress.currentSectionIndex + 1, updatedAt: now() };
+    onSaveJourney(existingProgress ? updateAbstractLogicalProgress(journey, nextProgress) : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() });
+  }
+  function goBack() {
+    if (progress.currentSectionIndex === 0) return;
+    const nextProgress = { ...progress, currentSectionIndex: progress.currentSectionIndex - 1, updatedAt: now() };
+    onSaveJourney(updateAbstractLogicalProgress(journey, nextProgress));
+  }
+  return <Shell><section className="mx-auto max-w-5xl px-8 py-12"><div className="mb-6 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / abstractLogicalFundamentalsModule.sections.length) * 100}%` }} /></div><div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Abstract & Logical Fundamentals</p><h1 className="mt-3 text-4xl font-semibold">{abstractLogicalFundamentalsModule.title}</h1><p className="mt-3 text-[#9AA3B2]">{abstractLogicalFundamentalsModule.subtitle}</p></div><Badge>Section {progress.currentSectionIndex + 1} of {abstractLogicalFundamentalsModule.sections.length}</Badge></div><Card><h2 className="text-3xl font-semibold">{section.title}</h2><p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-[#C8D2DD]">{section.body}</p>{section.keyPoint && <div className="mt-8 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Key point</div><p className="mt-3 text-[#D9F8FF]">{section.keyPoint}</p></div>}{miniCheck && <div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div><p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p><div className="mt-5 grid gap-3">{miniCheck.options.map((option) => <button key={option.optionId} onClick={() => answerMiniCheck(option.optionId)} className={`rounded-xl border p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"}`}><span className="font-semibold text-[#D9F8FF]">{option.label}.</span> <span className="text-[#C8D2DD]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}><p className="font-medium">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p></div>}</div>}<div className="mt-9 flex flex-col gap-3 pb-4 sm:flex-row sm:justify-between sm:pb-0"><PrimaryButton className="sm:order-2" onClick={goNext}>{progress.currentSectionIndex === abstractLogicalFundamentalsModule.sections.length - 1 ? "Complete module" : "Continue"}</PrimaryButton><SecondaryButton className="sm:order-1" onClick={goBack}>Back</SecondaryButton></div></Card></section></Shell>;
+}
+
+function AbstractLogicalFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuided }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuided: () => void }) {
+  const rec = getCurrentRecommendation(journey);
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Abstract & Logical Fundamentals complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">The next stage is guided rule-finding practice with immediate feedback.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuided}>Begin guided practice</PrimaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+}
+
+type AbstractLogicalStage = "guided" | "independent" | "assessment";
+
+function AbstractLogicalVisualPanel({ visual }: { visual: AbstractVisual }) {
+  const maxColumns = Math.max(...visual.rows.map((row) => row.length));
+  const isMatrix = visual.kind === "matrix";
+  return <div className="mb-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">{visual.caption && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{visual.caption}</div>}<div className="mx-auto grid max-w-3xl gap-3" style={{ gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))` }}>{visual.rows.flatMap((row, rowIndex) => Array.from({ length: maxColumns }, (_, colIndex) => { const cell = row[colIndex] ?? ""; const isMissing = cell === "?"; const isSpacer = cell.trim() === ""; return <div key={`${rowIndex}-${colIndex}`} className={`${isMatrix ? "aspect-square" : "min-h-20"} flex items-center justify-center rounded-2xl border text-center font-semibold ${isSpacer ? "border-transparent bg-transparent" : isMissing ? "border-[#5ED3F3]/45 bg-[#5ED3F3]/10 text-[#D9F8FF]" : "border-white/10 bg-[#171C23] text-[#F4F6F8]"}`}><span className="whitespace-pre text-2xl sm:text-3xl">{cell}</span></div>; }))}</div></div>;
+}
+
+function AbstractLogicalPracticeIntroScreen({ stage, onStart }: { stage: AbstractLogicalStage; onStart: () => void }) {
+  const config = stage === "guided"
+    ? { eyebrow: "Guided learning", title: "Guided Abstract & Logical Practice", body: "Ten questions across patterns, matrices, classification and deduction. You will receive immediate feedback and a short cue about what to notice.", items: ["10 questions", "Immediate feedback", "Rule-finding cues"], button: "Start guided practice" }
+    : stage === "independent"
+      ? { eyebrow: "Less-supported practice", title: "Independent Abstract & Logical Practice", body: "A larger question set with broader variation. Feedback comes after each answer, but the method is no longer signposted.", items: ["25 questions", "Immediate feedback", "Less support"], button: "Start independent practice" }
+      : { eyebrow: "Assessment-style check", title: "Abstract & Logical Check", body: "Twelve mixed questions with no immediate answer feedback. The Mentor will identify either a clear weakness or a progression step.", items: ["12 questions", "No immediate feedback", "Untimed in v1"], button: "Start Abstract & Logical Check" };
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
+}
+
+function AbstractLogicalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: AbstractLogicalStage }) {
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); setShowFeedback(false); }, [questionIndex]);
+  const question = questions[questionIndex]; if (!question) return null;
+  const progress = ((questionIndex + 1) / questions.length) * 100;
+  const answered = journey.responses.filter((r) => r.sessionId === sessionId).length;
+  const selectedCorrect = selectedOptionId === question.correctOptionId;
+  function select(optionId: string) { if (stage !== "assessment" && showFeedback) return; setSelectedOptionId(optionId); if (stage !== "assessment") setShowFeedback(true); }
+  function next() { if (!selectedOptionId) return; const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false); onAnswer(response, questionIndex === questions.length - 1); }
+  const title = stage === "guided" ? "Guided Abstract & Logical Practice" : stage === "independent" ? "Independent Abstract & Logical Practice" : "Abstract & Logical Check";
+  return <Shell right={title}><section className={`mx-auto max-w-5xl px-8 pt-12 ${stage === "assessment" ? "pb-12" : "pb-44 sm:pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Find the rule</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br /><span className="text-xs">{answered} saved</span></div></div><Card>{question.abstractVisual && <AbstractLogicalVisualPanel visual={question.abstractVisual} />}{stage === "guided" && question.feedbackCue && <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">{question.feedbackCue}</div>}<p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-lg text-[#DCE3EA]">{option.text}</span></button>)}</div>{stage === "assessment" ? <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === questions.length - 1 ? "Finish check" : "Next question"}</PrimaryButton></div> : showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl sm:static sm:mt-7 sm:rounded-2xl sm:border sm:p-5 sm:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div></div>}</Card></section></Shell>;
+}
+
+function AbstractLogicalDebriefScreen({ journey, stage, onWhy, onDashboard, onNext }: { journey: MvpGuestJourney; stage: AbstractLogicalStage; onWhy: () => void; onDashboard: () => void; onNext?: () => void }) {
+  const debrief = getLatestDebrief(journey);
+  const rec = getCurrentRecommendation(journey);
+  const sessionType: PracticeSummary["sessionType"] = stage === "guided" ? "guided_abstract_logical_practice" : stage === "independent" ? "abstract_logical_independent_practice" : "abstract_logical_assessment";
+  const summary = [...journey.practiceSummaries].reverse().find((item) => item.sessionType === sessionType);
+  const canUseNext = stage === "guided" ? rec?.recommendationType === "begin_abstract_logical_independent_practice" : stage === "independent" ? rec?.recommendationType === "begin_abstract_logical_assessment" : false;
+  const isProgression = stage === "assessment" && rec?.recommendationType === "continue_abstract_logical_practice";
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-5xl items-center px-8 py-16"><Card><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{stage === "assessment" ? "Abstract & Logical Check debrief" : "Abstract & logical practice debrief"}</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p></div>{stage === "assessment" && <Badge>{isProgression ? "Progression recommendation" : "Weakness recommendation"}</Badge>}</div>{summary && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{summary.conceptBreakdown.map((item) => <div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{abstractLogicalCategoryLabels[item.concept as AbstractLogicalSubcompetency] ?? item.concept}</div><div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div></div>)}</div>}<div className="mt-8 grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Mentor recommendation</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 leading-relaxed text-[#AAB4C0]">{rec?.summary}</p></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton>{canUseNext && onNext && <PrimaryButton onClick={onNext}>{stage === "guided" ? "Start Independent Abstract & Logical Practice" : "Start Abstract & Logical Check"}</PrimaryButton>}<PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
 }
 
 function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
@@ -4098,6 +4581,31 @@ export default function FloSpatialPrototype() {
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
 
+
+  function openAbstractLogicalFundamentals() { const next = startAbstractLogicalFundamentals(journey); updateJourney(next); setShowWhy(false); setScreen("abstract-logical-fundamentals"); }
+  function completeAbstractLogicalModule() { const next = completeAbstractLogicalFundamentals(journey); updateJourney(next); setShowWhy(false); setScreen("abstract-logical-fundamentals-complete"); }
+  function openGuidedAbstractLogicalPracticeIntro() { setShowWhy(false); setScreen("guided-abstract-logical-practice-intro"); }
+  function startGuidedAbstractLogicalPractice() { const session = createGuidedAbstractLogicalPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("guided-abstract-logical-practice-question"); }
+  function handleGuidedAbstractLogicalAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeGuidedAbstractLogicalPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("guided-abstract-logical-practice-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+  function openAbstractLogicalIndependentPracticeIntro() { setShowWhy(false); setScreen("abstract-logical-independent-practice-intro"); }
+  function startAbstractLogicalIndependentPractice() { const session = createAbstractLogicalIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("abstract-logical-independent-practice-question"); }
+  function handleAbstractLogicalIndependentAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeAbstractLogicalIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("abstract-logical-independent-practice-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+  function openAbstractLogicalAssessmentIntro() { setShowWhy(false); setScreen("abstract-logical-assessment-intro"); }
+  function startAbstractLogicalAssessment() { const session = createAbstractLogicalAssessmentSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("abstract-logical-assessment-question"); }
+  function handleAbstractLogicalAssessmentAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeAbstractLogicalAssessment(withResponse, activeSessionId); updateJourney(completed); setScreen("abstract-logical-assessment-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+
   const why = getCurrentWhy(journey);
-  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartMixedAssessment={openMixedMechanicalAssessmentIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onStartLeverFundamentals={openLeverFundamentals} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} onStartLeverIndependentPractice={openLeverIndependentPracticeIntro} onStartLeverAssessment={openLeverAssessmentIntro} onStartNumericalFundamentals={openNumericalFundamentals} onStartGuidedNumericalPractice={openGuidedNumericalPracticeIntro} onStartNumericalIndependentPractice={openNumericalIndependentPracticeIntro} onStartNumericalAssessment={openNumericalAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-assessment-intro" && <MixedMechanicalAssessmentIntroScreen onStart={startMixedMechanicalAssessment} />}{screen === "mixed-mechanical-assessment-question" && activeSession && <MixedMechanicalAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedMechanicalAssessmentAnswer} />}{screen === "mixed-mechanical-assessment-debrief" && <MixedMechanicalAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "lever-fundamentals" && <LeverFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeLeverModule} />}{screen === "lever-fundamentals-complete" && <LeverFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} />}{screen === "guided-lever-practice-intro" && <LeverPracticeIntroScreen stage="guided" onStart={startGuidedLeverPractice} />}{screen === "guided-lever-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedLeverAnswer} questions={guidedLeverPracticeQuestions} stage="guided" />}{screen === "guided-lever-practice-debrief" && <LeverDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverIndependentPracticeIntro} />}{screen === "lever-independent-practice-intro" && <LeverPracticeIntroScreen stage="independent" onStart={startLeverIndependentPractice} />}{screen === "lever-independent-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverIndependentPracticeAnswer} questions={leverIndependentPracticeQuestions} stage="independent" />}{screen === "lever-independent-practice-debrief" && <LeverDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverAssessmentIntro} />}{screen === "lever-assessment-intro" && <LeverPracticeIntroScreen stage="assessment" onStart={startLeverAssessment} />}{screen === "lever-assessment-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverAssessmentAnswer} questions={leverAssessmentQuestions} stage="assessment" />}{screen === "lever-assessment-debrief" && <LeverDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "numerical-fundamentals" && <NumericalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeNumericalModule} />}{screen === "numerical-fundamentals-complete" && <NumericalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedNumericalPracticeIntro} />}{screen === "guided-numerical-practice-intro" && <NumericalPracticeIntroScreen stage="guided" onStart={startGuidedNumericalPractice} />}{screen === "guided-numerical-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedNumericalAnswer} questions={guidedNumericalPracticeQuestions} stage="guided" />}{screen === "guided-numerical-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalIndependentPracticeIntro} />}{screen === "numerical-independent-practice-intro" && <NumericalPracticeIntroScreen stage="independent" onStart={startNumericalIndependentPractice} />}{screen === "numerical-independent-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalIndependentAnswer} questions={numericalIndependentPracticeQuestions} stage="independent" />}{screen === "numerical-independent-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalAssessmentIntro} />}{screen === "numerical-assessment-intro" && <NumericalPracticeIntroScreen stage="assessment" onStart={startNumericalAssessment} />}{screen === "numerical-assessment-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalAssessmentAnswer} questions={numericalAssessmentQuestions} stage="assessment" />}{screen === "numerical-assessment-debrief" && <NumericalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}</>;
+  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartMixedAssessment={openMixedMechanicalAssessmentIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onStartLeverFundamentals={openLeverFundamentals} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} onStartLeverIndependentPractice={openLeverIndependentPracticeIntro} onStartLeverAssessment={openLeverAssessmentIntro} onStartNumericalFundamentals={openNumericalFundamentals} onStartGuidedNumericalPractice={openGuidedNumericalPracticeIntro} onStartNumericalIndependentPractice={openNumericalIndependentPracticeIntro} onStartNumericalAssessment={openNumericalAssessmentIntro} onStartAbstractLogicalFundamentals={openAbstractLogicalFundamentals} onStartGuidedAbstractLogicalPractice={openGuidedAbstractLogicalPracticeIntro} onStartAbstractLogicalIndependentPractice={openAbstractLogicalIndependentPracticeIntro} onStartAbstractLogicalAssessment={openAbstractLogicalAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-assessment-intro" && <MixedMechanicalAssessmentIntroScreen onStart={startMixedMechanicalAssessment} />}{screen === "mixed-mechanical-assessment-question" && activeSession && <MixedMechanicalAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedMechanicalAssessmentAnswer} />}{screen === "mixed-mechanical-assessment-debrief" && <MixedMechanicalAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "lever-fundamentals" && <LeverFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeLeverModule} />}{screen === "lever-fundamentals-complete" && <LeverFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} />}{screen === "guided-lever-practice-intro" && <LeverPracticeIntroScreen stage="guided" onStart={startGuidedLeverPractice} />}{screen === "guided-lever-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedLeverAnswer} questions={guidedLeverPracticeQuestions} stage="guided" />}{screen === "guided-lever-practice-debrief" && <LeverDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverIndependentPracticeIntro} />}{screen === "lever-independent-practice-intro" && <LeverPracticeIntroScreen stage="independent" onStart={startLeverIndependentPractice} />}{screen === "lever-independent-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverIndependentPracticeAnswer} questions={leverIndependentPracticeQuestions} stage="independent" />}{screen === "lever-independent-practice-debrief" && <LeverDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverAssessmentIntro} />}{screen === "lever-assessment-intro" && <LeverPracticeIntroScreen stage="assessment" onStart={startLeverAssessment} />}{screen === "lever-assessment-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverAssessmentAnswer} questions={leverAssessmentQuestions} stage="assessment" />}{screen === "lever-assessment-debrief" && <LeverDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "numerical-fundamentals" && <NumericalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeNumericalModule} />}{screen === "numerical-fundamentals-complete" && <NumericalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedNumericalPracticeIntro} />}{screen === "guided-numerical-practice-intro" && <NumericalPracticeIntroScreen stage="guided" onStart={startGuidedNumericalPractice} />}{screen === "guided-numerical-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedNumericalAnswer} questions={guidedNumericalPracticeQuestions} stage="guided" />}{screen === "guided-numerical-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalIndependentPracticeIntro} />}{screen === "numerical-independent-practice-intro" && <NumericalPracticeIntroScreen stage="independent" onStart={startNumericalIndependentPractice} />}{screen === "numerical-independent-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalIndependentAnswer} questions={numericalIndependentPracticeQuestions} stage="independent" />}{screen === "numerical-independent-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalAssessmentIntro} />}{screen === "numerical-assessment-intro" && <NumericalPracticeIntroScreen stage="assessment" onStart={startNumericalAssessment} />}{screen === "numerical-assessment-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalAssessmentAnswer} questions={numericalAssessmentQuestions} stage="assessment" />}{screen === "numerical-assessment-debrief" && <NumericalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "abstract-logical-fundamentals" && <AbstractLogicalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeAbstractLogicalModule} />}{screen === "abstract-logical-fundamentals-complete" && <AbstractLogicalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedAbstractLogicalPracticeIntro} />}{screen === "guided-abstract-logical-practice-intro" && <AbstractLogicalPracticeIntroScreen stage="guided" onStart={startGuidedAbstractLogicalPractice} />}{screen === "guided-abstract-logical-practice-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAbstractLogicalAnswer} questions={guidedAbstractLogicalPracticeQuestions} stage="guided" />}{screen === "guided-abstract-logical-practice-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openAbstractLogicalIndependentPracticeIntro} />}{screen === "abstract-logical-independent-practice-intro" && <AbstractLogicalPracticeIntroScreen stage="independent" onStart={startAbstractLogicalIndependentPractice} />}{screen === "abstract-logical-independent-practice-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAbstractLogicalIndependentAnswer} questions={abstractLogicalIndependentPracticeQuestions} stage="independent" />}{screen === "abstract-logical-independent-practice-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openAbstractLogicalAssessmentIntro} />}{screen === "abstract-logical-assessment-intro" && <AbstractLogicalPracticeIntroScreen stage="assessment" onStart={startAbstractLogicalAssessment} />}{screen === "abstract-logical-assessment-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAbstractLogicalAssessmentAnswer} questions={abstractLogicalAssessmentQuestions} stage="assessment" />}{screen === "abstract-logical-assessment-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}</>;
 }
