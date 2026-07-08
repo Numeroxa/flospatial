@@ -52,7 +52,18 @@ type AppScreen =
   | "lever-assessment-debrief"
   | "mixed-mechanical-assessment-intro"
   | "mixed-mechanical-assessment-question"
-  | "mixed-mechanical-assessment-debrief";
+  | "mixed-mechanical-assessment-debrief"
+  | "numerical-fundamentals"
+  | "numerical-fundamentals-complete"
+  | "guided-numerical-practice-intro"
+  | "guided-numerical-practice-question"
+  | "guided-numerical-practice-debrief"
+  | "numerical-independent-practice-intro"
+  | "numerical-independent-practice-question"
+  | "numerical-independent-practice-debrief"
+  | "numerical-assessment-intro"
+  | "numerical-assessment-question"
+  | "numerical-assessment-debrief";
 
 type TestScenario =
   | "hydraulic_baseline"
@@ -74,6 +85,10 @@ type TestScenario =
 
 type PathwayId = "fire_service";
 type MechanicalSubcompetency = "hydraulics" | "gears" | "pulleys" | "levers";
+type NumericalSubcompetency = "arithmetic_estimation" | "percentages_ratios" | "rates_proportion" | "tables_data";
+type Domain = "mechanical" | "numerical";
+type Subcompetency = MechanicalSubcompetency | NumericalSubcompetency;
+type NumericalDataTable = { headers: string[]; rows: string[][] };
 type Confidence = "low" | "moderate" | "high";
 type EvidenceStrength = "none" | "early" | "emerging" | "strong" | "established";
 
@@ -87,10 +102,10 @@ type PreparationContext = {
 type QuestionOption = { optionId: string; label: "A" | "B" | "C" | "D"; text: string };
 type MvpQuestion = {
   questionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment";
   pathwayId: PathwayId;
-  domain: "mechanical";
-  subcompetency: MechanicalSubcompetency;
+  domain: Domain;
+  subcompetency: Subcompetency;
   concept: string;
   difficulty: "foundational" | "developing" | "applied";
   stem: string;
@@ -98,11 +113,12 @@ type MvpQuestion = {
   correctOptionId: string;
   explanation: string;
   feedbackCue?: string;
+  dataTable?: NumericalDataTable;
 };
 
 type AssessmentSession = {
   sessionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment";
   pathwayId: PathwayId;
   startedAt: string;
   completedAt?: string;
@@ -122,8 +138,8 @@ type AssessmentResponse = {
 
 type CompetencyEvidence = {
   evidenceId: string;
-  domain: "mechanical";
-  subcompetency: MechanicalSubcompetency;
+  domain: Domain;
+  subcompetency: Subcompetency;
   attempted: number;
   correct: number;
   accuracy: number;
@@ -136,8 +152,8 @@ type Observation = { observationId: string; title: string; summary: string; evid
 type PreparationConstraint = {
   constraintId: string;
   constraintType: "foundation_knowledge" | "broad_foundation" | "insufficient_evidence";
-  domain: "mechanical";
-  subcompetency?: MechanicalSubcompetency;
+  domain: Domain;
+  subcompetency?: Subcompetency;
   status: "identified" | "active" | "under_review" | "improving";
   confidence: Confidence;
   observationId: string;
@@ -183,7 +199,16 @@ type Recommendation = {
     | "begin_lever_assessment"
     | "repeat_lever_assessment"
     | "begin_mixed_mechanical_assessment"
-    | "repeat_mixed_mechanical_assessment";
+    | "repeat_mixed_mechanical_assessment"
+    | "start_numerical_fundamentals"
+    | "begin_guided_numerical_practice"
+    | "continue_guided_numerical_practice"
+    | "begin_numerical_independent_practice"
+    | "continue_numerical_independent_practice"
+    | "review_numerical_fundamentals"
+    | "begin_numerical_assessment"
+    | "repeat_numerical_assessment"
+    | "continue_numerical_practice";
   title: string;
   summary: string;
   actionLabel: string;
@@ -239,7 +264,11 @@ type Milestone = {
     | "lever_improvement_signal"
     | "lever_assessment_completed"
     | "lever_pathway_completed"
-    | "mixed_mechanical_assessment_completed";
+    | "mixed_mechanical_assessment_completed"
+    | "guided_numerical_practice_completed"
+    | "numerical_independent_practice_completed"
+    | "numerical_assessment_completed"
+    | "numerical_pathway_completed";
   label: string;
   createdAt: string;
 };
@@ -255,7 +284,7 @@ type DashboardState = {
   updatedAt: string;
 };
 
-type LearningModuleId = "hydraulic_fundamentals" | "gear_fundamentals" | "pulley_fundamentals" | "lever_fundamentals";
+type LearningModuleId = "hydraulic_fundamentals" | "gear_fundamentals" | "pulley_fundamentals" | "lever_fundamentals" | "numerical_fundamentals";
 
 type LearningMiniCheck = {
   questionId: string;
@@ -277,8 +306,8 @@ type LearningModule = {
   moduleId: LearningModuleId;
   title: string;
   subtitle: string;
-  targetDomain: "mechanical";
-  targetSubcompetency: MechanicalSubcompetency;
+  targetDomain: Domain;
+  targetSubcompetency: Subcompetency;
   estimatedMinutes: number;
   sections: LearningModuleSection[];
 };
@@ -309,7 +338,7 @@ type ModuleCompletion = {
 type PracticeSummary = {
   summaryId: string;
   sessionId: string;
-  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment";
+  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment" | "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment";
   attempted: number;
   correct: number;
   accuracy: number;
@@ -357,7 +386,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Mixed Mechanical Assessment v1 Alpha";
+const BUILD_LABEL = "Numerical Reasoning Pathway v1 Alpha";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -778,6 +807,94 @@ function makeMiniCheck(questionId: string, stem: string, options: string[], corr
   };
 }
 
+
+function makeNumericalQuestion(
+  questionId: string,
+  sessionType: "guided_numerical_practice" | "numerical_independent_practice" | "numerical_assessment",
+  subcompetency: NumericalSubcompetency,
+  concept: string,
+  stem: string,
+  options: string[],
+  correctLabel: OptionLabel,
+  explanation: string,
+  difficulty: "developing" | "applied",
+  feedbackCue?: string,
+  dataTable?: NumericalDataTable
+): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return {
+    questionId,
+    sessionType,
+    pathwayId: "fire_service",
+    domain: "numerical",
+    subcompetency,
+    concept,
+    difficulty,
+    stem,
+    options: prepared.options,
+    correctOptionId: prepared.correctOptionId,
+    explanation,
+    feedbackCue,
+    dataTable,
+  };
+}
+
+const guidedNumericalPracticeQuestions: MvpQuestion[] = [
+  makeNumericalQuestion("NUM-G-001", "guided_numerical_practice", "arithmetic_estimation", "basic_arithmetic", "A depot has 48 helmets and receives 37 more. How many helmets are there now?", ["85", "75", "95", "84"], "A", "48 + 37 = 85.", "developing", "Add the tens and units carefully.", undefined),
+  makeNumericalQuestion("NUM-G-002", "guided_numerical_practice", "arithmetic_estimation", "estimation", "Which is the closest estimate for 19.8 × 5.1?", ["100", "50", "150", "250"], "A", "20 × 5 is about 100, so 100 is the best estimate.", "developing", "Round to friendly numbers before calculating.", undefined),
+  makeNumericalQuestion("NUM-G-003", "guided_numerical_practice", "percentages_ratios", "percentage_of_amount", "What is 15% of 240?", ["36", "24", "30", "48"], "A", "10% of 240 is 24 and 5% is 12, so 15% is 36.", "developing", "Use easy percentage anchors such as 10% and 5%.", undefined),
+  makeNumericalQuestion("NUM-G-004", "guided_numerical_practice", "percentages_ratios", "percentage_change", "A score of 80 is increased by 25%. What is the new score?", ["100", "105", "95", "120"], "A", "25% of 80 is 20, so the new score is 100.", "developing", "Find the change first, then add it.", undefined),
+  makeNumericalQuestion("NUM-G-005", "guided_numerical_practice", "percentages_ratios", "ratio_sharing", "Red and blue markers are in the ratio 3:5. There are 64 markers altogether. How many are red?", ["24", "40", "18", "32"], "A", "There are 8 ratio parts. Each part is 8, so red = 3 × 8 = 24.", "developing", "Add the ratio parts before sharing the total.", undefined),
+  makeNumericalQuestion("NUM-G-006", "guided_numerical_practice", "rates_proportion", "unit_rate", "A vehicle travels 180 km in 3 hours. What is its average speed?", ["60 km/h", "90 km/h", "45 km/h", "540 km/h"], "A", "180 ÷ 3 = 60 km/h.", "developing", "Reduce the information to a one-unit rate.", undefined),
+  makeNumericalQuestion("NUM-G-007", "guided_numerical_practice", "rates_proportion", "direct_proportion", "A team completes 12 checks in 8 minutes. At the same rate, how many checks can it complete in 12 minutes?", ["18", "16", "20", "24"], "A", "12 minutes is 1.5 times as long as 8 minutes, so 12 × 1.5 = 18.", "developing", "Scale both quantities by the same factor.", undefined),
+  makeNumericalQuestion("NUM-G-008", "guided_numerical_practice", "rates_proportion", "work_rate", "Four identical pumps fill a tank in 6 hours. At the same combined rate, how long would six pumps take?", ["4 hours", "9 hours", "3 hours", "6 hours"], "A", "The job is 24 pump-hours. With six pumps, 24 ÷ 6 = 4 hours.", "developing", "For shared work, think in total worker-hours or pump-hours.", undefined),
+  makeNumericalQuestion("NUM-G-009", "guided_numerical_practice", "tables_data", "table_percentage", "According to the table, what percentage of applicants passed?", ["80%", "75%", "48%", "125%"], "A", "48 out of 60 passed. 48 ÷ 60 = 0.8 = 80%.", "developing", "Read the correct row first, then calculate the fraction as a percentage.", {"headers": ["Applicants", "Passed"], "rows": [["60", "48"]]}),
+  makeNumericalQuestion("NUM-G-010", "guided_numerical_practice", "tables_data", "table_difference", "What is the difference between the slowest and fastest average response times?", ["2.2 min", "1.9 min", "2.6 min", "13.4 min"], "A", "The slowest is 8.1 minutes and the fastest is 5.9 minutes. 8.1 − 5.9 = 2.2.", "developing", "Identify the maximum and minimum before subtracting.", {"headers": ["Station", "Average response time"], "rows": [["A", "7.5 min"], ["B", "6.2 min"], ["C", "8.1 min"], ["D", "5.9 min"]]}),
+];
+
+const numericalIndependentPracticeQuestions: MvpQuestion[] = [
+  makeNumericalQuestion("NUM-IP-001", "numerical_independent_practice", "arithmetic_estimation", "basic_arithmetic", "What is 375 + 248?", ["623", "613", "633", "523"], "A", "375 + 248 = 623.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-002", "numerical_independent_practice", "arithmetic_estimation", "basic_arithmetic", "What is 960 − 475?", ["485", "495", "475", "585"], "A", "960 − 475 = 485.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-003", "numerical_independent_practice", "arithmetic_estimation", "multiplication", "What is 24 × 18?", ["432", "442", "384", "468"], "A", "24 × 18 = 24 × (20 − 2) = 480 − 48 = 432.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-004", "numerical_independent_practice", "arithmetic_estimation", "division", "What is 864 ÷ 12?", ["72", "62", "82", "96"], "A", "12 × 72 = 864.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-005", "numerical_independent_practice", "arithmetic_estimation", "estimation", "Which is the closest estimate for 49 × 21?", ["1,000", "500", "1,500", "2,000"], "A", "50 × 20 = 1,000.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-006", "numerical_independent_practice", "arithmetic_estimation", "order_of_operations", "What is 180 − 4 × 25?", ["80", "4,400", "140", "100"], "A", "Multiply first: 4 × 25 = 100. Then 180 − 100 = 80.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-007", "numerical_independent_practice", "percentages_ratios", "percentage_of_amount", "What is 12% of 350?", ["42", "35", "38", "47"], "A", "10% is 35 and 2% is 7, giving 42.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-008", "numerical_independent_practice", "percentages_ratios", "percentage_increase", "A quantity of 72 increases by 25%. What is the new quantity?", ["90", "97", "86", "108"], "A", "25% of 72 is 18, so 72 + 18 = 90.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-009", "numerical_independent_practice", "percentages_ratios", "percentage_decrease", "A budget of 240 units is reduced by 15%. What remains?", ["204", "216", "200", "225"], "A", "15% of 240 is 36, so 240 − 36 = 204.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-010", "numerical_independent_practice", "percentages_ratios", "percentage_change", "A value rises from 160 to 200. What is the percentage increase?", ["25%", "20%", "40%", "12.5%"], "A", "The increase is 40. 40 ÷ 160 = 25%.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-011", "numerical_independent_practice", "percentages_ratios", "ratio_sharing", "Red and blue items are in the ratio 2:3. There are 45 items altogether. How many are red?", ["18", "27", "15", "20"], "A", "There are 5 parts, each worth 9. Red = 2 × 9 = 18.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-012", "numerical_independent_practice", "percentages_ratios", "ratio_sharing", "A mixture contains fuel and water in the ratio 1:4. There are 30 L altogether. How much is fuel?", ["6 L", "24 L", "7.5 L", "5 L"], "A", "There are 5 parts, so each part is 6 L. Fuel is one part.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-013", "numerical_independent_practice", "percentages_ratios", "direct_proportion", "Three identical items cost $18. At the same price, what do eight items cost?", ["$48", "$42", "$54", "$36"], "A", "Each item costs $6, so eight cost $48.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-014", "numerical_independent_practice", "rates_proportion", "unit_rate", "A vehicle travels 210 km in 3.5 hours. What is its average speed?", ["60 km/h", "70 km/h", "55 km/h", "73.5 km/h"], "A", "210 ÷ 3.5 = 60 km/h.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-015", "numerical_independent_practice", "rates_proportion", "direct_proportion", "A machine produces 15 units in 6 minutes. At the same rate, how long will 40 units take?", ["16 min", "12 min", "18 min", "20 min"], "A", "15 units in 6 minutes is 2.5 units per minute. 40 ÷ 2.5 = 16 minutes.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-016", "numerical_independent_practice", "rates_proportion", "work_rate", "Five workers complete a job in 8 hours. At the same productivity, how long would ten workers take?", ["4 hours", "16 hours", "5 hours", "6 hours"], "A", "The job is 40 worker-hours. 40 ÷ 10 = 4 hours.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-017", "numerical_independent_practice", "rates_proportion", "flow_rate", "Water flows at 24 L per minute for 7.5 minutes. How much water flows?", ["180 L", "168 L", "192 L", "210 L"], "A", "24 × 7.5 = 180 L.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-018", "numerical_independent_practice", "rates_proportion", "unit_rate", "A manual has 360 pages. A candidate reads 45 pages per hour. How long will it take?", ["8 hours", "7 hours", "9 hours", "6 hours"], "A", "360 ÷ 45 = 8 hours.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-019", "numerical_independent_practice", "rates_proportion", "scale", "On a map, 1 cm represents 5 km. What distance does 7.2 cm represent?", ["36 km", "35 km", "31 km", "42 km"], "A", "7.2 × 5 = 36 km.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-IP-020", "numerical_independent_practice", "tables_data", "table_total", "How many calls were recorded on Tuesday and Thursday combined?", ["120", "103", "107", "65"], "A", "55 + 65 = 120.", "applied", undefined, {"headers": ["Day", "Calls"], "rows": [["Monday", "42"], ["Tuesday", "55"], ["Wednesday", "38"], ["Thursday", "65"]]}),
+  makeNumericalQuestion("NUM-IP-021", "numerical_independent_practice", "tables_data", "table_rate", "Which centres had the highest pass rate?", ["A and C", "B only", "C only", "B and D"], "A", "A: 36/45 = 80%; B: 42/60 = 70%; C: 28/35 = 80%; D: 49/70 = 70%.", "applied", undefined, {"headers": ["Centre", "Applicants", "Passed"], "rows": [["A", "45", "36"], ["B", "60", "42"], ["C", "35", "28"], ["D", "70", "49"]]}),
+  makeNumericalQuestion("NUM-IP-022", "numerical_independent_practice", "tables_data", "table_difference", "How many more helmets than radios are listed?", ["36", "24", "12", "204"], "A", "120 − 84 = 36.", "applied", undefined, {"headers": ["Equipment", "Count"], "rows": [["Helmets", "120"], ["Jackets", "96"], ["Boots", "108"], ["Radios", "84"]]}),
+  makeNumericalQuestion("NUM-IP-023", "numerical_independent_practice", "tables_data", "table_unit_rate", "Which team completed the most tasks per staff member?", ["Team C", "Team A", "Team B", "Team D"], "A", "A = 7 each, B = 7 each, C = 8 each, D = 6 each.", "applied", undefined, {"headers": ["Team", "Staff", "Tasks"], "rows": [["A", "8", "56"], ["B", "10", "70"], ["C", "6", "48"], ["D", "12", "72"]]}),
+  makeNumericalQuestion("NUM-IP-024", "numerical_independent_practice", "tables_data", "table_percentage_change", "Actual spending was what percentage above budget?", ["10%", "24%", "9%", "110%"], "A", "The overspend is 24,000. 24,000 ÷ 240,000 = 10%.", "applied", undefined, {"headers": ["Budget", "Actual"], "rows": [["$240,000", "$264,000"]]}),
+  makeNumericalQuestion("NUM-IP-025", "numerical_independent_practice", "tables_data", "table_change", "How much did the reading increase from the first measurement to the third?", ["6", "4", "3", "24"], "A", "24 − 18 = 6.", "applied", undefined, {"headers": ["Measurement", "Reading"], "rows": [["1", "18"], ["2", "21"], ["3", "24"], ["4", "22"]]}),
+];
+
+const numericalAssessmentQuestions: MvpQuestion[] = [
+  makeNumericalQuestion("NUM-A-001", "numerical_assessment", "tables_data", "table_percentage", "Which station had the highest completion rate?", ["Station C", "Station A", "Station B", "Station D"], "A", "A = 42/50 = 84%; B = 54/72 = 75%; C = 38/40 = 95%; D = 63/75 = 84%.", "applied", undefined, {"headers": ["Station", "Assigned", "Completed"], "rows": [["A", "50", "42"], ["B", "72", "54"], ["C", "40", "38"], ["D", "75", "63"]]}),
+  makeNumericalQuestion("NUM-A-002", "numerical_assessment", "arithmetic_estimation", "basic_arithmetic", "What is 725 + 386?", ["1,111", "1,101", "1,121", "1,211"], "A", "725 + 386 = 1,111.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-003", "numerical_assessment", "rates_proportion", "unit_rate", "A vehicle travels 270 km in 4.5 hours. What is its average speed?", ["60 km/h", "55 km/h", "65 km/h", "75 km/h"], "A", "270 ÷ 4.5 = 60 km/h.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-004", "numerical_assessment", "percentages_ratios", "percentage_of_amount", "What is 18% of 250?", ["45", "40", "50", "36"], "A", "10% is 25, 8% is 20, total 45.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-005", "numerical_assessment", "arithmetic_estimation", "division", "What is 1,440 ÷ 16?", ["90", "80", "96", "100"], "A", "16 × 90 = 1,440.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-006", "numerical_assessment", "tables_data", "table_difference", "How many more units were available than required for Item B?", ["18", "12", "24", "102"], "A", "120 − 102 = 18.", "applied", undefined, {"headers": ["Item", "Required", "Available"], "rows": [["A", "84", "96"], ["B", "102", "120"], ["C", "75", "81"], ["D", "110", "104"]]}),
+  makeNumericalQuestion("NUM-A-007", "numerical_assessment", "percentages_ratios", "percentage_decrease", "A value of 150 is reduced by 20%. What remains?", ["120", "130", "125", "100"], "A", "20% of 150 is 30, leaving 120.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-008", "numerical_assessment", "rates_proportion", "direct_proportion", "Eight inspections take 5 minutes. At the same rate, how long do 24 inspections take?", ["15 min", "10 min", "12 min", "18 min"], "A", "24 is three times 8, so the time is three times 5 = 15 minutes.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-009", "numerical_assessment", "arithmetic_estimation", "estimation", "Which is the closest estimate for 31.2 × 9.8?", ["300", "200", "400", "30"], "A", "31.2 is about 30 and 9.8 is about 10, giving about 300.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-010", "numerical_assessment", "percentages_ratios", "ratio_sharing", "Two quantities are in the ratio 4:7 and total 99. What is the smaller quantity?", ["36", "63", "44", "55"], "A", "There are 11 parts, each worth 9. The smaller quantity is 4 × 9 = 36.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-011", "numerical_assessment", "rates_proportion", "work_rate", "Three workers complete a job in 10 hours. At the same productivity, how long would five workers take?", ["6 hours", "5 hours", "8 hours", "15 hours"], "A", "The job is 30 worker-hours. 30 ÷ 5 = 6 hours.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-012", "numerical_assessment", "tables_data", "table_average", "What is the average of the four recorded values?", ["24", "23", "25", "26"], "A", "(18 + 22 + 26 + 30) ÷ 4 = 24.", "applied", undefined, {"headers": ["Record", "Value"], "rows": [["1", "18"], ["2", "22"], ["3", "26"], ["4", "30"]]}),
+];
+
 const hydraulicFundamentalsModule: LearningModule = {
   moduleId: "hydraulic_fundamentals",
   title: "Hydraulic Fundamentals",
@@ -1044,6 +1161,73 @@ const leverFundamentalsModule: LearningModule = {
   ],
 };
 
+
+const numericalFundamentalsModule: LearningModule = {
+  moduleId: "numerical_fundamentals",
+  title: "Numerical Reasoning Fundamentals",
+  subtitle: "Arithmetic, percentages, ratios, rates and data interpretation",
+  targetDomain: "numerical",
+  targetSubcompetency: "arithmetic_estimation",
+  estimatedMinutes: 12,
+  sections: [
+    {
+      sectionId: "numerical-fund-001",
+      title: "Estimate before you calculate",
+      body: "A quick estimate gives you a target. It helps you reject impossible answers and catches slips. Round to friendly numbers, decide roughly what the answer should be, then calculate more exactly if needed.",
+      keyPoint: "Estimate first. Exact calculation second.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-001", "Which is the best estimate for 39.7 × 5.2?", ["200", "100", "400", "50"], "A", "40 × 5 is about 200."),
+    },
+    {
+      sectionId: "numerical-fund-002",
+      title: "Keep the arithmetic controlled",
+      body: "Most aptitude questions use ordinary arithmetic under pressure. Break awkward numbers into easier parts. Respect the order of operations: multiplication and division before addition and subtraction.",
+      keyPoint: "Simplify the arithmetic before doing it.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-002", "What is 150 − 3 × 20?", ["90", "2,940", "130", "60"], "A", "Multiply first: 3 × 20 = 60. Then 150 − 60 = 90."),
+    },
+    {
+      sectionId: "numerical-fund-003",
+      title: "Use percentage anchors",
+      body: "Build percentages from easy anchors. Ten percent means divide by 10. Five percent is half of 10%. One percent means divide by 100. Combine these to find less familiar percentages quickly.",
+      keyPoint: "10%, 5% and 1% are useful building blocks.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-003", "What is 15% of 200?", ["30", "20", "15", "40"], "A", "10% is 20 and 5% is 10, so 15% is 30."),
+    },
+    {
+      sectionId: "numerical-fund-004",
+      title: "Separate the change from the final value",
+      body: "For percentage increase or decrease, first calculate the amount of change. Then add or subtract it from the original. For percentage change between two values, compare the change with the original value.",
+      keyPoint: "Find the change first. Then decide what the question asks for.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-004", "A value of 80 increases by 25%. What is the new value?", ["100", "105", "95", "120"], "A", "25% of 80 is 20. Add it to 80 to get 100."),
+    },
+    {
+      sectionId: "numerical-fund-005",
+      title: "Ratios are parts of a whole",
+      body: "For a ratio such as 2:3, the whole contains 5 equal parts. Add the ratio numbers, find the value of one part, then multiply by the number of parts you need.",
+      keyPoint: "Add the ratio parts before sharing the total.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-005", "Two quantities are in the ratio 2:3 and total 40. What is the smaller quantity?", ["16", "24", "20", "10"], "A", "There are 5 parts. Each part is 8, so the smaller quantity is 16."),
+    },
+    {
+      sectionId: "numerical-fund-006",
+      title: "Reduce rates to one unit",
+      body: "Rates become easier when you find the amount for one unit of time, distance or work. For shared-work questions, total worker-hours can be a useful shortcut.",
+      keyPoint: "Find the one-unit rate, then scale.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-006", "A vehicle travels 150 km in 2.5 hours. What is its average speed?", ["60 km/h", "75 km/h", "50 km/h", "62.5 km/h"], "A", "150 ÷ 2.5 = 60 km/h."),
+    },
+    {
+      sectionId: "numerical-fund-007",
+      title: "Read the table before calculating",
+      body: "In data questions, identify the correct row, column and units before doing arithmetic. Many mistakes come from using the wrong figures rather than difficult mathematics.\n\nCalls recorded:\nMonday 42\nTuesday 55\nWednesday 38\nThursday 65",
+      keyPoint: "Select the right data before you calculate.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-007", "Which day recorded the most calls?", ["Thursday", "Tuesday", "Monday", "Wednesday"], "A", "Thursday has the largest value: 65."),
+    },
+    {
+      sectionId: "numerical-fund-008",
+      title: "Check whether the answer is reasonable",
+      body: "Before committing, compare your exact answer with your estimate. Check units and ask whether the result is plausible. Numerical reasoning rewards controlled decisions more than elaborate mathematics.\n\nYou are now ready for Guided Numerical Practice.",
+      keyPoint: "Estimate, calculate, then sense-check.",
+    },
+  ],
+};
+
 function createMechanicalBaselineSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "mechanical_starting_point", pathwayId: "fire_service", startedAt: now(), questionIds: mechanicalQuestions.map((q) => q.questionId) };
 }
@@ -1082,6 +1266,15 @@ function createLeverAssessmentSession(): AssessmentSession {
 }
 function createMixedMechanicalAssessmentSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "mixed_mechanical_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: mixedMechanicalAssessmentQuestions.map((q) => q.questionId) };
+}
+function createGuidedNumericalPracticeSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "guided_numerical_practice", pathwayId: "fire_service", startedAt: now(), questionIds: guidedNumericalPracticeQuestions.map((q) => q.questionId) };
+}
+function createNumericalIndependentPracticeSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "numerical_independent_practice", pathwayId: "fire_service", startedAt: now(), questionIds: numericalIndependentPracticeQuestions.map((q) => q.questionId) };
+}
+function createNumericalAssessmentSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "numerical_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: numericalAssessmentQuestions.map((q) => q.questionId) };
 }
 function createAssessmentResponse(sessionId: string, question: MvpQuestion, selectedOptionId: string | null, responseTimeMs: number, notSureSelected: boolean): AssessmentResponse {
   return { responseId: id("response"), sessionId, questionId: question.questionId, selectedOptionId, correct: selectedOptionId === question.correctOptionId, responseTimeMs, notSureSelected, answeredAt: now() };
@@ -1511,6 +1704,162 @@ function completeLeverAssessment(journey: MvpGuestJourney, sessionId: string): M
   const evidence: CompetencyEvidence = { evidenceId: id("evidence"), domain: "mechanical", subcompetency: "levers", attempted: summary.attempted, correct: summary.correct, accuracy: summary.accuracy, evidenceStrength: evidenceStrength(summary.attempted), sourceSessionId: sessionId, updatedAt: now() };
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
   return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], competencyEvidence: [...journey.competencyEvidence, evidence], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, ...newMilestones], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: currentFocus, readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+
+function getCurrentNumericalProgress(journey: MvpGuestJourney) {
+  return journey.moduleProgress.find((progress) => progress.moduleId === "numerical_fundamentals" && !progress.completedAt);
+}
+function startNumericalFundamentals(journey: MvpGuestJourney): MvpGuestJourney {
+  if (getCurrentNumericalProgress(journey)) return journey;
+  const alreadyCompleted = journey.moduleCompletions.some((completion) => completion.moduleId === "numerical_fundamentals");
+  if (alreadyCompleted) return journey;
+  const progress: ModuleProgress = { moduleProgressId: id("module-progress"), moduleId: "numerical_fundamentals", currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
+  return { ...journey, moduleProgress: [...journey.moduleProgress, progress], updatedAt: now() };
+}
+function updateNumericalProgress(journey: MvpGuestJourney, nextProgress: ModuleProgress): MvpGuestJourney {
+  return { ...journey, moduleProgress: journey.moduleProgress.map((progress) => progress.moduleProgressId === nextProgress.moduleProgressId ? nextProgress : progress), updatedAt: now() };
+}
+function completeNumericalFundamentals(journey: MvpGuestJourney): MvpGuestJourney {
+  const activeProgress = getCurrentNumericalProgress(journey);
+  const completedAt = now();
+  const completedProgress = activeProgress ? { ...activeProgress, currentSectionIndex: numericalFundamentalsModule.sections.length - 1, completedAt, updatedAt: completedAt } : undefined;
+  const completion: ModuleCompletion = { moduleCompletionId: id("module-completion"), moduleId: "numerical_fundamentals", completedAt };
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: "Why Guided Numerical Practice is recommended", observation: "Numerical Reasoning Fundamentals has been completed.", evidence: "You completed the foundation module covering estimation, percentages, ratios, rates and table reading.", interpretation: "Guided practice is the next useful step before support is reduced.", recommendation: "Guided Numerical Practice is recommended next.", confidence: "High. This is the planned next stage after the fundamentals module.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType: "begin_guided_numerical_practice", title: "Begin Guided Numerical Practice", summary: "Apply the core numerical methods with immediate feedback.", actionLabel: "Begin guided practice", confidence: "high", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "first_learning_action_completed", label: "Numerical Reasoning Fundamentals completed", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: "developing_evidence", label: "Developing evidence — numerical practice not yet checked", explanation: "The fundamentals module is complete, but practice evidence is still needed.", confidence: "high", createdAt: now() };
+  return {
+    ...journey,
+    moduleProgress: completedProgress ? journey.moduleProgress.map((progress) => progress.moduleProgressId === completedProgress.moduleProgressId ? completedProgress : progress) : journey.moduleProgress,
+    moduleCompletions: [...journey.moduleCompletions, completion],
+    recommendations: [...updatedRecommendations, recommendation],
+    whyExplanations: [...journey.whyExplanations, why],
+    readinessSnapshots: [...journey.readinessSnapshots, readiness],
+    milestones: [...journey.milestones, milestone],
+    dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Numerical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds: [...(journey.dashboardState?.recentMilestoneIds ?? []).slice(-4), milestone.milestoneId], baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() },
+    updatedAt: now(),
+  };
+}
+
+const numericalCategoryLabels: Record<NumericalSubcompetency, string> = {
+  arithmetic_estimation: "Arithmetic & estimation",
+  percentages_ratios: "Percentages & ratios",
+  rates_proportion: "Rates & proportion",
+  tables_data: "Tables & data",
+};
+
+function calculateNumericalSummary(session: AssessmentSession, responses: AssessmentResponse[], questions: MvpQuestion[], sessionType: PracticeSummary["sessionType"]): PracticeSummary {
+  const categories: NumericalSubcompetency[] = ["arithmetic_estimation", "percentages_ratios", "rates_proportion", "tables_data"];
+  const conceptBreakdown = categories.map((category) => {
+    const ids = new Set(questions.filter((q) => q.subcompetency === category).map((q) => q.questionId));
+    const categoryResponses = responses.filter((r) => ids.has(r.questionId));
+    const attempted = categoryResponses.length;
+    const correct = categoryResponses.filter((r) => r.correct).length;
+    return { concept: category, attempted, correct, accuracy: attempted ? correct / attempted : 0 };
+  });
+  const attempted = responses.length;
+  const correct = responses.filter((r) => r.correct).length;
+  return { summaryId: id("summary"), sessionId: session.sessionId, sessionType, attempted, correct, accuracy: attempted ? correct / attempted : 0, conceptBreakdown, createdAt: now() };
+}
+function weakestNumericalCategory(summary: PracticeSummary) {
+  return [...summary.conceptBreakdown].sort((a, b) => a.accuracy - b.accuracy || b.attempted - a.attempted)[0];
+}
+function numericalEvidenceFromSummary(summary: PracticeSummary, sessionId: string): CompetencyEvidence[] {
+  return summary.conceptBreakdown.map((item) => ({
+    evidenceId: id("evidence"),
+    domain: "numerical" as const,
+    subcompetency: item.concept as NumericalSubcompetency,
+    attempted: item.attempted,
+    correct: item.correct,
+    accuracy: item.accuracy,
+    evidenceStrength: evidenceStrength(item.attempted),
+    sourceSessionId: sessionId,
+    updatedAt: now(),
+  }));
+}
+
+function completeGuidedNumericalPractice(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId); if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculateNumericalSummary(completedSession, responses, guidedNumericalPracticeQuestions, "guided_numerical_practice");
+  const weakest = weakestNumericalCategory(summary);
+  const weakestLabel = numericalCategoryLabels[weakest.concept as NumericalSubcompetency];
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "begin_numerical_independent_practice";
+  let title = "Begin Independent Numerical Practice";
+  let summaryText = "Apply the same methods across a larger, less-supported question set.";
+  let actionLabel = "Start independent practice";
+  let interpretation = "Guided practice suggests the core numerical methods are ready for less-supported application.";
+  if (summary.accuracy < 0.8 && summary.accuracy >= 0.5) { recommendationType = "continue_guided_numerical_practice"; title = "Continue Guided Numerical Practice"; summaryText = `Do another guided set, with extra attention to ${weakestLabel.toLowerCase()}.`; actionLabel = "Continue guided practice"; interpretation = "The method is partly established, but immediate feedback is still useful."; }
+  else if (summary.accuracy < 0.5) { recommendationType = "review_numerical_fundamentals"; title = "Review Numerical Fundamentals"; summaryText = `Revisit the core methods, especially ${weakestLabel.toLowerCase()}, before continuing.`; actionLabel = "Review fundamentals"; interpretation = "The guided result suggests the foundation should be rebuilt before support is reduced."; }
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Guided Numerical Practice: ${summary.correct} of ${summary.attempted} correct.`, evidence: `${weakestLabel} was the lowest area in this set.`, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one guided numerical practice set.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.5 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — ready for independent numerical practice" : "Developing evidence — numerical practice continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "guided_numerical_practice_completed", label: "Guided Numerical Practice completed", createdAt: now() };
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Guided Numerical Practice complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Guided numerical practice: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), milestone.milestoneId].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, milestone], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Numerical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+function completeNumericalIndependentPractice(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId); if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculateNumericalSummary(completedSession, responses, numericalIndependentPracticeQuestions, "numerical_independent_practice");
+  const weakest = weakestNumericalCategory(summary);
+  const weakestLabel = numericalCategoryLabels[weakest.concept as NumericalSubcompetency];
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "begin_numerical_assessment";
+  let title = "Take the Numerical Check";
+  let summaryText = "Test whether the numerical methods hold up without immediate answer feedback.";
+  let actionLabel = "Start Numerical Check";
+  let interpretation = "Independent practice suggests the methods are ready for a short assessment-style check.";
+  if (summary.accuracy < 0.8 && summary.accuracy >= 0.6) { recommendationType = "continue_numerical_independent_practice"; title = "Continue Independent Numerical Practice"; summaryText = `Do another independent set, with extra attention to ${weakestLabel.toLowerCase()}.`; actionLabel = "Continue independent practice"; interpretation = "The methods are developing, but another less-supported practice set is appropriate before the check."; }
+  else if (summary.accuracy < 0.6) { recommendationType = "continue_guided_numerical_practice"; title = "Return to Guided Numerical Practice"; summaryText = `Rebuild ${weakestLabel.toLowerCase()} with immediate feedback before returning to independent practice.`; actionLabel = "Start guided practice"; interpretation = "Independent practice suggests the methods are not yet stable enough without support."; }
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Independent Numerical Practice: ${summary.correct} of ${summary.attempted} correct.`, evidence: `${weakestLabel} was the lowest area in this set.`, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one independent numerical practice set.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — ready for Numerical Check" : "Developing evidence — numerical practice continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "numerical_independent_practice_completed", label: "Independent Numerical Practice completed", createdAt: now() };
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Independent Numerical Practice complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Independent numerical practice: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), milestone.milestoneId].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, milestone], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: "Numerical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
+}
+
+function completeNumericalAssessment(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((s) => s.sessionId === sessionId); if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((r) => r.sessionId === sessionId);
+  const summary = calculateNumericalSummary(completedSession, responses, numericalAssessmentQuestions, "numerical_assessment");
+  const weakest = weakestNumericalCategory(summary);
+  const weakestLabel = numericalCategoryLabels[weakest.concept as NumericalSubcompetency];
+  const balancedStrong = summary.accuracy >= 0.8 && summary.conceptBreakdown.every((item) => item.correct >= 2);
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  let recommendationType: Recommendation["recommendationType"] = "continue_numerical_practice";
+  let title = "Maintain with Numerical Practice";
+  let summaryText = "Your result is strong across all four numerical areas. Keep the skill fresh while you move on to the next aptitude domain.";
+  let actionLabel = "Start numerical practice";
+  let interpretation = "This is a progression recommendation. No single numerical area was weak enough to justify targeted remediation.";
+  let recommendationKind: "progression" | "weakness" = "progression";
+  if (!balancedStrong && summary.accuracy >= 0.6) { recommendationType = "continue_numerical_independent_practice"; title = `Target ${weakestLabel}`; summaryText = `The overall result is useful, but ${weakestLabel.toLowerCase()} is the clearest remaining numerical focus.`; actionLabel = "Start independent practice"; interpretation = "This is a weakness recommendation based on the lowest numerical area in the check."; recommendationKind = "weakness"; }
+  else if (summary.accuracy < 0.6) { recommendationType = "continue_guided_numerical_practice"; title = "Return to Guided Numerical Practice"; summaryText = `Rebuild the core methods, with particular attention to ${weakestLabel.toLowerCase()}.`; actionLabel = "Start guided practice"; interpretation = "The assessment-style check suggests the numerical methods are not yet stable enough without support."; recommendationKind = "weakness"; }
+  const evidenceText = summary.conceptBreakdown.map((item) => `${numericalCategoryLabels[item.concept as NumericalSubcompetency]}: ${item.correct}/${item.attempted}`).join(" · ");
+  const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Numerical Check: ${summary.correct} of ${summary.attempted} correct.`, evidence: evidenceText, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one 12-question numerical check.", createdAt: now() };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: balancedStrong ? "Developing evidence — numerical pathway completed" : "Developing evidence — numerical pathway continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
+  const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "numerical_assessment_completed", label: "Numerical Check completed", createdAt: now() };
+  const pathwayMilestone: Milestone | undefined = balancedStrong ? { milestoneId: id("milestone"), type: "numerical_pathway_completed", label: "Numerical reasoning pathway completed", createdAt: now() } : undefined;
+  const newMilestones = pathwayMilestone ? [completedMilestone, pathwayMilestone] : [completedMilestone];
+  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Numerical Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: evidenceText, interpretation: `${recommendationKind === "progression" ? "Progression recommendation" : "Weakness recommendation"}: ${interpretation}`, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
+  const evidence = numericalEvidenceFromSummary(summary, sessionId);
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
+  return { ...journey, sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s), practiceSummaries: [...journey.practiceSummaries, summary], debriefs: [...journey.debriefs, debrief], competencyEvidence: [...journey.competencyEvidence, ...evidence], recommendations: [...updatedRecommendations, recommendation], whyExplanations: [...journey.whyExplanations, why], readinessSnapshots: [...journey.readinessSnapshots, readiness], milestones: [...journey.milestones, ...newMilestones], dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: balancedStrong ? "Numerical reasoning maintenance" : "Numerical reasoning", readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() }, updatedAt: now() };
 }
 
 function calculateGuidedPracticeSummary(session: AssessmentSession, responses: AssessmentResponse[]): PracticeSummary {
@@ -2088,12 +2437,12 @@ function completeMixedMechanicalAssessment(journey: MvpGuestJourney, sessionId: 
   let recommendationKind: "progression" | "weakness";
 
   if (integratedStrong) {
-    recommendationType = "continue_mixed_mechanical_practice";
-    title = "Maintain with Mixed Mechanical Practice";
-    summaryText = "Your result was strong across all four mechanical areas. Keep the methods available by returning to mixed practice rather than reteaching a single topic.";
-    actionLabel = "Start mixed practice";
-    currentFocus = "Mechanical reasoning integration";
-    interpretation = "This is a progression recommendation. The assessment did not identify one mechanical area weak enough to justify targeted remediation.";
+    recommendationType = "start_numerical_fundamentals";
+    title = "Begin Numerical Reasoning Fundamentals";
+    summaryText = "Your result was strong across all four mechanical areas. The next useful progression step is to begin numerical reasoning rather than reteach a mechanical topic.";
+    actionLabel = "Start Numerical Fundamentals";
+    currentFocus = "Numerical reasoning";
+    interpretation = "This is a progression recommendation. The assessment did not identify one mechanical area weak enough to justify targeted remediation, so preparation can move to the next core aptitude domain.";
     recommendationKind = "progression";
   } else {
     recommendationKind = "weakness";
@@ -2246,6 +2595,9 @@ function getResumeState(journey: MvpGuestJourney): ResumeState {
       lever_independent_practice: "lever-independent-practice-question",
       lever_assessment: "lever-assessment-question",
       mixed_mechanical_assessment: "mixed-mechanical-assessment-question",
+      guided_numerical_practice: "guided-numerical-practice-question",
+      numerical_independent_practice: "numerical-independent-practice-question",
+      numerical_assessment: "numerical-assessment-question",
     };
     return {
       screen: screenBySessionType[incompleteSession.sessionType],
@@ -2275,9 +2627,9 @@ function getNonCorrectOptionId(question: MvpQuestion) {
 function buildResponsesForTargetCounts(
   session: AssessmentSession,
   questions: MvpQuestion[],
-  targetCorrectBySubcompetency: Partial<Record<MechanicalSubcompetency, number>>
+  targetCorrectBySubcompetency: Partial<Record<Subcompetency, number>>
 ): AssessmentResponse[] {
-  const correctSoFar: Partial<Record<MechanicalSubcompetency, number>> = {};
+  const correctSoFar: Partial<Record<Subcompetency, number>> = {};
 
   return questions.map((question, index) => {
     const targetCorrect = targetCorrectBySubcompetency[question.subcompetency] ?? 0;
@@ -2633,7 +2985,57 @@ function MechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer 
 function AssessmentCompleteScreen({ onView }: { onView: () => void }) { return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><h1 className="text-4xl font-semibold">Starting point assessment complete</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">FloSpatial has reviewed your responses and prepared your first preparation insight.</p><div className="mt-10"><PrimaryButton onClick={onView}>View insight</PrimaryButton></div></Card></section></Shell>; }
 function WhyModal({ why, onClose }: { why?: WhyExplanation; onClose: () => void }) { if (!why) return null; const sections = [["Observation", why.observation], ["Evidence", why.evidence], ["Interpretation", why.interpretation], ["Recommendation", why.recommendation], ["Confidence", why.confidence]]; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-[32px] border border-white/10 bg-[#171C23] p-8 shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="text-xs uppercase tracking-[0.22em] text-[#6E7A88]">Why explanation</p><h2 className="mt-3 text-3xl font-semibold">{why.title}</h2></div><button onClick={onClose} className="rounded-lg px-3 py-2 text-sm text-[#8D98A6] hover:text-white">Close</button></div><div className="mt-8 space-y-6">{sections.map(([label, text]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{label}</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{text}</p></div>)}</div><p className="mt-6 text-sm text-[#6E7A88]">FloSpatial uses this explanation to keep recommendations transparent and evidence-based.</p></div></div>; }
 function FirstAdvisorInsightScreen({ journey, onWhy, onDashboard }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void }) { const rec = getCurrentRecommendation(journey); const focus = journey.dashboardState?.currentFocusLabel ?? "Preparation focus"; return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Your first preparation insight</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{focus === "Hydraulic-force reasoning" ? "Hydraulic-force reasoning currently appears to be your highest-value preparation focus." : rec?.recommendationType === "start_mechanical_foundations" ? "Mechanical reasoning foundations appear to need broader attention." : "FloSpatial does not yet have one clear preparation focus."}</h1><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "moderate" ? "Moderate confidence" : rec?.confidence === "high" ? "High confidence" : "Low confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>; }
-function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGuidedPractice, onStartMixedPractice, onStartMixedAssessment, onStartGearFundamentals, onStartGuidedGearPractice, onStartGearIndependentPractice, onStartGearAssessment, onStartPulleyFundamentals, onStartGuidedPulleyPractice, onStartPulleyIndependentPractice, onStartPulleyAssessment, onStartLeverFundamentals, onStartGuidedLeverPractice, onStartLeverIndependentPractice, onStartLeverAssessment, onLoadTestScenario }: { journey: MvpGuestJourney; onWhy: () => void; onReset: () => void; onStartHydraulics: () => void; onStartGuidedPractice: () => void; onStartMixedPractice: () => void; onStartMixedAssessment: () => void; onStartGearFundamentals: () => void; onStartGuidedGearPractice: () => void; onStartGearIndependentPractice: () => void; onStartGearAssessment: () => void; onStartPulleyFundamentals: () => void; onStartGuidedPulleyPractice: () => void; onStartPulleyIndependentPractice: () => void; onStartPulleyAssessment: () => void; onStartLeverFundamentals: () => void; onStartGuidedLeverPractice: () => void; onStartLeverIndependentPractice: () => void; onStartLeverAssessment: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) {
+function DashboardScreen({
+  journey,
+  onWhy,
+  onReset,
+  onStartHydraulics,
+  onStartGuidedPractice,
+  onStartMixedPractice,
+  onStartMixedAssessment,
+  onStartGearFundamentals,
+  onStartGuidedGearPractice,
+  onStartGearIndependentPractice,
+  onStartGearAssessment,
+  onStartPulleyFundamentals,
+  onStartGuidedPulleyPractice,
+  onStartPulleyIndependentPractice,
+  onStartPulleyAssessment,
+  onStartLeverFundamentals,
+  onStartGuidedLeverPractice,
+  onStartLeverIndependentPractice,
+  onStartLeverAssessment,
+  onStartNumericalFundamentals,
+  onStartGuidedNumericalPractice,
+  onStartNumericalIndependentPractice,
+  onStartNumericalAssessment,
+  onLoadTestScenario,
+}: {
+  journey: MvpGuestJourney;
+  onWhy: () => void;
+  onReset: () => void;
+  onStartHydraulics: () => void;
+  onStartGuidedPractice: () => void;
+  onStartMixedPractice: () => void;
+  onStartMixedAssessment: () => void;
+  onStartGearFundamentals: () => void;
+  onStartGuidedGearPractice: () => void;
+  onStartGearIndependentPractice: () => void;
+  onStartGearAssessment: () => void;
+  onStartPulleyFundamentals: () => void;
+  onStartGuidedPulleyPractice: () => void;
+  onStartPulleyIndependentPractice: () => void;
+  onStartPulleyAssessment: () => void;
+  onStartLeverFundamentals: () => void;
+  onStartGuidedLeverPractice: () => void;
+  onStartLeverIndependentPractice: () => void;
+  onStartLeverAssessment: () => void;
+  onStartNumericalFundamentals: () => void;
+  onStartGuidedNumericalPractice: () => void;
+  onStartNumericalIndependentPractice: () => void;
+  onStartNumericalAssessment: () => void;
+  onLoadTestScenario: (scenario: TestScenario) => void;
+}) {
   const rec = getCurrentRecommendation(journey);
   const readiness = getCurrentReadiness(journey);
   const milestones = getRecentMilestones(journey);
@@ -2653,7 +3055,11 @@ function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGu
   const canStartGuidedLever = rec?.recommendationType === "begin_guided_lever_practice" || rec?.recommendationType === "continue_guided_lever_practice" || rec?.title?.toLowerCase().includes("guided lever practice");
   const canStartIndependentLever = rec?.recommendationType === "begin_lever_independent_practice" || rec?.recommendationType === "continue_lever_independent_practice" || rec?.title?.toLowerCase().includes("independent lever practice");
   const canStartLeverAssessment = rec?.recommendationType === "begin_lever_assessment" || rec?.recommendationType === "repeat_lever_assessment" || rec?.actionLabel?.toLowerCase().includes("lever check");
-  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin guided practice</PrimaryButton> : canStartIndependentGear ? <PrimaryButton onClick={onStartGearIndependentPractice}>Start independent practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : canStartPulley ? <PrimaryButton onClick={onStartPulleyFundamentals}>Start module</PrimaryButton> : canStartGuidedPulley ? <PrimaryButton onClick={onStartGuidedPulleyPractice}>Begin guided practice</PrimaryButton> : canStartIndependentPulley ? <PrimaryButton onClick={onStartPulleyIndependentPractice}>Start independent practice</PrimaryButton> : canStartPulleyAssessment ? <PrimaryButton onClick={onStartPulleyAssessment}>Start Pulley Check</PrimaryButton> : canStartLever ? <PrimaryButton onClick={onStartLeverFundamentals}>Start module</PrimaryButton> : canStartGuidedLever ? <PrimaryButton onClick={onStartGuidedLeverPractice}>Begin guided practice</PrimaryButton> : canStartIndependentLever ? <PrimaryButton onClick={onStartLeverIndependentPractice}>Start independent practice</PrimaryButton> : canStartLeverAssessment ? <PrimaryButton onClick={onStartLeverAssessment}>Start Lever Check</PrimaryButton> : canStartMixedAssessment ? <PrimaryButton onClick={onStartMixedAssessment}>Start Mixed Mechanical Assessment</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Alpha pathway access</div><h3 className="mt-3 text-2xl font-semibold">Mechanical pathways</h3><p className="mt-3 max-w-3xl text-[#9AA3B2]">Direct access remains available while the pathways are being tested. These buttons do not change the current recommendation until a stage is completed.</p><p className="mt-3 text-xs text-[#6E7A88]">Build: {BUILD_LABEL}</p><div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Gear pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartGearFundamentals}>Gear Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedGearPractice}>Guided Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearIndependentPractice}>Independent Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearAssessment}>Gear Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Pulley pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartPulleyFundamentals}>Pulley Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedPulleyPractice}>Guided Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyIndependentPractice}>Independent Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyAssessment}>Pulley Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Lever pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartLeverFundamentals}>Lever Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedLeverPractice}>Guided Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverIndependentPractice}>Independent Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverAssessment}>Lever Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Integrated mechanical assessment</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Mixes gears, pulleys, levers and hydraulics so the candidate must select the right method without being told the category.</p><div className="mt-4"><PrimaryButton onClick={onStartMixedAssessment}>Mixed Mechanical Assessment</PrimaryButton></div></div></Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
+  const canStartNumerical = rec?.recommendationType === "start_numerical_fundamentals" || rec?.recommendationType === "review_numerical_fundamentals" || rec?.title?.toLowerCase().includes("numerical fundamentals");
+  const canStartGuidedNumerical = rec?.recommendationType === "begin_guided_numerical_practice" || rec?.recommendationType === "continue_guided_numerical_practice";
+  const canStartIndependentNumerical = rec?.recommendationType === "begin_numerical_independent_practice" || rec?.recommendationType === "continue_numerical_independent_practice" || rec?.recommendationType === "continue_numerical_practice";
+  const canStartNumericalAssessment = rec?.recommendationType === "begin_numerical_assessment" || rec?.recommendationType === "repeat_numerical_assessment";
+  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin guided practice</PrimaryButton> : canStartIndependentGear ? <PrimaryButton onClick={onStartGearIndependentPractice}>Start independent practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : canStartPulley ? <PrimaryButton onClick={onStartPulleyFundamentals}>Start module</PrimaryButton> : canStartGuidedPulley ? <PrimaryButton onClick={onStartGuidedPulleyPractice}>Begin guided practice</PrimaryButton> : canStartIndependentPulley ? <PrimaryButton onClick={onStartPulleyIndependentPractice}>Start independent practice</PrimaryButton> : canStartPulleyAssessment ? <PrimaryButton onClick={onStartPulleyAssessment}>Start Pulley Check</PrimaryButton> : canStartLever ? <PrimaryButton onClick={onStartLeverFundamentals}>Start module</PrimaryButton> : canStartGuidedLever ? <PrimaryButton onClick={onStartGuidedLeverPractice}>Begin guided practice</PrimaryButton> : canStartIndependentLever ? <PrimaryButton onClick={onStartLeverIndependentPractice}>Start independent practice</PrimaryButton> : canStartLeverAssessment ? <PrimaryButton onClick={onStartLeverAssessment}>Start Lever Check</PrimaryButton> : canStartNumerical ? <PrimaryButton onClick={onStartNumericalFundamentals}>Start Numerical Fundamentals</PrimaryButton> : canStartGuidedNumerical ? <PrimaryButton onClick={onStartGuidedNumericalPractice}>Start guided numerical practice</PrimaryButton> : canStartIndependentNumerical ? <PrimaryButton onClick={onStartNumericalIndependentPractice}>Start independent numerical practice</PrimaryButton> : canStartNumericalAssessment ? <PrimaryButton onClick={onStartNumericalAssessment}>Start Numerical Check</PrimaryButton> : canStartMixedAssessment ? <PrimaryButton onClick={onStartMixedAssessment}>Start Mixed Mechanical Assessment</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Alpha pathway access</div><h3 className="mt-3 text-2xl font-semibold">Mechanical pathways</h3><p className="mt-3 max-w-3xl text-[#9AA3B2]">Direct access remains available while the pathways are being tested. These buttons do not change the current recommendation until a stage is completed.</p><p className="mt-3 text-xs text-[#6E7A88]">Build: {BUILD_LABEL}</p><div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Gear pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartGearFundamentals}>Gear Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedGearPractice}>Guided Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearIndependentPractice}>Independent Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearAssessment}>Gear Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Pulley pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartPulleyFundamentals}>Pulley Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedPulleyPractice}>Guided Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyIndependentPractice}>Independent Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyAssessment}>Pulley Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Lever pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartLeverFundamentals}>Lever Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedLeverPractice}>Guided Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverIndependentPractice}>Independent Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverAssessment}>Lever Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Integrated mechanical assessment</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Mixes gears, pulleys, levers and hydraulics so the candidate must select the right method without being told the category.</p><div className="mt-4"><PrimaryButton onClick={onStartMixedAssessment}>Mixed Mechanical Assessment</PrimaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Numerical reasoning pathway</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Arithmetic, percentages, ratios, rates and data interpretation in the same Learn → Guided → Independent → Check structure.</p><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartNumericalFundamentals}>Numerical Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedNumericalPractice}>Guided Numerical Practice</SecondaryButton><SecondaryButton onClick={onStartNumericalIndependentPractice}>Independent Numerical Practice</SecondaryButton><SecondaryButton onClick={onStartNumericalAssessment}>Numerical Check</SecondaryButton></div></div></Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
 }
 
 function HydraulicWorkedExampleDiagram() {
@@ -3424,6 +3830,92 @@ function LeverDebriefScreen({ journey, stage, onWhy, onDashboard, onNext }: { jo
 }
 
 
+
+function NumericalFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
+  const existingProgress = getCurrentNumericalProgress(journey);
+  const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "numerical_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
+  const section = numericalFundamentalsModule.sections[progress.currentSectionIndex];
+  const miniCheck = section.miniCheck;
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSelectedOptionId(null); setShowFeedback(false); }, [progress.currentSectionIndex]);
+  const selectedCorrect = miniCheck ? selectedOptionId === miniCheck.correctOptionId : false;
+  function answerMiniCheck(optionId: string) {
+    if (!miniCheck || showFeedback) return;
+    setSelectedOptionId(optionId);
+    setShowFeedback(true);
+    const response: ModuleMiniCheckResponse = { questionId: miniCheck.questionId, selectedOptionId: optionId, correct: optionId === miniCheck.correctOptionId, answeredAt: now() };
+    const nextProgress = { ...progress, miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response], updatedAt: now() };
+    onSaveJourney(existingProgress ? updateNumericalProgress(journey, nextProgress) : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() });
+  }
+  function goNext() {
+    if (miniCheck && !showFeedback) return;
+    if (progress.currentSectionIndex >= numericalFundamentalsModule.sections.length - 1) { onComplete(); return; }
+    const nextProgress = { ...progress, currentSectionIndex: progress.currentSectionIndex + 1, updatedAt: now() };
+    onSaveJourney(existingProgress ? updateNumericalProgress(journey, nextProgress) : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() });
+  }
+  function goBack() {
+    if (progress.currentSectionIndex === 0) return;
+    const nextProgress = { ...progress, currentSectionIndex: progress.currentSectionIndex - 1, updatedAt: now() };
+    onSaveJourney(updateNumericalProgress(journey, nextProgress));
+  }
+  return <Shell><section className="mx-auto max-w-5xl px-8 py-12"><div className="mb-6 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / numericalFundamentalsModule.sections.length) * 100}%` }} /></div><div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Numerical reasoning</p><h1 className="mt-3 text-4xl font-semibold">{numericalFundamentalsModule.title}</h1><p className="mt-3 text-[#9AA3B2]">{numericalFundamentalsModule.subtitle}</p></div><Badge>Section {progress.currentSectionIndex + 1} of {numericalFundamentalsModule.sections.length}</Badge></div><Card><h2 className="text-3xl font-semibold">{section.title}</h2><p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-[#C8D2DD]">{section.body}</p>{section.keyPoint && <div className="mt-8 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Key point</div><p className="mt-3 text-[#D9F8FF]">{section.keyPoint}</p></div>}{miniCheck && <div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div><p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p><div className="mt-5 grid gap-3">{miniCheck.options.map((option) => <button key={option.optionId} onClick={() => answerMiniCheck(option.optionId)} className={`rounded-xl border p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"}`}><span className="font-semibold text-[#D9F8FF]">{option.label}.</span> <span className="text-[#C8D2DD]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}><p className="font-medium">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p></div>}</div>}<div className="mt-9 flex flex-col gap-3 pb-4 sm:flex-row sm:justify-between sm:pb-0"><PrimaryButton className="sm:order-2" onClick={goNext}>{progress.currentSectionIndex === numericalFundamentalsModule.sections.length - 1 ? "Complete module" : "Continue"}</PrimaryButton><SecondaryButton className="sm:order-1" onClick={goBack}>Back</SecondaryButton></div></Card></section></Shell>;
+}
+
+function NumericalFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuided }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuided: () => void }) {
+  const rec = getCurrentRecommendation(journey);
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Numerical Reasoning Fundamentals complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">The next stage applies the same methods with immediate feedback.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuided}>Begin guided practice</PrimaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+}
+
+type NumericalStage = "guided" | "independent" | "assessment";
+
+function NumericalPracticeIntroScreen({ stage, onStart }: { stage: NumericalStage; onStart: () => void }) {
+  const config = stage === "guided"
+    ? { eyebrow: "Learning through application", title: "Guided Numerical Practice", description: "Ten questions across arithmetic, percentages, ratios, rates and data. Immediate feedback helps you correct the method as you work.", items: ["10 questions", "Immediate feedback", "Four numerical areas"], action: "Begin guided practice" }
+    : stage === "independent"
+      ? { eyebrow: "Less-supported practice", title: "Independent Numerical Practice", description: "A larger question set with varied numerical problems. You still receive feedback after each answer, but the method is yours to choose.", items: ["25 questions", "Immediate feedback", "Mixed numerical methods"], action: "Start independent practice" }
+      : { eyebrow: "Assessment-style check", title: "Numerical Check", description: "Twelve mixed questions with no immediate answer feedback. The Mentor will use the result to identify either a clear weakness or a progression step.", items: ["12 questions", "No immediate feedback", "Untimed in v1"], action: "Start Numerical Check" };
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.description}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Use mental or written working. The alpha build does not include a calculator.</p><div className="mt-10"><PrimaryButton onClick={onStart}>{config.action}</PrimaryButton></div></Card></section></Shell>;
+}
+
+function NumericalDataTableView({ table }: { table?: NumericalDataTable }) {
+  if (!table) return null;
+  return <div className="mb-7 overflow-x-auto rounded-2xl border border-white/10 bg-[#0E1115]"><table className="w-full min-w-[420px] border-collapse text-left"><thead><tr>{table.headers.map((header) => <th key={header} className="border-b border-white/10 px-4 py-3 text-xs uppercase tracking-[0.14em] text-[#6E7A88]">{header}</th>)}</tr></thead><tbody>{table.rows.map((row, rowIndex) => <tr key={rowIndex} className="border-b border-white/5 last:border-0">{row.map((cell, cellIndex) => <td key={cellIndex} className="px-4 py-3 text-[#DCE3EA]">{cell}</td>)}</tr>)}</tbody></table></div>;
+}
+
+function NumericalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: NumericalStage }) {
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); setShowFeedback(false); }, [questionIndex]);
+  const question = questions[questionIndex];
+  if (!question) return null;
+  const progress = ((questionIndex + 1) / questions.length) * 100;
+  const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
+  const selectedCorrect = selectedOptionId === question.correctOptionId;
+  const title = stage === "guided" ? "Guided Numerical Practice" : stage === "independent" ? "Independent Numerical Practice" : "Numerical Check";
+  function select(optionId: string) {
+    if (showFeedback && stage !== "assessment") return;
+    setSelectedOptionId(optionId);
+    if (stage !== "assessment") setShowFeedback(true);
+  }
+  function next() {
+    if (!selectedOptionId) return;
+    onAnswer(createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false), questionIndex === questions.length - 1);
+  }
+  return <Shell right={title}><section className={`mx-auto max-w-5xl px-8 pt-12 ${stage === "assessment" ? "pb-12" : "pb-44 sm:pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Numerical reasoning</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><NumericalDataTableView table={question.dataTable}/>{stage === "guided" && question.feedbackCue && <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">{question.feedbackCue}</div>}<p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{stage === "assessment" ? <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === questions.length - 1 ? "Finish check" : "Next question"}</PrimaryButton></div> : showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl sm:static sm:mt-7 sm:rounded-2xl sm:border sm:p-5 sm:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div></div>}</Card></section></Shell>;
+}
+
+function NumericalDebriefScreen({ journey, stage, onWhy, onDashboard, onNext }: { journey: MvpGuestJourney; stage: NumericalStage; onWhy: () => void; onDashboard: () => void; onNext?: () => void }) {
+  const debrief = getLatestDebrief(journey);
+  const rec = getCurrentRecommendation(journey);
+  const sessionType: PracticeSummary["sessionType"] = stage === "guided" ? "guided_numerical_practice" : stage === "independent" ? "numerical_independent_practice" : "numerical_assessment";
+  const summary = [...journey.practiceSummaries].reverse().find((item) => item.sessionType === sessionType);
+  const canUseNext = stage === "guided" ? rec?.recommendationType === "begin_numerical_independent_practice" : stage === "independent" ? rec?.recommendationType === "begin_numerical_assessment" : false;
+  const isProgression = stage === "assessment" && rec?.recommendationType === "continue_numerical_practice";
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-5xl items-center px-8 py-16"><Card><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{stage === "assessment" ? "Numerical Check debrief" : "Numerical practice debrief"}</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p></div>{stage === "assessment" && <Badge>{isProgression ? "Progression recommendation" : "Weakness recommendation"}</Badge>}</div>{summary && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{summary.conceptBreakdown.map((item) => <div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{numericalCategoryLabels[item.concept as NumericalSubcompetency] ?? item.concept}</div><div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div></div>)}</div>}<div className="mt-8 grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Mentor recommendation</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 leading-relaxed text-[#AAB4C0]">{rec?.summary}</p></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton>{canUseNext && onNext && <PrimaryButton onClick={onNext}>{stage === "guided" ? "Start Independent Numerical Practice" : "Start Numerical Check"}</PrimaryButton>}<PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+}
+
 function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
   const specs: Record<string, { inputWidth: number; outputWidth: number; inputLabel: string; outputLabel: string; topLabel?: string; showInputArrow?: boolean }> = {
     "MMA-HYD-001": { inputWidth: 78, outputWidth: 150, inputLabel: "Area 1", outputLabel: "Area 2", topLabel: "Same pressure" },
@@ -3581,6 +4073,31 @@ export default function FloSpatialPrototype() {
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
 
+
+  function openNumericalFundamentals() { const next = startNumericalFundamentals(journey); updateJourney(next); setShowWhy(false); setScreen("numerical-fundamentals"); }
+  function completeNumericalModule() { const next = completeNumericalFundamentals(journey); updateJourney(next); setShowWhy(false); setScreen("numerical-fundamentals-complete"); }
+  function openGuidedNumericalPracticeIntro() { setShowWhy(false); setScreen("guided-numerical-practice-intro"); }
+  function startGuidedNumericalPractice() { const session = createGuidedNumericalPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("guided-numerical-practice-question"); }
+  function handleGuidedNumericalAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeGuidedNumericalPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("guided-numerical-practice-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+  function openNumericalIndependentPracticeIntro() { setShowWhy(false); setScreen("numerical-independent-practice-intro"); }
+  function startNumericalIndependentPractice() { const session = createNumericalIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("numerical-independent-practice-question"); }
+  function handleNumericalIndependentAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeNumericalIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("numerical-independent-practice-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+  function openNumericalAssessmentIntro() { setShowWhy(false); setScreen("numerical-assessment-intro"); }
+  function startNumericalAssessment() { const session = createNumericalAssessmentSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("numerical-assessment-question"); }
+  function handleNumericalAssessmentAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeNumericalAssessment(withResponse, activeSessionId); updateJourney(completed); setScreen("numerical-assessment-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+
   const why = getCurrentWhy(journey);
-  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartMixedAssessment={openMixedMechanicalAssessmentIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onStartLeverFundamentals={openLeverFundamentals} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} onStartLeverIndependentPractice={openLeverIndependentPracticeIntro} onStartLeverAssessment={openLeverAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-assessment-intro" && <MixedMechanicalAssessmentIntroScreen onStart={startMixedMechanicalAssessment} />}{screen === "mixed-mechanical-assessment-question" && activeSession && <MixedMechanicalAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedMechanicalAssessmentAnswer} />}{screen === "mixed-mechanical-assessment-debrief" && <MixedMechanicalAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "lever-fundamentals" && <LeverFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeLeverModule} />}{screen === "lever-fundamentals-complete" && <LeverFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} />}{screen === "guided-lever-practice-intro" && <LeverPracticeIntroScreen stage="guided" onStart={startGuidedLeverPractice} />}{screen === "guided-lever-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedLeverAnswer} questions={guidedLeverPracticeQuestions} stage="guided" />}{screen === "guided-lever-practice-debrief" && <LeverDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverIndependentPracticeIntro} />}{screen === "lever-independent-practice-intro" && <LeverPracticeIntroScreen stage="independent" onStart={startLeverIndependentPractice} />}{screen === "lever-independent-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverIndependentPracticeAnswer} questions={leverIndependentPracticeQuestions} stage="independent" />}{screen === "lever-independent-practice-debrief" && <LeverDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverAssessmentIntro} />}{screen === "lever-assessment-intro" && <LeverPracticeIntroScreen stage="assessment" onStart={startLeverAssessment} />}{screen === "lever-assessment-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverAssessmentAnswer} questions={leverAssessmentQuestions} stage="assessment" />}{screen === "lever-assessment-debrief" && <LeverDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}</>;
+  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartMixedAssessment={openMixedMechanicalAssessmentIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onStartLeverFundamentals={openLeverFundamentals} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} onStartLeverIndependentPractice={openLeverIndependentPracticeIntro} onStartLeverAssessment={openLeverAssessmentIntro} onStartNumericalFundamentals={openNumericalFundamentals} onStartGuidedNumericalPractice={openGuidedNumericalPracticeIntro} onStartNumericalIndependentPractice={openNumericalIndependentPracticeIntro} onStartNumericalAssessment={openNumericalAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-assessment-intro" && <MixedMechanicalAssessmentIntroScreen onStart={startMixedMechanicalAssessment} />}{screen === "mixed-mechanical-assessment-question" && activeSession && <MixedMechanicalAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedMechanicalAssessmentAnswer} />}{screen === "mixed-mechanical-assessment-debrief" && <MixedMechanicalAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "lever-fundamentals" && <LeverFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeLeverModule} />}{screen === "lever-fundamentals-complete" && <LeverFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} />}{screen === "guided-lever-practice-intro" && <LeverPracticeIntroScreen stage="guided" onStart={startGuidedLeverPractice} />}{screen === "guided-lever-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedLeverAnswer} questions={guidedLeverPracticeQuestions} stage="guided" />}{screen === "guided-lever-practice-debrief" && <LeverDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverIndependentPracticeIntro} />}{screen === "lever-independent-practice-intro" && <LeverPracticeIntroScreen stage="independent" onStart={startLeverIndependentPractice} />}{screen === "lever-independent-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverIndependentPracticeAnswer} questions={leverIndependentPracticeQuestions} stage="independent" />}{screen === "lever-independent-practice-debrief" && <LeverDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverAssessmentIntro} />}{screen === "lever-assessment-intro" && <LeverPracticeIntroScreen stage="assessment" onStart={startLeverAssessment} />}{screen === "lever-assessment-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverAssessmentAnswer} questions={leverAssessmentQuestions} stage="assessment" />}{screen === "lever-assessment-debrief" && <LeverDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "numerical-fundamentals" && <NumericalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeNumericalModule} />}{screen === "numerical-fundamentals-complete" && <NumericalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedNumericalPracticeIntro} />}{screen === "guided-numerical-practice-intro" && <NumericalPracticeIntroScreen stage="guided" onStart={startGuidedNumericalPractice} />}{screen === "guided-numerical-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedNumericalAnswer} questions={guidedNumericalPracticeQuestions} stage="guided" />}{screen === "guided-numerical-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalIndependentPracticeIntro} />}{screen === "numerical-independent-practice-intro" && <NumericalPracticeIntroScreen stage="independent" onStart={startNumericalIndependentPractice} />}{screen === "numerical-independent-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalIndependentAnswer} questions={numericalIndependentPracticeQuestions} stage="independent" />}{screen === "numerical-independent-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalAssessmentIntro} />}{screen === "numerical-assessment-intro" && <NumericalPracticeIntroScreen stage="assessment" onStart={startNumericalAssessment} />}{screen === "numerical-assessment-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalAssessmentAnswer} questions={numericalAssessmentQuestions} stage="assessment" />}{screen === "numerical-assessment-debrief" && <NumericalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}</>;
 }
