@@ -49,7 +49,10 @@ type AppScreen =
   | "lever-independent-practice-debrief"
   | "lever-assessment-intro"
   | "lever-assessment-question"
-  | "lever-assessment-debrief";
+  | "lever-assessment-debrief"
+  | "mixed-mechanical-assessment-intro"
+  | "mixed-mechanical-assessment-question"
+  | "mixed-mechanical-assessment-debrief";
 
 type TestScenario =
   | "hydraulic_baseline"
@@ -66,7 +69,8 @@ type TestScenario =
   | "pulley_independent_strong"
   | "lever_guided_ready"
   | "lever_guided_strong"
-  | "lever_independent_strong";
+  | "lever_independent_strong"
+  | "mixed_assessment_pulley_focus";
 
 type PathwayId = "fire_service";
 type MechanicalSubcompetency = "hydraulics" | "gears" | "pulleys" | "levers";
@@ -83,7 +87,7 @@ type PreparationContext = {
 type QuestionOption = { optionId: string; label: "A" | "B" | "C" | "D"; text: string };
 type MvpQuestion = {
   questionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment";
   pathwayId: PathwayId;
   domain: "mechanical";
   subcompetency: MechanicalSubcompetency;
@@ -98,7 +102,7 @@ type MvpQuestion = {
 
 type AssessmentSession = {
   sessionId: string;
-  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment";
+  sessionType: "mechanical_starting_point" | "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment";
   pathwayId: PathwayId;
   startedAt: string;
   completedAt?: string;
@@ -177,7 +181,9 @@ type Recommendation = {
     | "continue_lever_independent_practice"
     | "review_lever_fundamentals"
     | "begin_lever_assessment"
-    | "repeat_lever_assessment";
+    | "repeat_lever_assessment"
+    | "begin_mixed_mechanical_assessment"
+    | "repeat_mixed_mechanical_assessment";
   title: string;
   summary: string;
   actionLabel: string;
@@ -232,7 +238,8 @@ type Milestone = {
     | "lever_independent_practice_completed"
     | "lever_improvement_signal"
     | "lever_assessment_completed"
-    | "lever_pathway_completed";
+    | "lever_pathway_completed"
+    | "mixed_mechanical_assessment_completed";
   label: string;
   createdAt: string;
 };
@@ -302,7 +309,7 @@ type ModuleCompletion = {
 type PracticeSummary = {
   summaryId: string;
   sessionId: string;
-  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment";
+  sessionType: "guided_hydraulic_practice" | "mixed_mechanical_practice" | "guided_gear_practice" | "gear_independent_practice" | "gear_assessment" | "guided_pulley_practice" | "pulley_independent_practice" | "pulley_assessment" | "guided_lever_practice" | "lever_independent_practice" | "lever_assessment" | "mixed_mechanical_assessment";
   attempted: number;
   correct: number;
   accuracy: number;
@@ -350,7 +357,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Lever Pathway v1 Alpha";
+const BUILD_LABEL = "Mixed Mechanical Assessment v1 Alpha";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -723,6 +730,39 @@ const mixedMechanicalPracticeQuestions: MvpQuestion[] = [
 ];
 
 
+function makeMixedAssessmentQuestion(questionId: string, subcompetency: MechanicalSubcompetency, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): MvpQuestion {
+  const prepared = buildQuestionOptions(questionId, options, correctLabel);
+  return { questionId, sessionType: "mixed_mechanical_assessment", pathwayId: "fire_service", domain: "mechanical", subcompetency, concept, difficulty: "applied", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
+}
+
+const mixedMechanicalAssessmentQuestions: MvpQuestion[] = [
+  makeMixedAssessmentQuestion("MMA-GEAR-001", "gears", "direction", "Gear A turns clockwise. Which way does Gear D turn?", ["Clockwise", "Anticlockwise", "It does not turn", "Direction cannot be known"], "B", "Four gears create three direct contacts, so the final gear turns opposite to the driver."),
+  makeMixedAssessmentQuestion("MMA-HYD-001", "hydraulics", "area_force", "The same fluid pressure acts on both pistons. The output piston has twice the area of the input piston. Compared with the input force, the output force is ideally:", ["Twice as large", "Half as large", "The same", "Zero"], "A", "With the same pressure, force increases in proportion to piston area."),
+  makeMixedAssessmentQuestion("MMA-PULL-001", "pulleys", "system_recognition", "What is the main effect of this single fixed pulley?", ["It changes the direction of effort", "It halves the effort", "It doubles the load", "It removes rope tension"], "A", "A single fixed pulley mainly changes the direction in which the effort is applied."),
+  makeMixedAssessmentQuestion("MMA-LEV-001", "levers", "balance_force", "A 600 N load acts 0.5 m from the fulcrum. The effort is applied 2 m from the fulcrum. What effort balances the load?", ["150 N", "300 N", "600 N", "1200 N"], "A", "The load moment is 600 × 0.5 = 300 N·m. Dividing by 2 m gives 150 N."),
+  makeMixedAssessmentQuestion("MMA-PULL-002", "pulleys", "mechanical_advantage", "A 400 N load is ideally supported by two rope sections. Approximately what effort is needed?", ["200 N", "400 N", "800 N", "100 N"], "A", "With two supporting rope sections, the ideal effort is 400 ÷ 2 = 200 N."),
+  makeMixedAssessmentQuestion("MMA-GEAR-002", "gears", "driver_position", "The middle gear is the driver and turns clockwise. Which way does Gear C turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends only on gear size"], "B", "Gear C meshes directly with the clockwise driver, so it turns anticlockwise."),
+  makeMixedAssessmentQuestion("MMA-LEV-002", "levers", "mechanical_advantage", "Which setup gives the greatest mechanical advantage?", ["The load close to the fulcrum and the effort far away", "The effort close to the fulcrum and the load far away", "Load and effort both at the fulcrum", "No fulcrum"], "A", "A short load arm and long effort arm give the greatest force advantage."),
+  makeMixedAssessmentQuestion("MMA-HYD-002", "hydraulics", "movement_direction", "The left piston is pushed downward in the sealed system. What will the right piston usually do?", ["Move upward", "Move downward", "Remain fixed", "Move only if air enters"], "A", "The input piston displaces fluid, which drives the other piston upward."),
+  makeMixedAssessmentQuestion("MMA-HYD-003", "hydraulics", "pressure_force", "The fluid pressure is 50 kPa and the piston area is 0.02 m². What force is produced?", ["1000 N", "2500 N", "100 N", "25 N"], "A", "50,000 Pa × 0.02 m² = 1000 N."),
+  makeMixedAssessmentQuestion("MMA-LEV-003", "levers", "movement_direction", "The effort end of this first-class lever moves downward. What happens to the load end?", ["It moves upward", "It also moves downward", "It stays fixed", "It moves toward the fulcrum only"], "A", "The two ends of a first-class lever move in opposite directions around the fulcrum."),
+  makeMixedAssessmentQuestion("MMA-GEAR-003", "gears", "speed_ratio", "A 12-tooth gear drives a 36-tooth gear. How fast does the 36-tooth gear turn compared with the driver?", ["One-third as fast", "Three times as fast", "At the same speed", "It does not turn"], "A", "The driven gear has three times as many teeth, so it turns at one-third the speed."),
+  makeMixedAssessmentQuestion("MMA-PULL-003", "pulleys", "force", "A 600 N load is ideally supported by three rope sections. Approximately what effort is needed?", ["200 N", "300 N", "600 N", "1800 N"], "A", "The ideal effort is 600 ÷ 3 = 200 N."),
+  makeMixedAssessmentQuestion("MMA-GEAR-004", "gears", "direction_speed", "A 40-tooth gear drives a 10-tooth gear. Compared with the driver, the output gear turns:", ["Four times faster in the opposite direction", "Four times slower in the same direction", "At the same speed in the opposite direction", "Twice as fast in the same direction"], "A", "Direct mesh reverses direction, and the 10-tooth gear turns four times faster than the 40-tooth driver."),
+  makeMixedAssessmentQuestion("MMA-PULL-004", "pulleys", "load_capacity", "A person pulls with 100 N in an ideal system with four supporting rope sections. What load can be supported?", ["400 N", "100 N", "25 N", "800 N"], "A", "Four supporting sections provide an ideal mechanical advantage of four: 100 × 4 = 400 N."),
+  makeMixedAssessmentQuestion("MMA-HYD-004", "hydraulics", "force_ratio", "A 100 N force acts on a 2 cm² input piston. The output piston area is 10 cm². What is the ideal output force?", ["500 N", "200 N", "1000 N", "20 N"], "A", "The output area is five times larger, so the ideal output force is five times larger: 500 N."),
+  makeMixedAssessmentQuestion("MMA-LEV-004", "levers", "balance", "A 100 N effort acts 3 m from the fulcrum. What load can be balanced 1 m from the fulcrum?", ["300 N", "100 N", "33 N", "600 N"], "A", "The effort moment is 100 × 3 = 300 N·m, so a 300 N load at 1 m balances it."),
+  makeMixedAssessmentQuestion("MMA-LEV-005", "levers", "arm_ratio", "The effort arm is 4 m and the load arm is 1 m. What is the ideal mechanical advantage?", ["4", "2", "1", "8"], "A", "Ideal mechanical advantage equals effort-arm length divided by load-arm length: 4 ÷ 1 = 4."),
+  makeMixedAssessmentQuestion("MMA-GEAR-005", "gears", "idler_ratio", "A 20-tooth driver turns through an idler and drives a 60-tooth output gear. Compared with the driver, the output turns:", ["In the same direction at one-third the speed", "In the opposite direction at three times the speed", "In the same direction at three times the speed", "In the opposite direction at the same speed"], "A", "Two contacts make the output turn in the same direction as the driver. The 60-tooth output turns at one-third the driver speed."),
+  makeMixedAssessmentQuestion("MMA-PULL-005", "pulleys", "distance_tradeoff", "The load rises 0.5 m in an ideal system with four supporting rope sections. How much rope must be pulled?", ["2 m", "0.5 m", "0.125 m", "4 m"], "A", "A four-to-one force advantage requires four times the rope movement distance: 2 m."),
+  makeMixedAssessmentQuestion("MMA-HYD-005", "hydraulics", "distance_tradeoff", "A hydraulic system provides a four-to-one force advantage. Ideally, how far must the input piston move compared with the output piston?", ["Four times as far", "One-quarter as far", "The same distance", "Distance is unrelated to force advantage"], "A", "A four-to-one force advantage requires the input side to move about four times the output distance."),
+  makeMixedAssessmentQuestion("MMA-PULL-006", "pulleys", "support_relationship", "The diagram is unfamiliar, but three rope sections directly support the moving block. What determines the ideal mechanical advantage?", ["The three supporting rope sections", "The angle of the drawing", "The colour of the rope", "The number of fixed supports above"], "A", "Ideal mechanical advantage depends on the rope sections directly supporting the moving load, not the diagram orientation."),
+  makeMixedAssessmentQuestion("MMA-LEV-006", "levers", "integrated", "A 400 N load acts 0.75 m from the fulcrum. A 100 N effort is used on the other side. How far from the fulcrum must the effort act to balance?", ["3 m", "1.5 m", "0.75 m", "4 m"], "A", "The load moment is 400 × 0.75 = 300 N·m. A 100 N effort therefore needs a 3 m arm."),
+  makeMixedAssessmentQuestion("MMA-HYD-006", "hydraulics", "equal_area", "The two pistons have equal area in an ideal sealed hydraulic system. If the input force is 300 N, what output force is expected?", ["300 N", "600 N", "150 N", "Zero"], "A", "Equal piston areas at the same pressure produce equal forces."),
+  makeMixedAssessmentQuestion("MMA-GEAR-006", "gears", "integrated", "A 15-tooth gear drives two idlers and then a 45-tooth output gear. Compared with the driver, the output turns:", ["In the opposite direction at one-third the speed", "In the same direction at three times the speed", "In the same direction at one-third the speed", "In the opposite direction at three times the speed"], "A", "Three direct contacts reverse the final direction. The 45-tooth output turns at one-third the speed of the 15-tooth driver."),
+];
+
+
 function moduleOption(questionId: string, label: "A" | "B" | "C" | "D", text: string): QuestionOption {
   return { optionId: `${questionId}-${label}`, label, text };
 }
@@ -1039,6 +1079,9 @@ function createLeverIndependentPracticeSession(): AssessmentSession {
 }
 function createLeverAssessmentSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "lever_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: leverAssessmentQuestions.map((q) => q.questionId) };
+}
+function createMixedMechanicalAssessmentSession(): AssessmentSession {
+  return { sessionId: id("session"), sessionType: "mixed_mechanical_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: mixedMechanicalAssessmentQuestions.map((q) => q.questionId) };
 }
 function createAssessmentResponse(sessionId: string, question: MvpQuestion, selectedOptionId: string | null, responseTimeMs: number, notSureSelected: boolean): AssessmentResponse {
   return { responseId: id("response"), sessionId, questionId: question.questionId, selectedOptionId, correct: selectedOptionId === question.correctOptionId, responseTimeMs, notSureSelected, answeredAt: now() };
@@ -1449,8 +1492,13 @@ function completeLeverAssessment(journey: MvpGuestJourney, sessionId: string): M
   ]);
   const previousRecommendation = getCurrentRecommendation(journey);
   const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
-  let recommendationType: Recommendation["recommendationType"] = "return_to_mixed_mechanical_practice";
-  let title = "Return to Mixed Mechanical Practice"; let summaryText = "Recheck lever reasoning alongside gears, pulleys and hydraulics."; let actionLabel = "Start mixed practice"; let currentFocus = "Mechanical reasoning integration"; let interpretation = "The Lever Check is strong enough to move back into mixed mechanical reasoning.";
+  const readyForMixedAssessment = journey.milestones.some((m) => m.type === "gear_pathway_completed") && journey.milestones.some((m) => m.type === "pulley_pathway_completed");
+  let recommendationType: Recommendation["recommendationType"] = readyForMixedAssessment ? "begin_mixed_mechanical_assessment" : "return_to_mixed_mechanical_practice";
+  let title = readyForMixedAssessment ? "Begin Mixed Mechanical Assessment" : "Return to Mixed Mechanical Practice";
+  let summaryText = readyForMixedAssessment ? "Gears, pulleys and levers have now reached the assessment stage. Check whether you can select the right method when all four mechanical areas are mixed together." : "Recheck lever reasoning alongside gears, pulleys and hydraulics.";
+  let actionLabel = readyForMixedAssessment ? "Start mixed assessment" : "Start mixed practice";
+  let currentFocus = "Mechanical reasoning integration";
+  let interpretation = readyForMixedAssessment ? "The Lever Check is strong and the earlier Gear and Pulley pathways are also complete. The next step is an integrated assessment rather than another single-topic exercise." : "The Lever Check is strong enough to move back into mixed mechanical reasoning.";
   if (summary.accuracy < 0.8 && summary.accuracy >= 0.6) { recommendationType = "continue_lever_independent_practice"; title = "Target the Weakest Lever Pattern"; summaryText = "Do another independent lever set before repeating the check."; actionLabel = "Continue independent practice"; currentFocus = "Lever reasoning"; interpretation = "The check showed useful learning, but one more consolidation step is appropriate."; }
   else if (summary.accuracy < 0.6) { recommendationType = "continue_guided_lever_practice"; title = "Return to Guided Lever Practice"; summaryText = "Rebuild the lever method with immediate feedback before another check."; actionLabel = "Start guided practice"; currentFocus = "Lever reasoning"; interpretation = "The assessment-style check suggests the lever method is not yet stable enough without support."; }
   const why: WhyExplanation = { whyExplanationId: id("why"), title: `Why ${title} is recommended`, observation: `Lever Check: ${summary.correct} of ${summary.attempted} correct.`, evidence: `Accuracy ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendation: `${title} is recommended next.`, confidence: "Moderate. This is based on one short assessment-style lever check.", createdAt: now() };
@@ -2005,6 +2053,175 @@ function completeMixedMechanicalPractice(journey: MvpGuestJourney, sessionId: st
   };
 }
 
+
+function calculateMixedMechanicalAssessmentSummary(session: AssessmentSession, responses: AssessmentResponse[]): PracticeSummary {
+  const subcompetencies: MechanicalSubcompetency[] = ["hydraulics", "gears", "pulleys", "levers"];
+  const conceptBreakdown = subcompetencies.map((subcompetency) => {
+    const ids = new Set(mixedMechanicalAssessmentQuestions.filter((q) => q.subcompetency === subcompetency).map((q) => q.questionId));
+    const subResponses = responses.filter((response) => ids.has(response.questionId));
+    const attempted = subResponses.length;
+    const correct = subResponses.filter((response) => response.correct).length;
+    return { concept: subcompetency, attempted, correct, accuracy: attempted ? correct / attempted : 0 };
+  });
+  const attempted = responses.length;
+  const correct = responses.filter((response) => response.correct).length;
+  return { summaryId: id("summary"), sessionId: session.sessionId, sessionType: "mixed_mechanical_assessment", attempted, correct, accuracy: attempted ? correct / attempted : 0, conceptBreakdown, createdAt: now() };
+}
+
+function completeMixedMechanicalAssessment(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
+  const session = journey.sessions.find((item) => item.sessionId === sessionId);
+  if (!session) return journey;
+  const completedSession = { ...session, completedAt: now() };
+  const responses = journey.responses.filter((response) => response.sessionId === sessionId);
+  const summary = calculateMixedMechanicalAssessmentSummary(completedSession, responses);
+  const weakest = [...summary.conceptBreakdown].sort((a, b) => a.accuracy - b.accuracy)[0];
+  const integratedStrong = summary.accuracy >= 0.8 && summary.conceptBreakdown.every((item) => item.accuracy >= 4 / 6);
+  const labels: Record<string, string> = { hydraulics: "Hydraulics", gears: "Gears", pulleys: "Pulleys", levers: "Levers" };
+  const weakestLabel = labels[weakest?.concept ?? "gears"] ?? "Mechanical reasoning";
+
+  let recommendationType: Recommendation["recommendationType"];
+  let title: string;
+  let summaryText: string;
+  let actionLabel: string;
+  let currentFocus: string;
+  let interpretation: string;
+  let recommendationKind: "progression" | "weakness";
+
+  if (integratedStrong) {
+    recommendationType = "continue_mixed_mechanical_practice";
+    title = "Maintain with Mixed Mechanical Practice";
+    summaryText = "Your result was strong across all four mechanical areas. Keep the methods available by returning to mixed practice rather than reteaching a single topic.";
+    actionLabel = "Start mixed practice";
+    currentFocus = "Mechanical reasoning integration";
+    interpretation = "This is a progression recommendation. The assessment did not identify one mechanical area weak enough to justify targeted remediation.";
+    recommendationKind = "progression";
+  } else {
+    recommendationKind = "weakness";
+    currentFocus = `${weakestLabel} reasoning`;
+    if (weakest.concept === "hydraulics") {
+      if (weakest.accuracy <= 0.5) {
+        recommendationType = "review_hydraulic_fundamentals";
+        title = "Review Hydraulic Fundamentals";
+        summaryText = "Hydraulics was the clearest limiting area in the mixed assessment. Rebuild pressure, area and force relationships before another integrated check.";
+        actionLabel = "Review fundamentals";
+      } else {
+        recommendationType = "begin_guided_hydraulic_practice";
+        title = "Target Guided Hydraulic Practice";
+        summaryText = "Hydraulics was the lowest area, but the foundation is partly present. Use immediate-feedback practice to stabilise it.";
+        actionLabel = "Begin guided practice";
+      }
+    } else if (weakest.concept === "gears") {
+      if (weakest.accuracy <= 0.5) {
+        recommendationType = "continue_guided_gear_practice";
+        title = "Return to Guided Gear Practice";
+        summaryText = "Gear reasoning was the clearest limiting area. Rebuild the method with immediate feedback before another mixed assessment.";
+        actionLabel = "Start guided practice";
+      } else {
+        recommendationType = "continue_gear_independent_practice";
+        title = "Target Independent Gear Practice";
+        summaryText = "Gear reasoning was the lowest area, but the method is partly stable. Consolidate it in less-supported practice.";
+        actionLabel = "Start independent practice";
+      }
+    } else if (weakest.concept === "pulleys") {
+      if (weakest.accuracy <= 0.5) {
+        recommendationType = "continue_guided_pulley_practice";
+        title = "Return to Guided Pulley Practice";
+        summaryText = "Pulley reasoning was the clearest limiting area. Rebuild the support-strand method with immediate feedback.";
+        actionLabel = "Start guided practice";
+      } else {
+        recommendationType = "continue_pulley_independent_practice";
+        title = "Target Independent Pulley Practice";
+        summaryText = "Pulley reasoning was the lowest area, but the method is partly stable. Consolidate it in less-supported practice.";
+        actionLabel = "Start independent practice";
+      }
+    } else {
+      if (weakest.accuracy <= 0.5) {
+        recommendationType = "continue_guided_lever_practice";
+        title = "Return to Guided Lever Practice";
+        summaryText = "Lever reasoning was the clearest limiting area. Rebuild the fulcrum-and-arm method with immediate feedback.";
+        actionLabel = "Start guided practice";
+      } else {
+        recommendationType = "continue_lever_independent_practice";
+        title = "Target Independent Lever Practice";
+        summaryText = "Lever reasoning was the lowest area, but the method is partly stable. Consolidate it in less-supported practice.";
+        actionLabel = "Start independent practice";
+      }
+    }
+    interpretation = `This is a weakness recommendation. ${weakestLabel} was the lowest-scoring area when the four mechanical methods were mixed together.`;
+  }
+
+  const previousRecommendation = getCurrentRecommendation(journey);
+  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
+  const comparison = summary.conceptBreakdown.map((item) => `${labels[item.concept] ?? item.concept}: ${item.correct}/${item.attempted}`).join(" · ");
+  const why: WhyExplanation = {
+    whyExplanationId: id("why"),
+    title: `Why ${title} is recommended`,
+    observation: integratedStrong ? "The mixed assessment was strong across all four mechanical areas." : `${weakestLabel} was the lowest-scoring area in the mixed assessment.`,
+    evidence: `Overall: ${summary.correct} of ${summary.attempted}. ${comparison}.`,
+    interpretation,
+    recommendation: `${title} is recommended next.`,
+    confidence: "Moderate. This is based on one 24-question mixed assessment and should guide the next preparation step rather than define overall aptitude.",
+    createdAt: now(),
+  };
+  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+  const readiness: ReadinessSnapshot = {
+    readinessSnapshotId: id("readiness"),
+    state: "developing_evidence",
+    label: integratedStrong ? "Developing evidence — integrated mechanical reasoning" : `Developing evidence — ${weakestLabel.toLowerCase()} is the next focus`,
+    explanation: integratedStrong ? "The learner selected and applied the correct mechanical method across mixed categories with a strong overall result." : `The mixed assessment identified ${weakestLabel.toLowerCase()} as the clearest next preparation focus.`,
+    confidence: "moderate",
+    createdAt: now(),
+  };
+  const milestone: Milestone = { milestoneId: id("milestone"), type: "mixed_mechanical_assessment_completed", label: "Mixed Mechanical Assessment completed", createdAt: now() };
+  const debrief: Debrief = {
+    debriefId: id("debrief"),
+    sessionId,
+    title: "Mixed Mechanical Assessment complete",
+    summary: `${summary.correct} of ${summary.attempted} correct (${Math.round(summary.accuracy * 100)}%).`,
+    comparison,
+    interpretation,
+    recommendationId: recommendation.recommendationId,
+    confidence: "moderate",
+    whyExplanationId: why.whyExplanationId,
+    createdAt: now(),
+  };
+  const evidence = summary.conceptBreakdown.map((item) => ({
+    evidenceId: id("evidence"),
+    domain: "mechanical" as const,
+    subcompetency: item.concept as MechanicalSubcompetency,
+    attempted: item.attempted,
+    correct: item.correct,
+    accuracy: item.accuracy,
+    evidenceStrength: evidenceStrength(item.attempted),
+    sourceSessionId: sessionId,
+    updatedAt: now(),
+  }));
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), milestone.milestoneId].slice(-7);
+
+  return {
+    ...journey,
+    sessions: journey.sessions.map((item) => item.sessionId === sessionId ? completedSession : item),
+    practiceSummaries: [...journey.practiceSummaries, summary],
+    debriefs: [...journey.debriefs, debrief],
+    competencyEvidence: [...journey.competencyEvidence, ...evidence],
+    recommendations: [...updatedRecommendations, recommendation],
+    whyExplanations: [...journey.whyExplanations, why],
+    readinessSnapshots: [...journey.readinessSnapshots, readiness],
+    milestones: [...journey.milestones, milestone],
+    dashboardState: {
+      ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }),
+      currentRecommendationId: recommendation.recommendationId,
+      currentFocusLabel: currentFocus,
+      readinessSnapshotId: readiness.readinessSnapshotId,
+      recentMilestoneIds,
+      baselineSummary: journey.dashboardState?.baselineSummary,
+      saveStatus: "local_only",
+      updatedAt: now(),
+    },
+    updatedAt: now(),
+  };
+}
+
 function getLatestDebrief(journey: MvpGuestJourney) {
   return journey.debriefs[journey.debriefs.length - 1];
 }
@@ -2028,6 +2245,7 @@ function getResumeState(journey: MvpGuestJourney): ResumeState {
       guided_lever_practice: "guided-lever-practice-question",
       lever_independent_practice: "lever-independent-practice-question",
       lever_assessment: "lever-assessment-question",
+      mixed_mechanical_assessment: "mixed-mechanical-assessment-question",
     };
     return {
       screen: screenBySessionType[incompleteSession.sessionType],
@@ -2224,6 +2442,19 @@ function createLeverIndependentStrongDemoJourney(): MvpGuestJourney {
   return completeLeverIndependentPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
 }
 
+
+function createMixedAssessmentPulleyFocusDemoJourney(): MvpGuestJourney {
+  const base = createLeverIndependentStrongDemoJourney();
+  const session = createMixedMechanicalAssessmentSession();
+  const responses = buildResponsesForTargetCounts(session, mixedMechanicalAssessmentQuestions, {
+    hydraulics: 5,
+    gears: 5,
+    pulleys: 2,
+    levers: 5,
+  });
+  return completeMixedMechanicalAssessment({ ...base, sessions: [...base.sessions, session], responses: [...base.responses, ...responses] }, session.sessionId);
+}
+
 function createTestScenarioJourney(scenario: TestScenario): MvpGuestJourney {
   switch (scenario) {
     case "hydraulic_module_complete":
@@ -2254,6 +2485,8 @@ function createTestScenarioJourney(scenario: TestScenario): MvpGuestJourney {
       return createLeverGuidedStrongDemoJourney();
     case "lever_independent_strong":
       return createLeverIndependentStrongDemoJourney();
+    case "mixed_assessment_pulley_focus":
+      return createMixedAssessmentPulleyFocusDemoJourney();
     case "hydraulic_baseline":
     default:
       return createHydraulicBaselineDemoJourney();
@@ -2328,6 +2561,11 @@ function TestScenarioPanel({ onLoad }: { onLoad: (scenario: TestScenario) => voi
       description: "Loads a journey where the Lever Check is recommended next.",
     },
     {
+      scenario: "mixed_assessment_pulley_focus",
+      title: "Mixed assessment → Pulley focus",
+      description: "Loads a completed mixed assessment where pulleys become the clearest weakness recommendation.",
+    },
+    {
       scenario: "guided_moderate_improvement",
       title: "Moderate guided improvement",
       description: "Loads a journey where continued guided practice is recommended.",
@@ -2395,13 +2633,14 @@ function MechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer 
 function AssessmentCompleteScreen({ onView }: { onView: () => void }) { return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><h1 className="text-4xl font-semibold">Starting point assessment complete</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">FloSpatial has reviewed your responses and prepared your first preparation insight.</p><div className="mt-10"><PrimaryButton onClick={onView}>View insight</PrimaryButton></div></Card></section></Shell>; }
 function WhyModal({ why, onClose }: { why?: WhyExplanation; onClose: () => void }) { if (!why) return null; const sections = [["Observation", why.observation], ["Evidence", why.evidence], ["Interpretation", why.interpretation], ["Recommendation", why.recommendation], ["Confidence", why.confidence]]; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-[32px] border border-white/10 bg-[#171C23] p-8 shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="text-xs uppercase tracking-[0.22em] text-[#6E7A88]">Why explanation</p><h2 className="mt-3 text-3xl font-semibold">{why.title}</h2></div><button onClick={onClose} className="rounded-lg px-3 py-2 text-sm text-[#8D98A6] hover:text-white">Close</button></div><div className="mt-8 space-y-6">{sections.map(([label, text]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{label}</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{text}</p></div>)}</div><p className="mt-6 text-sm text-[#6E7A88]">FloSpatial uses this explanation to keep recommendations transparent and evidence-based.</p></div></div>; }
 function FirstAdvisorInsightScreen({ journey, onWhy, onDashboard }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void }) { const rec = getCurrentRecommendation(journey); const focus = journey.dashboardState?.currentFocusLabel ?? "Preparation focus"; return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Your first preparation insight</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{focus === "Hydraulic-force reasoning" ? "Hydraulic-force reasoning currently appears to be your highest-value preparation focus." : rec?.recommendationType === "start_mechanical_foundations" ? "Mechanical reasoning foundations appear to need broader attention." : "FloSpatial does not yet have one clear preparation focus."}</h1><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "moderate" ? "Moderate confidence" : rec?.confidence === "high" ? "High confidence" : "Low confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>; }
-function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGuidedPractice, onStartMixedPractice, onStartGearFundamentals, onStartGuidedGearPractice, onStartGearIndependentPractice, onStartGearAssessment, onStartPulleyFundamentals, onStartGuidedPulleyPractice, onStartPulleyIndependentPractice, onStartPulleyAssessment, onStartLeverFundamentals, onStartGuidedLeverPractice, onStartLeverIndependentPractice, onStartLeverAssessment, onLoadTestScenario }: { journey: MvpGuestJourney; onWhy: () => void; onReset: () => void; onStartHydraulics: () => void; onStartGuidedPractice: () => void; onStartMixedPractice: () => void; onStartGearFundamentals: () => void; onStartGuidedGearPractice: () => void; onStartGearIndependentPractice: () => void; onStartGearAssessment: () => void; onStartPulleyFundamentals: () => void; onStartGuidedPulleyPractice: () => void; onStartPulleyIndependentPractice: () => void; onStartPulleyAssessment: () => void; onStartLeverFundamentals: () => void; onStartGuidedLeverPractice: () => void; onStartLeverIndependentPractice: () => void; onStartLeverAssessment: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) {
+function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGuidedPractice, onStartMixedPractice, onStartMixedAssessment, onStartGearFundamentals, onStartGuidedGearPractice, onStartGearIndependentPractice, onStartGearAssessment, onStartPulleyFundamentals, onStartGuidedPulleyPractice, onStartPulleyIndependentPractice, onStartPulleyAssessment, onStartLeverFundamentals, onStartGuidedLeverPractice, onStartLeverIndependentPractice, onStartLeverAssessment, onLoadTestScenario }: { journey: MvpGuestJourney; onWhy: () => void; onReset: () => void; onStartHydraulics: () => void; onStartGuidedPractice: () => void; onStartMixedPractice: () => void; onStartMixedAssessment: () => void; onStartGearFundamentals: () => void; onStartGuidedGearPractice: () => void; onStartGearIndependentPractice: () => void; onStartGearAssessment: () => void; onStartPulleyFundamentals: () => void; onStartGuidedPulleyPractice: () => void; onStartPulleyIndependentPractice: () => void; onStartPulleyAssessment: () => void; onStartLeverFundamentals: () => void; onStartGuidedLeverPractice: () => void; onStartLeverIndependentPractice: () => void; onStartLeverAssessment: () => void; onLoadTestScenario: (scenario: TestScenario) => void }) {
   const rec = getCurrentRecommendation(journey);
   const readiness = getCurrentReadiness(journey);
   const milestones = getRecentMilestones(journey);
   const canStartHydraulics = rec?.recommendationType === "start_hydraulic_fundamentals";
   const canStartGuided = rec?.recommendationType === "begin_guided_hydraulic_practice" || rec?.recommendationType === "continue_guided_hydraulic_practice" || rec?.title?.toLowerCase().includes("guided hydraulic practice");
   const canStartMixed = rec?.recommendationType === "begin_mixed_mechanical_practice" || rec?.recommendationType === "return_to_mixed_mechanical_practice" || rec?.title?.toLowerCase().includes("mixed mechanical practice");
+  const canStartMixedAssessment = rec?.recommendationType === "begin_mixed_mechanical_assessment" || rec?.recommendationType === "repeat_mixed_mechanical_assessment";
   const canStartGear = rec?.recommendationType === "start_gear_fundamentals" || rec?.recommendationType === "review_gear_fundamentals" || rec?.title?.toLowerCase().includes("gear fundamentals");
   const canStartGuidedGear = rec?.recommendationType === "begin_guided_gear_practice" || rec?.recommendationType === "continue_guided_gear_practice" || rec?.title?.toLowerCase().includes("guided gear practice");
   const canStartIndependentGear = rec?.recommendationType === "begin_gear_independent_practice" || rec?.recommendationType === "continue_gear_independent_practice" || rec?.title?.toLowerCase().includes("independent gear practice");
@@ -2414,7 +2653,7 @@ function DashboardScreen({ journey, onWhy, onReset, onStartHydraulics, onStartGu
   const canStartGuidedLever = rec?.recommendationType === "begin_guided_lever_practice" || rec?.recommendationType === "continue_guided_lever_practice" || rec?.title?.toLowerCase().includes("guided lever practice");
   const canStartIndependentLever = rec?.recommendationType === "begin_lever_independent_practice" || rec?.recommendationType === "continue_lever_independent_practice" || rec?.title?.toLowerCase().includes("independent lever practice");
   const canStartLeverAssessment = rec?.recommendationType === "begin_lever_assessment" || rec?.recommendationType === "repeat_lever_assessment" || rec?.actionLabel?.toLowerCase().includes("lever check");
-  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin guided practice</PrimaryButton> : canStartIndependentGear ? <PrimaryButton onClick={onStartGearIndependentPractice}>Start independent practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : canStartPulley ? <PrimaryButton onClick={onStartPulleyFundamentals}>Start module</PrimaryButton> : canStartGuidedPulley ? <PrimaryButton onClick={onStartGuidedPulleyPractice}>Begin guided practice</PrimaryButton> : canStartIndependentPulley ? <PrimaryButton onClick={onStartPulleyIndependentPractice}>Start independent practice</PrimaryButton> : canStartPulleyAssessment ? <PrimaryButton onClick={onStartPulleyAssessment}>Start Pulley Check</PrimaryButton> : canStartLever ? <PrimaryButton onClick={onStartLeverFundamentals}>Start module</PrimaryButton> : canStartGuidedLever ? <PrimaryButton onClick={onStartGuidedLeverPractice}>Begin guided practice</PrimaryButton> : canStartIndependentLever ? <PrimaryButton onClick={onStartLeverIndependentPractice}>Start independent practice</PrimaryButton> : canStartLeverAssessment ? <PrimaryButton onClick={onStartLeverAssessment}>Start Lever Check</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Alpha pathway access</div><h3 className="mt-3 text-2xl font-semibold">Mechanical pathways</h3><p className="mt-3 max-w-3xl text-[#9AA3B2]">Direct access remains available while the pathways are being tested. These buttons do not change the current recommendation until a stage is completed.</p><p className="mt-3 text-xs text-[#6E7A88]">Build: {BUILD_LABEL}</p><div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Gear pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartGearFundamentals}>Gear Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedGearPractice}>Guided Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearIndependentPractice}>Independent Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearAssessment}>Gear Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Pulley pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartPulleyFundamentals}>Pulley Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedPulleyPractice}>Guided Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyIndependentPractice}>Independent Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyAssessment}>Pulley Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Lever pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartLeverFundamentals}>Lever Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedLeverPractice}>Guided Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverIndependentPractice}>Independent Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverAssessment}>Lever Check</SecondaryButton></div></div></Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
+  return <Shell><section className="mx-auto max-w-6xl px-8 py-12"><div className="mb-9"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Dashboard</p><h1 className="mt-3 text-4xl font-semibold">Your preparation cockpit</h1></div><div className="grid gap-5 lg:grid-cols-2"><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-3xl font-semibold">{rec?.title}</h2><p className="mt-3 max-w-2xl text-[#AAB4C0]">{rec?.summary}</p><div className="mt-7 flex flex-col gap-3 sm:flex-row">{canStartHydraulics ? <PrimaryButton onClick={onStartHydraulics}>Start module</PrimaryButton> : canStartGuided ? <PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton> : canStartGear ? <PrimaryButton onClick={onStartGearFundamentals}>Start module</PrimaryButton> : canStartGuidedGear ? <PrimaryButton onClick={onStartGuidedGearPractice}>Begin guided practice</PrimaryButton> : canStartIndependentGear ? <PrimaryButton onClick={onStartGearIndependentPractice}>Start independent practice</PrimaryButton> : canStartGearAssessment ? <PrimaryButton onClick={onStartGearAssessment}>Start Gear Check</PrimaryButton> : canStartPulley ? <PrimaryButton onClick={onStartPulleyFundamentals}>Start module</PrimaryButton> : canStartGuidedPulley ? <PrimaryButton onClick={onStartGuidedPulleyPractice}>Begin guided practice</PrimaryButton> : canStartIndependentPulley ? <PrimaryButton onClick={onStartPulleyIndependentPractice}>Start independent practice</PrimaryButton> : canStartPulleyAssessment ? <PrimaryButton onClick={onStartPulleyAssessment}>Start Pulley Check</PrimaryButton> : canStartLever ? <PrimaryButton onClick={onStartLeverFundamentals}>Start module</PrimaryButton> : canStartGuidedLever ? <PrimaryButton onClick={onStartGuidedLeverPractice}>Begin guided practice</PrimaryButton> : canStartIndependentLever ? <PrimaryButton onClick={onStartLeverIndependentPractice}>Start independent practice</PrimaryButton> : canStartLeverAssessment ? <PrimaryButton onClick={onStartLeverAssessment}>Start Lever Check</PrimaryButton> : canStartMixedAssessment ? <PrimaryButton onClick={onStartMixedAssessment}>Start Mixed Mechanical Assessment</PrimaryButton> : canStartMixed ? <PrimaryButton onClick={onStartMixedPractice}>Start mixed practice</PrimaryButton> : <PrimaryButton disabled>{rec?.actionLabel} — coming soon</PrimaryButton>}<SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current focus</div><h3 className="mt-3 text-2xl font-semibold">{journey.dashboardState?.currentFocusLabel}</h3><p className="mt-3 text-[#9AA3B2]">This is the area FloSpatial currently recommends addressing next. If no clear weakness is identified, this may be a structured progression step rather than a weakness signal.</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Readiness snapshot</div><h3 className="mt-3 text-2xl font-semibold">{readiness?.label}</h3><p className="mt-3 text-[#9AA3B2]">{readiness?.explanation}</p></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><ul className="mt-4 space-y-3 text-[#C8D2DD]">{milestones.map((m) => <li key={m.milestoneId}>• {m.label}</li>)}</ul></Card><Card><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Starting point summary</div><p className="mt-4 text-[#C8D2DD]">{journey.dashboardState?.baselineSummary?.mechanicalQuestionsCompleted ?? 0} mechanical reasoning questions completed.</p>{journey.dashboardState?.baselineSummary?.focusArea && <p className="mt-3 text-[#9AA3B2]">Initial focus: {journey.dashboardState.baselineSummary.focusArea}</p>}</Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Alpha pathway access</div><h3 className="mt-3 text-2xl font-semibold">Mechanical pathways</h3><p className="mt-3 max-w-3xl text-[#9AA3B2]">Direct access remains available while the pathways are being tested. These buttons do not change the current recommendation until a stage is completed.</p><p className="mt-3 text-xs text-[#6E7A88]">Build: {BUILD_LABEL}</p><div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Gear pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartGearFundamentals}>Gear Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedGearPractice}>Guided Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearIndependentPractice}>Independent Gear Practice</SecondaryButton><SecondaryButton onClick={onStartGearAssessment}>Gear Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Pulley pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartPulleyFundamentals}>Pulley Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedPulleyPractice}>Guided Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyIndependentPractice}>Independent Pulley Practice</SecondaryButton><SecondaryButton onClick={onStartPulleyAssessment}>Pulley Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Lever pathway</div><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onStartLeverFundamentals}>Lever Fundamentals</PrimaryButton><SecondaryButton onClick={onStartGuidedLeverPractice}>Guided Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverIndependentPractice}>Independent Lever Practice</SecondaryButton><SecondaryButton onClick={onStartLeverAssessment}>Lever Check</SecondaryButton></div></div><div className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Integrated mechanical assessment</div><p className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Mixes gears, pulleys, levers and hydraulics so the candidate must select the right method without being told the category.</p><div className="mt-4"><PrimaryButton onClick={onStartMixedAssessment}>Mixed Mechanical Assessment</PrimaryButton></div></div></Card><Card className="lg:col-span-2"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Save status</div><p className="mt-4 text-[#C8D2DD]">Progress saved on this device.</p><p className="mt-3 text-[#9AA3B2]">You can continue without creating an account. A free username option can be added later for cross-device continuity.</p><div className="mt-7"><SecondaryButton onClick={onReset}>Reset local demo journey</SecondaryButton></div></Card>{SHOW_TEST_SCENARIOS && <div className="lg:col-span-2"><TestScenarioPanel onLoad={onLoadTestScenario} /></div>}</div></section></Shell>;
 }
 
 function HydraulicWorkedExampleDiagram() {
@@ -2903,6 +3142,12 @@ function getGearDiagramSpec(questionId: string): GearDiagramSpec {
     "GEAR-AS-008": { teeth: [40, 10], yOffsets: [24, -24], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
     "GEAR-AS-009": { teeth: [20, 40], yOffsets: [-20, 20], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
     "GEAR-AS-010": { teeth: [20, 10, 40], yOffsets: [18, -24, 18], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+    "MMA-GEAR-001": { teeth: [20, 20, 20, 20], yOffsets: [24, -24, 24, -24], driverIndex: 0, driverDirection: "clockwise" },
+    "MMA-GEAR-002": { teeth: [20, 20, 20], yOffsets: [-24, 24, -24], driverIndex: 1, driverDirection: "clockwise" },
+    "MMA-GEAR-003": { teeth: [12, 36], yOffsets: [18, -18], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+    "MMA-GEAR-004": { teeth: [40, 10], yOffsets: [-18, 18], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+    "MMA-GEAR-005": { teeth: [20, 24, 60], yOffsets: [18, -24, 18], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
+    "MMA-GEAR-006": { teeth: [15, 20, 20, 45], yOffsets: [24, -18, 18, -24], driverIndex: 0, driverDirection: "clockwise", showTeeth: true },
   };
   return specs[questionId] ?? { teeth: [20, 20], driverIndex: 0, driverDirection: "clockwise" };
 }
@@ -2936,7 +3181,7 @@ function buildGearDiagramNodes(spec: GearDiagramSpec) {
   });
 }
 
-function GearQuestionDiagram({ question, mode }: { question: MvpQuestion; mode: GearDiagramMode }) {
+function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { question: MvpQuestion; mode: GearDiagramMode; hideContextLabel?: boolean }) {
   const spec = getGearDiagramSpec(question.questionId);
   const nodes = buildGearDiagramNodes(spec);
   const driver = nodes[spec.driverIndex];
@@ -2949,9 +3194,9 @@ function GearQuestionDiagram({ question, mode }: { question: MvpQuestion; mode: 
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-4 sm:p-6">
       <div className="mb-3 flex items-center justify-between gap-4">
-        <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{mode === "guided" ? "Guided diagram" : mode === "practice" ? "Practice diagram" : "Gear diagram"}</div>
+        {!hideContextLabel && <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{mode === "guided" ? "Guided diagram" : mode === "practice" ? "Practice diagram" : "Gear diagram"}</div>}
         {mode === "practice" && <div className="text-xs text-[#6E7A88]">No guided cues</div>}
-        {mode === "assessment" && <div className="text-xs text-[#6E7A88]">No hints</div>}
+        {mode === "assessment" && <div className={`text-xs text-[#6E7A88] ${hideContextLabel ? "ml-auto" : ""}`}>No hints</div>}
       </div>
       <svg viewBox="0 0 760 315" role="img" aria-label={aria} className="h-auto w-full">
         <defs>
@@ -3063,14 +3308,15 @@ const pulleySupportCounts: Record<string, number> = {
   "PULL-GP-001": 1, "PULL-GP-002": 2, "PULL-GP-003": 3, "PULL-GP-004": 4, "PULL-GP-005": 2, "PULL-GP-006": 2, "PULL-GP-007": 2, "PULL-GP-008": 3, "PULL-GP-009": 4, "PULL-GP-010": 4,
   "PULL-IP-001": 1, "PULL-IP-002": 1, "PULL-IP-003": 2, "PULL-IP-004": 3, "PULL-IP-005": 4, "PULL-IP-006": 2, "PULL-IP-007": 2, "PULL-IP-008": 3, "PULL-IP-009": 4, "PULL-IP-010": 2, "PULL-IP-011": 3, "PULL-IP-012": 4, "PULL-IP-013": 2, "PULL-IP-014": 3, "PULL-IP-015": 4, "PULL-IP-016": 4, "PULL-IP-017": 2, "PULL-IP-018": 3, "PULL-IP-019": 3, "PULL-IP-020": 2, "PULL-IP-021": 4, "PULL-IP-022": 4, "PULL-IP-023": 2, "PULL-IP-024": 4, "PULL-IP-025": 3,
   "PULL-AS-001": 1, "PULL-AS-002": 2, "PULL-AS-003": 3, "PULL-AS-004": 4, "PULL-AS-005": 3, "PULL-AS-006": 4, "PULL-AS-007": 4, "PULL-AS-008": 3, "PULL-AS-009": 2, "PULL-AS-010": 4,
+  "MMA-PULL-001": 1, "MMA-PULL-002": 2, "MMA-PULL-003": 3, "MMA-PULL-004": 4, "MMA-PULL-005": 4, "MMA-PULL-006": 3,
 };
-function PulleyQuestionDiagram({ question, mode }: { question: MvpQuestion; mode: PulleyQuestionMode }) {
+function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { question: MvpQuestion; mode: PulleyQuestionMode; hideContextLabel?: boolean }) {
   const count = pulleySupportCounts[question.questionId] ?? 2;
   const fixedOnly = count === 1;
   const helper = mode === "guided" ? question.feedbackCue : undefined;
-  if (fixedOnly) return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div><svg viewBox="0 0 760 330" role="img" aria-label="Single fixed pulley with a load on one side and a free end on the other" className="h-auto w-full"><line x1="170" y1="52" x2="590" y2="52" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/><circle cx="380" cy="100" r="48" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="5"/><path d="M 285 260 L 285 100 Q 285 52 333 52 L 427 52 Q 475 52 475 100 L 475 275" fill="none" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/><rect x="230" y="245" width="110" height="55" rx="12" fill="#252C35"/><text x="285" y="278" textAnchor="middle" fill="#F4F6F8" fontSize="20">Load</text><path d="M 475 210 L 475 285" stroke="#D9F8FF" strokeWidth="5"/><path d="M 460 268 L 475 292 L 490 268" fill="#D9F8FF"/><text x="525" y="265" fill="#AAB4C0" fontSize="18">Pull down</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+  if (fixedOnly) return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 330" role="img" aria-label="Single fixed pulley with a load on one side and a free end on the other" className="h-auto w-full"><line x1="170" y1="52" x2="590" y2="52" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/><circle cx="380" cy="100" r="48" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="5"/><path d="M 285 260 L 285 100 Q 285 52 333 52 L 427 52 Q 475 52 475 100 L 475 275" fill="none" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/><rect x="230" y="245" width="110" height="55" rx="12" fill="#252C35"/><text x="285" y="278" textAnchor="middle" fill="#F4F6F8" fontSize="20">Load</text><path d="M 475 210 L 475 285" stroke="#D9F8FF" strokeWidth="5"/><path d="M 460 268 L 475 292 L 490 268" fill="#D9F8FF"/><text x="525" y="265" fill="#AAB4C0" fontSize="18">Pull down</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
   const xs = Array.from({ length: count }, (_, i) => 250 + (i * 260) / Math.max(count - 1, 1));
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div><svg viewBox="0 0 760 350" role="img" aria-label={`Moving pulley block supported by ${count} rope sections`} className="h-auto w-full"><line x1="100" y1="55" x2="650" y2="55" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/>{xs.map((x,i)=><g key={x}><line x1={x} y1="70" x2={x} y2="220" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/>{mode === "guided" && <text x={x} y="135" textAnchor="middle" fill="#D9F8FF" fontSize="17">{i+1}</text>}</g>)}<rect x="205" y="215" width="350" height="62" rx="20" fill="#171C23" stroke="rgba(255,255,255,0.24)" strokeWidth="4"/><circle cx="300" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><circle cx="460" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><text x="380" y="256" textAnchor="middle" fill="#F4F6F8" fontSize="20" fontWeight="700">Moving block</text><rect x="300" y="280" width="160" height="48" rx="12" fill="#252C35"/><text x="380" y="311" textAnchor="middle" fill="#C8D2DD" fontSize="19">Load</text><line x1="600" y1="70" x2="600" y2="270" stroke="#8D98A6" strokeWidth="5" strokeDasharray="10 9"/><path d="M 586 252 L 600 276 L 614 252" fill="#8D98A6"/>{mode === "guided" && <text x="620" y="185" fill="#8D98A6" fontSize="16">Free end</text>}</svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 350" role="img" aria-label={`Moving pulley block supported by ${count} rope sections`} className="h-auto w-full"><line x1="100" y1="55" x2="650" y2="55" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/>{xs.map((x,i)=><g key={x}><line x1={x} y1="70" x2={x} y2="220" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/>{mode === "guided" && <text x={x} y="135" textAnchor="middle" fill="#D9F8FF" fontSize="17">{i+1}</text>}</g>)}<rect x="205" y="215" width="350" height="62" rx="20" fill="#171C23" stroke="rgba(255,255,255,0.24)" strokeWidth="4"/><circle cx="300" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><circle cx="460" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><text x="380" y="256" textAnchor="middle" fill="#F4F6F8" fontSize="20" fontWeight="700">Moving block</text><rect x="300" y="280" width="160" height="48" rx="12" fill="#252C35"/><text x="380" y="311" textAnchor="middle" fill="#C8D2DD" fontSize="19">Load</text><line x1="600" y1="70" x2="600" y2="270" stroke="#8D98A6" strokeWidth="5" strokeDasharray="10 9"/><path d="M 586 252 L 600 276 L 614 252" fill="#8D98A6"/>{mode === "guided" && <text x="620" y="185" fill="#8D98A6" fontSize="16">Free end</text>}</svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
 }
 
 function PulleyPracticeIntroScreen({ stage, onStart }: { stage: "guided" | "independent" | "assessment"; onStart: () => void }) {
@@ -3110,13 +3356,17 @@ type LeverDiagramSpec = { fulcrumX: number; loadX: number; effortX: number; load
 function getLeverDiagramSpec(questionId: string): LeverDiagramSpec {
   const secondClass = new Set(["LEV-GP-009", "LEV-IP-014", "LEV-IP-017", "LEV-AS-007"]);
   const thirdClass = new Set(["LEV-IP-015", "LEV-IP-018"]);
-  const closeLoad = new Set(["LEV-GP-003", "LEV-GP-004", "LEV-IP-003", "LEV-IP-004", "LEV-IP-022", "LEV-AS-002", "LEV-AS-003"]);
+  const closeLoad = new Set(["LEV-GP-003", "LEV-GP-004", "LEV-IP-003", "LEV-IP-004", "LEV-IP-022", "LEV-AS-002", "LEV-AS-003", "MMA-LEV-002"]);
+  if (questionId === "MMA-LEV-001") return { fulcrumX: 340, loadX: 280, effortX: 620, loadLabel: "0.5 m", effortLabel: "2 m" };
+  if (questionId === "MMA-LEV-004") return { fulcrumX: 340, loadX: 250, effortX: 650, loadLabel: "1 m", effortLabel: "3 m" };
+  if (questionId === "MMA-LEV-005") return { fulcrumX: 340, loadX: 260, effortX: 650, loadLabel: "1 m", effortLabel: "4 m" };
+  if (questionId === "MMA-LEV-006") return { fulcrumX: 360, loadX: 260, effortX: 650, loadLabel: "0.75 m", effortLabel: "?" };
   if (secondClass.has(questionId)) return { fulcrumX: 140, loadX: 360, effortX: 650, helper: "Notice which part lies between the other two." };
   if (thirdClass.has(questionId)) return { fulcrumX: 140, effortX: 350, loadX: 650, helper: "Notice which part lies between the fulcrum and load." };
   if (closeLoad.has(questionId)) return { fulcrumX: 300, loadX: 220, effortX: 650, helper: "Compare the two distances from the fulcrum." };
-  if (["LEV-GP-005", "LEV-IP-007", "LEV-AS-006"].includes(questionId)) return { fulcrumX: 340, loadX: 250, effortX: 610, loadLabel: "1 m", effortLabel: "3 m", helper: "Compare force × distance on each side." };
-  if (["LEV-GP-006", "LEV-IP-008", "LEV-AS-004"].includes(questionId)) return { fulcrumX: 340, loadX: 280, effortX: 620, loadLabel: "0.5 m", effortLabel: "2 m", helper: "Balance the turning effects." };
-  if (["LEV-GP-010", "LEV-IP-009", "LEV-IP-025", "LEV-AS-005", "LEV-AS-010"].includes(questionId)) return { fulcrumX: 360, loadX: 260, effortX: 650, helper: "Use force × distance about the fulcrum." };
+  if (["LEV-GP-005", "LEV-IP-007", "LEV-AS-006", "MMA-LEV-005"].includes(questionId)) return { fulcrumX: 340, loadX: 250, effortX: 610, loadLabel: "1 m", effortLabel: "3 m", helper: "Compare force × distance on each side." };
+  if (["LEV-GP-006", "LEV-IP-008", "LEV-AS-004", "MMA-LEV-001", "MMA-LEV-004"].includes(questionId)) return { fulcrumX: 340, loadX: 280, effortX: 620, loadLabel: "0.5 m", effortLabel: "2 m", helper: "Balance the turning effects." };
+  if (["LEV-GP-010", "LEV-IP-009", "LEV-IP-025", "LEV-AS-005", "LEV-AS-010", "MMA-LEV-006"].includes(questionId)) return { fulcrumX: 360, loadX: 260, effortX: 650, helper: "Use force × distance about the fulcrum." };
   if (["LEV-IP-011"].includes(questionId)) return { fulcrumX: 380, loadX: 180, effortX: 650, loadLabel: "2 m", effortLabel: "?", helper: "Equal moments balance the seesaw." };
   if (["LEV-GP-002", "LEV-IP-002", "LEV-IP-020"].includes(questionId)) return { fulcrumX: 300, loadX: 190, effortX: 650, helper: "The farther effort point gives the greater turning effect." };
   return { fulcrumX: 360, loadX: 210, effortX: 630, helper: "Find the fulcrum, then compare the two arms." };
@@ -3171,6 +3421,55 @@ function LeverDebriefScreen({ journey, stage, onWhy, onDashboard, onNext }: { jo
   const labels: Record<string,string> = { recognition: "Setup recognition", mechanical_advantage: "Mechanical advantage", balance_force: "Balance & force" };
   const canUseNext = stage === "guided" ? rec?.recommendationType === "begin_lever_independent_practice" : stage === "independent" ? rec?.recommendationType === "begin_lever_assessment" : false;
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{stage === "assessment" ? "Lever Check debrief" : "Lever practice debrief"}</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p>{summary && <div className="mt-8 grid gap-4 sm:grid-cols-3">{summary.conceptBreakdown.map((item)=><div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{labels[item.concept] ?? item.concept}</div><div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div></div>)}</div>}<div className="mt-8 grid gap-5"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton>{canUseNext && onNext && <PrimaryButton onClick={onNext}>{stage === "guided" ? "Start Independent Lever Practice" : "Start Lever Check"}</PrimaryButton>}<PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+}
+
+
+function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
+  const specs: Record<string, { inputWidth: number; outputWidth: number; inputLabel: string; outputLabel: string; topLabel?: string; showInputArrow?: boolean }> = {
+    "MMA-HYD-001": { inputWidth: 78, outputWidth: 150, inputLabel: "Area 1", outputLabel: "Area 2", topLabel: "Same pressure" },
+    "MMA-HYD-002": { inputWidth: 86, outputWidth: 120, inputLabel: "Input", outputLabel: "Output", showInputArrow: true },
+    "MMA-HYD-003": { inputWidth: 90, outputWidth: 130, inputLabel: "Fluid", outputLabel: "Area 0.02 m²", topLabel: "Pressure 50 kPa" },
+    "MMA-HYD-004": { inputWidth: 72, outputWidth: 160, inputLabel: "100 N · 2 cm²", outputLabel: "10 cm²" },
+    "MMA-HYD-005": { inputWidth: 72, outputWidth: 150, inputLabel: "Input movement", outputLabel: "Output movement", topLabel: "Force advantage 4:1" },
+    "MMA-HYD-006": { inputWidth: 110, outputWidth: 110, inputLabel: "300 N", outputLabel: "Equal area", topLabel: "Ideal sealed system" },
+  };
+  const spec = specs[question.questionId] ?? { inputWidth: 86, outputWidth: 130, inputLabel: "Input", outputLabel: "Output" };
+  const inputX = 170 - spec.inputWidth / 2;
+  const outputX = 590 - spec.outputWidth / 2;
+  const arrowId = `hyd-assess-arrow-${question.questionId}`;
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Hydraulic system with two connected pistons" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#5ED3F3" /></marker></defs><rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/><path d={`M ${inputX+spec.inputWidth} 225 H ${outputX}`} stroke="#5ED3F3" strokeWidth="32" strokeLinecap="round" opacity="0.24"/><path d={`M ${inputX+spec.inputWidth+8} 225 H ${outputX-8}`} stroke="#5ED3F3" strokeWidth="5" strokeDasharray="12 12" opacity="0.85"/><text x="380" y="210" textAnchor="middle" fill="#D9F8FF" fontSize="17">sealed fluid</text><text x="170" y="300" textAnchor="middle" fill="#AAB4C0" fontSize="17">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#AAB4C0" fontSize="17">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="17">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
+}
+
+function MixedMechanicalAssessmentDiagram({ question }: { question: MvpQuestion }) {
+  if (question.subcompetency === "gears") return <GearQuestionDiagram question={question} mode="assessment" hideContextLabel />;
+  if (question.subcompetency === "pulleys") return <PulleyQuestionDiagram question={question} mode="assessment" hideContextLabel />;
+  if (question.subcompetency === "levers") return <LeverQuestionDiagram question={question} mode="assessment" />;
+  return <HydraulicAssessmentDiagram question={question} />;
+}
+
+function MixedMechanicalAssessmentIntroScreen({ onStart }: { onStart: () => void }) {
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Integrated evidence check</p><h1 className="mt-5 text-4xl font-semibold">Mixed Mechanical Assessment</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Gears, pulleys, levers and hydraulics are mixed together. The category is not announced, so you must first decide which mechanical method applies.</p><div className="mx-auto mt-9 grid max-w-2xl gap-3 sm:grid-cols-4">{["24 questions", "4 mechanical areas", "No immediate feedback", "Untimed in v1"].map((item)=><div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">The Mentor will use the result to make either a weakness recommendation or a progression recommendation.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Start mixed assessment</PrimaryButton></div></Card></section></Shell>;
+}
+
+function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); }, [questionIndex]);
+  const question = mixedMechanicalAssessmentQuestions[questionIndex];
+  if (!question) return null;
+  const progress = ((questionIndex + 1) / mixedMechanicalAssessmentQuestions.length) * 100;
+  const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
+  function next() { if (!selectedOptionId) return; onAnswer(createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false), questionIndex === mixedMechanicalAssessmentQuestions.length - 1); }
+  return <Shell right="Mixed Mechanical Assessment"><section className="mx-auto max-w-5xl px-8 py-12"><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div><div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question"}</PrimaryButton></div></Card></section></Shell>;
+}
+
+function MixedMechanicalAssessmentDebriefScreen({ journey, onWhy, onDashboard }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void }) {
+  const debrief = getLatestDebrief(journey);
+  const rec = getCurrentRecommendation(journey);
+  const summary = [...journey.practiceSummaries].reverse().find((item) => item.sessionType === "mixed_mechanical_assessment");
+  const labels: Record<string,string> = { hydraulics: "Hydraulics", gears: "Gears", pulleys: "Pulleys", levers: "Levers" };
+  const isProgression = rec?.recommendationType === "continue_mixed_mechanical_practice";
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-5xl items-center px-8 py-16"><Card><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Integrated assessment debrief</p><h1 className="mt-5 text-4xl font-semibold leading-tight">{debrief?.title}</h1><p className="mt-5 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p></div><Badge>{isProgression ? "Progression recommendation" : "Weakness recommendation"}</Badge></div>{summary && <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{summary.conceptBreakdown.map((item)=><div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{labels[item.concept] ?? item.concept}</div><div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div></div>)}</div>}<div className="mt-8 grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Mentor recommendation</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 leading-relaxed text-[#AAB4C0]">{rec?.summary}</p></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
 }
 
 function PasswordGate({ onUnlock }: { onUnlock: () => void }) { const [password, setPassword] = useState(""); const [error, setError] = useState(false); return <main className="flex min-h-screen items-center justify-center bg-[#111418] p-8 text-[#F4F6F8]"><section className="w-full max-w-md rounded-[32px] border border-white/5 bg-[#171C23] p-10 shadow-2xl"><div className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">FloSpatial</div><h1 className="mt-6 text-4xl font-semibold">Private testing access</h1><p className="mt-5 text-[#9AA3B2]">Enter the shared testing password to continue.</p><form onSubmit={(e) => { e.preventDefault(); if (password.trim() === TEST_ACCESS_PASSWORD) { window.localStorage.setItem("flospatial.accessGranted.v1", "true"); onUnlock(); } else setError(true); }} className="mt-8"><input value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} type="password" autoFocus className="w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-4 outline-none focus:border-[#5ED3F3]/50" placeholder="Password" />{error && <p className="mt-3 text-sm text-[#FF9A9A]">That password did not match.</p>}<button className="mt-6 w-full rounded-xl border border-[#5ED3F3]/30 bg-[#5ED3F3]/10 px-7 py-4 font-medium text-[#D9F8FF]">Enter</button></form></section></main>; }
@@ -3273,6 +3572,15 @@ export default function FloSpatialPrototype() {
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
 
+
+  function openMixedMechanicalAssessmentIntro() { setShowWhy(false); setScreen("mixed-mechanical-assessment-intro"); }
+  function startMixedMechanicalAssessment() { const session = createMixedMechanicalAssessmentSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("mixed-mechanical-assessment-question"); }
+  function handleMixedMechanicalAssessmentAnswer(response: AssessmentResponse, final: boolean) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+    if (final && activeSessionId) { const completed = completeMixedMechanicalAssessment(withResponse, activeSessionId); updateJourney(completed); setScreen("mixed-mechanical-assessment-debrief"); return; }
+    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+  }
+
   const why = getCurrentWhy(journey);
-  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onStartLeverFundamentals={openLeverFundamentals} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} onStartLeverIndependentPractice={openLeverIndependentPracticeIntro} onStartLeverAssessment={openLeverAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "lever-fundamentals" && <LeverFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeLeverModule} />}{screen === "lever-fundamentals-complete" && <LeverFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} />}{screen === "guided-lever-practice-intro" && <LeverPracticeIntroScreen stage="guided" onStart={startGuidedLeverPractice} />}{screen === "guided-lever-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedLeverAnswer} questions={guidedLeverPracticeQuestions} stage="guided" />}{screen === "guided-lever-practice-debrief" && <LeverDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverIndependentPracticeIntro} />}{screen === "lever-independent-practice-intro" && <LeverPracticeIntroScreen stage="independent" onStart={startLeverIndependentPractice} />}{screen === "lever-independent-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverIndependentPracticeAnswer} questions={leverIndependentPracticeQuestions} stage="independent" />}{screen === "lever-independent-practice-debrief" && <LeverDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverAssessmentIntro} />}{screen === "lever-assessment-intro" && <LeverPracticeIntroScreen stage="assessment" onStart={startLeverAssessment} />}{screen === "lever-assessment-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverAssessmentAnswer} questions={leverAssessmentQuestions} stage="assessment" />}{screen === "lever-assessment-debrief" && <LeverDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}</>;
+  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartMixedPractice={openMixedPracticeIntro} onStartMixedAssessment={openMixedMechanicalAssessmentIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onStartLeverFundamentals={openLeverFundamentals} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} onStartLeverIndependentPractice={openLeverIndependentPracticeIntro} onStartLeverAssessment={openLeverAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-assessment-intro" && <MixedMechanicalAssessmentIntroScreen onStart={startMixedMechanicalAssessment} />}{screen === "mixed-mechanical-assessment-question" && activeSession && <MixedMechanicalAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedMechanicalAssessmentAnswer} />}{screen === "mixed-mechanical-assessment-debrief" && <MixedMechanicalAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "lever-fundamentals" && <LeverFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeLeverModule} />}{screen === "lever-fundamentals-complete" && <LeverFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} />}{screen === "guided-lever-practice-intro" && <LeverPracticeIntroScreen stage="guided" onStart={startGuidedLeverPractice} />}{screen === "guided-lever-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedLeverAnswer} questions={guidedLeverPracticeQuestions} stage="guided" />}{screen === "guided-lever-practice-debrief" && <LeverDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverIndependentPracticeIntro} />}{screen === "lever-independent-practice-intro" && <LeverPracticeIntroScreen stage="independent" onStart={startLeverIndependentPractice} />}{screen === "lever-independent-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverIndependentPracticeAnswer} questions={leverIndependentPracticeQuestions} stage="independent" />}{screen === "lever-independent-practice-debrief" && <LeverDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverAssessmentIntro} />}{screen === "lever-assessment-intro" && <LeverPracticeIntroScreen stage="assessment" onStart={startLeverAssessment} />}{screen === "lever-assessment-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverAssessmentAnswer} questions={leverAssessmentQuestions} stage="assessment" />}{screen === "lever-assessment-debrief" && <LeverDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}</>;
 }
