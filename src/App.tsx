@@ -1,37 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-function useVisualViewportBottomOffset(baseGap = 12) {
-  const [bottomOffset, setBottomOffset] = useState(baseGap);
-
-  useEffect(() => {
-    const viewport = window.visualViewport;
-
-    function updateOffset() {
-      if (!viewport) {
-        setBottomOffset(baseGap);
-        return;
-      }
-
-      const layoutHeight = document.documentElement.clientHeight;
-      const obscuredHeight = Math.max(0, layoutHeight - viewport.height - viewport.offsetTop);
-      setBottomOffset(Math.max(baseGap, Math.round(obscuredHeight + baseGap)));
-    }
-
-    updateOffset();
-    viewport?.addEventListener("resize", updateOffset);
-    viewport?.addEventListener("scroll", updateOffset);
-    window.addEventListener("orientationchange", updateOffset);
-
-    return () => {
-      viewport?.removeEventListener("resize", updateOffset);
-      viewport?.removeEventListener("scroll", updateOffset);
-      window.removeEventListener("orientationchange", updateOffset);
-    };
-  }, [baseGap]);
-
-  return bottomOffset;
-}
-
 type AppScreen =
   | "landing"
   | "pathway-selection"
@@ -4484,8 +4452,8 @@ function HydraulicCuriosityDiagram() {
         <circle cx="116" cy="64" r="13" fill="#111418" stroke="#D9F8FF" strokeWidth="4" />
         <rect x="30" y="20" width="70" height="27" rx="9" fill="#D9F8FF" opacity=".95" />
       </g>
-      <text x="130" y="282" textAnchor="middle" fill="#AAB4C0" fontSize="20">small input piston</text>
-      <text x="570" y="282" textAnchor="middle" fill="#AAB4C0" fontSize="20">large output piston</text>
+      <text x="130" y="282" textAnchor="middle" fill="#AAB4C0" fontSize="24" fontWeight="650">INPUT</text>
+      <text x="570" y="282" textAnchor="middle" fill="#AAB4C0" fontSize="24" fontWeight="650">OUTPUT</text>
     </svg>
   </div>;
 }
@@ -4499,7 +4467,7 @@ function HydraulicPressureDiagram() {
       <rect x="525" y="82" width="90" height="34" rx="7" fill="#DDE3EA" />
       <path d="M190 175H490" stroke="#5ED3F3" strokeWidth="38" strokeLinecap="round" opacity=".25" />
       {[235,305,375,445].map((x) => <g key={x}><circle cx={x} cy="175" r="17" fill="#5ED3F3" opacity=".18"/><text x={x} y="181" textAnchor="middle" fill="#D9F8FF" fontSize="16" fontWeight="700">P</text></g>)}
-      <text x="350" y="225" textAnchor="middle" fill="#D9F8FF" fontSize="21" fontWeight="650">same pressure throughout</text>
+      <text x="350" y="225" textAnchor="middle" fill="#D9F8FF" fontSize="25" fontWeight="700">SAME PRESSURE</text>
     </svg>
   </div>;
 }
@@ -4515,52 +4483,41 @@ function HydraulicAreaForceDiagram() {
       <path d="M215 195H475" stroke="#5ED3F3" strokeWidth="38" strokeLinecap="round" opacity=".25" />
       <path d="M150 122V58" stroke="#D9F8FF" strokeWidth="5" markerEnd="url(#forceArrowV1)" />
       <path d="M563 105V30" stroke="#D9F8FF" strokeWidth="9" markerEnd="url(#forceArrowV1)" />
-      <text x="150" y="274" textAnchor="middle" fill="#AAB4C0" fontSize="19">smaller area · smaller force</text>
-      <text x="563" y="274" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="650">larger area · larger force</text>
-      <text x="345" y="226" textAnchor="middle" fill="#5ED3F3" fontSize="18">pressure remains equal</text>
+      <text x="150" y="274" textAnchor="middle" fill="#AAB4C0" fontSize="22" fontWeight="650">SMALLER FORCE</text>
+      <text x="563" y="274" textAnchor="middle" fill="#D9F8FF" fontSize="22" fontWeight="700">GREATER FORCE</text>
+      <text x="345" y="226" textAnchor="middle" fill="#5ED3F3" fontSize="22" fontWeight="700">SAME PRESSURE</text>
     </svg>
   </div>;
 }
 
 function HydraulicWorkedExampleDiagram() {
   return (
-    <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">
-      <div className="mb-5 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Worked example diagram</div>
-      <svg viewBox="0 0 760 330" role="img" aria-label="Hydraulic jack diagram showing a small input piston transmitting pressure to a larger output piston" className="h-auto w-full">
+    <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] px-3 py-5 sm:p-7">
+      <div className="mb-4 px-2 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Worked example diagram</div>
+      <svg viewBox="0 0 680 255" role="img" aria-label="A small input piston transmits the same pressure through fluid to a larger output piston, producing greater force" className="h-auto w-full">
         <defs>
-          <marker id="arrowCyan" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" />
-          </marker>
-          <marker id="arrowSoft" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#D9F8FF" />
-          </marker>
+          <marker id="arrowCyan" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" /></marker>
+          <marker id="arrowSoft" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D9F8FF" /></marker>
         </defs>
-
-        <rect x="70" y="115" width="115" height="145" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.18)" strokeWidth="3" />
-        <rect x="95" y="142" width="65" height="28" rx="6" fill="#DDE3EA" />
-        <rect x="112" y="55" width="31" height="88" rx="8" fill="#8D98A6" />
-        <path d="M 127 35 L 127 92" stroke="#D9F8FF" strokeWidth="5" markerEnd="url(#arrowSoft)" />
-        <text x="127" y="26" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Force applied</text>
-        <text x="127" y="294" textAnchor="middle" fill="#AAB4C0" fontSize="17">Small input piston</text>
-
-        <path d="M 185 222 H 515" stroke="#5ED3F3" strokeWidth="34" strokeLinecap="round" opacity="0.25" />
-        <path d="M 190 222 H 505" stroke="#5ED3F3" strokeWidth="5" strokeDasharray="12 12" markerEnd="url(#arrowCyan)" />
-        <text x="350" y="202" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Pressure path through fluid</text>
-
-        <rect x="515" y="82" width="175" height="178" rx="18" fill="#171C23" stroke="rgba(255,255,255,0.18)" strokeWidth="3" />
-        <rect x="548" y="126" width="110" height="42" rx="8" fill="#DDE3EA" />
-        <rect x="580" y="50" width="48" height="78" rx="9" fill="#8D98A6" />
-        <path d="M 604 119 L 604 60" stroke="#D9F8FF" strokeWidth="5" markerEnd="url(#arrowSoft)" />
-        <text x="604" y="32" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Greater lifting force</text>
-        <text x="604" y="294" textAnchor="middle" fill="#AAB4C0" fontSize="17">Large output piston</text>
-
-        <text x="604" y="317" textAnchor="middle" fill="#5ED3F3" fontSize="16">Larger area → greater force</text>
-        <text x="127" y="317" textAnchor="middle" fill="#6E7A88" fontSize="15">Longer input movement</text>
-        <text x="604" y="76" textAnchor="middle" fill="#6E7A88" fontSize="15">Shorter output movement</text>
+        <rect x="52" y="78" width="125" height="142" rx="15" fill="#171C23" stroke="rgba(255,255,255,0.18)" strokeWidth="3" />
+        <rect x="80" y="108" width="69" height="30" rx="6" fill="#DDE3EA" />
+        <rect x="99" y="37" width="31" height="73" rx="8" fill="#8D98A6" />
+        <path d="M 114 20 L 114 69" stroke="#D9F8FF" strokeWidth="6" markerEnd="url(#arrowSoft)" />
+        <path d="M 177 185 H 455" stroke="#5ED3F3" strokeWidth="38" strokeLinecap="round" opacity="0.25" />
+        <path d="M 190 185 H 440" stroke="#5ED3F3" strokeWidth="6" strokeDasharray="13 12" markerEnd="url(#arrowCyan)" />
+        <rect x="455" y="58" width="178" height="162" rx="18" fill="#171C23" stroke="rgba(255,255,255,0.18)" strokeWidth="3" />
+        <rect x="489" y="100" width="110" height="43" rx="8" fill="#DDE3EA" />
+        <rect x="521" y="27" width="48" height="75" rx="9" fill="#8D98A6" />
+        <path d="M 545 96 L 545 37" stroke="#D9F8FF" strokeWidth="8" markerEnd="url(#arrowSoft)" />
+        <text x="114" y="247" textAnchor="middle" fill="#D9F8FF" fontSize="22" fontWeight="700">INPUT</text>
+        <text x="316" y="166" textAnchor="middle" fill="#D9F8FF" fontSize="21" fontWeight="700">SAME PRESSURE</text>
+        <text x="545" y="247" textAnchor="middle" fill="#D9F8FF" fontSize="22" fontWeight="700">GREATER FORCE</text>
       </svg>
-      <p className="mt-5 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">
-        Same pressure acting over a larger area can produce greater output force. The tradeoff is that the larger piston usually moves a shorter distance.
-      </p>
+      <div className="mt-4 grid grid-cols-1 gap-2 px-2 text-base leading-relaxed text-[#C8D2DD] sm:grid-cols-2">
+        <p><span className="font-semibold text-[#D9F8FF]">Small input piston:</span> a modest force creates pressure in the fluid.</p>
+        <p><span className="font-semibold text-[#D9F8FF]">Large output piston:</span> the same pressure acts over a larger area, producing greater force.</p>
+      </div>
+      <p className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-base leading-relaxed text-[#D9F8FF]"><span className="font-semibold">Larger area → greater force.</span> The trade-off is that the larger piston usually moves a shorter distance.</p>
     </div>
   );
 }
@@ -4704,6 +4661,7 @@ function GearFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journe
     persistProgress({ ...progress, miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response], updatedAt: now() });
   }
   function goNext() {
+    if (miniCheck && !showFeedback) return;
     if (isFinalSection) { onComplete(); return; }
     const nextProgress = { ...progress, currentSectionIndex: Math.min(progress.currentSectionIndex + 1, gearFundamentalsModule.sections.length - 1), updatedAt: now() };
     setSelectedOptionId(null); setShowFeedback(false); persistProgress(nextProgress);
@@ -4727,7 +4685,6 @@ function HydraulicFundamentalsScreen({ journey, onSaveJourney, onComplete }: { j
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const sectionTopRef = useRef<HTMLDivElement | null>(null);
-  const visualViewportBottomOffset = useVisualViewportBottomOffset(12);
   const section = hydraulicFundamentalsModule.sections[progress.currentSectionIndex];
   const miniCheck = section.miniCheck;
   const selectedCorrect = Boolean(miniCheck && selectedOptionId === miniCheck.correctOptionId);
@@ -4769,7 +4726,7 @@ function HydraulicFundamentalsScreen({ journey, onSaveJourney, onComplete }: { j
     persistProgress(nextProgress);
   }
 
-  return <Shell><section className="mx-auto max-w-5xl px-5 pb-32 pt-7 sm:px-8 sm:pb-12 sm:pt-12"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / hydraulicFundamentalsModule.sections.length) * 100}%` }} /></div><div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Hydraulic Pressure</p><h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{hydraulicFundamentalsModule.title}</h1><p className="mt-2 text-sm text-[#9AA3B2] sm:text-base">{hydraulicFundamentalsModule.subtitle}</p></div><Badge>Section {progress.currentSectionIndex + 1} of {hydraulicFundamentalsModule.sections.length}</Badge></div><div ref={sectionTopRef} className="scroll-mt-4"><Card className="p-5 sm:p-8"><h2 className="text-2xl font-semibold sm:text-3xl">{section.title}</h2><p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[#C8D2DD] sm:text-lg">{section.body}</p>{section.sectionId === "hyd-fund-001" && <HydraulicCuriosityDiagram />}{section.sectionId === "hyd-fund-002" && <HydraulicPressureDiagram />}{section.sectionId === "hyd-fund-003" && <HydraulicAreaForceDiagram />}{section.sectionId === "hyd-fund-005" && <HydraulicWorkedExampleDiagram />}{section.sectionId === "hyd-fund-006" && <HydraulicSolvingMethodDiagram />}{section.keyPoint && <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{section.sectionId === "hyd-fund-008" ? "Pocket principle" : "Key idea"}</div><p className="mt-3 text-lg font-medium text-[#D9F8FF]">{section.keyPoint}</p></div>}{miniCheck && <div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5 sm:p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div><p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p><div className="mt-5 grid gap-3">{miniCheck.options.map((option) => <button key={option.optionId} onClick={() => answerMiniCheck(option.optionId)} className={`rounded-xl border p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"}`}><span className="font-semibold text-[#D9F8FF]">{option.label}.</span> <span className="text-[#C8D2DD]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}><p className="font-medium">{selectedCorrect ? "Exactly" : "Not quite"}</p><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p></div>}</div>}</Card></div><div style={{ bottom: visualViewportBottomOffset }} className="fixed inset-x-3 z-40 rounded-2xl border border-white/10 bg-[#111418]/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-2xl backdrop-blur-xl sm:static sm:inset-auto sm:mt-7 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-0 sm:shadow-none sm:backdrop-blur-none"><div className="mx-auto flex max-w-5xl gap-3"><SecondaryButton className="flex-1 sm:flex-none" onClick={goBack}>Back</SecondaryButton><PrimaryButton className="flex-1 sm:ml-auto sm:flex-none" onClick={goNext}>{isFinalSection ? "Continue to practice" : "Continue"}</PrimaryButton></div></div></section></Shell>;
+  return <Shell><section className="mx-auto max-w-5xl px-5 pb-40 pt-7 sm:px-8 sm:pb-12 sm:pt-12"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / hydraulicFundamentalsModule.sections.length) * 100}%` }} /></div><div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Hydraulic Pressure</p><h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{hydraulicFundamentalsModule.title}</h1><p className="mt-2 text-sm text-[#9AA3B2] sm:text-base">{hydraulicFundamentalsModule.subtitle}</p></div><Badge>Section {progress.currentSectionIndex + 1} of {hydraulicFundamentalsModule.sections.length}</Badge></div><div ref={sectionTopRef} className="scroll-mt-4"><Card className="p-5 sm:p-8"><h2 className="text-2xl font-semibold sm:text-3xl">{section.title}</h2><p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[#C8D2DD] sm:text-lg">{section.body}</p>{section.sectionId === "hyd-fund-001" && <HydraulicCuriosityDiagram />}{section.sectionId === "hyd-fund-002" && <HydraulicPressureDiagram />}{section.sectionId === "hyd-fund-003" && <HydraulicAreaForceDiagram />}{section.sectionId === "hyd-fund-005" && <HydraulicWorkedExampleDiagram />}{section.sectionId === "hyd-fund-006" && <HydraulicSolvingMethodDiagram />}{section.keyPoint && <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{section.sectionId === "hyd-fund-008" ? "Pocket principle" : "Key idea"}</div><p className="mt-3 text-lg font-medium text-[#D9F8FF]">{section.keyPoint}</p></div>}{miniCheck && <div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5 sm:p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div><p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p><div className="mt-5 grid gap-3">{miniCheck.options.map((option) => <button key={option.optionId} onClick={() => answerMiniCheck(option.optionId)} className={`rounded-xl border p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"}`}><span className="font-semibold text-[#D9F8FF]">{option.label}.</span> <span className="text-[#C8D2DD]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}><p className="font-medium">{selectedCorrect ? "Exactly" : "Not quite"}</p><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p></div>}</div>}</Card></div><div style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom))" }} className="fixed inset-x-3 z-40 rounded-2xl border border-white/10 bg-[#111418]/95 p-3 shadow-2xl backdrop-blur-xl sm:static sm:inset-auto sm:mt-7 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none"><div className="mx-auto flex max-w-5xl gap-3"><SecondaryButton className="flex-1 sm:flex-none" onClick={goBack}>Back</SecondaryButton><PrimaryButton className={`flex-1 sm:ml-auto sm:flex-none ${miniCheck && !showFeedback ? "cursor-not-allowed opacity-40" : ""}`} onClick={goNext} disabled={Boolean(miniCheck && !showFeedback)}>{isFinalSection ? "Continue to practice" : "Continue"}</PrimaryButton></div></div></section></Shell>;
 }
 
 function HydraulicFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuidedPractice }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuidedPractice: () => void }) {
