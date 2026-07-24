@@ -4685,7 +4685,7 @@ function HydraulicFundamentalsScreen({ journey, onSaveJourney, onComplete }: { j
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const sectionTopRef = useRef<HTMLDivElement | null>(null);
-  const feedbackRef = useRef<HTMLDivElement | null>(null);
+  const continueRef = useRef<HTMLDivElement | null>(null);
   const section = hydraulicFundamentalsModule.sections[progress.currentSectionIndex];
   const miniCheck = section.miniCheck;
   const selectedCorrect = Boolean(miniCheck && selectedOptionId === miniCheck.correctOptionId);
@@ -4703,14 +4703,38 @@ function HydraulicFundamentalsScreen({ journey, onSaveJourney, onComplete }: { j
   useEffect(() => {
     if (!showFeedback) return;
 
-    const frame = window.requestAnimationFrame(() => {
-      // On phones the Continue button now lives inside the feedback card.
-      // Bring that compact feedback/action unit into view without relying on
-      // Safari's changing bottom toolbar or viewport measurements.
-      feedbackRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
+    let frame = 0;
+    const timers: number[] = [];
 
-    return () => window.cancelAnimationFrame(frame);
+    const revealContinue = () => {
+      const target = continueRef.current;
+      if (!target || window.matchMedia("(min-width: 640px)").matches) return;
+
+      // Target the action itself, not merely the feedback card. "end" makes
+      // Safari bring the bottom of the Continue control into the viewport.
+      target.scrollIntoView({ behavior: "smooth", block: "end" });
+
+      // Add breathing room below the button. visualViewport reflects the
+      // actually visible iPhone area when Safari's browser chrome is present.
+      frame = window.requestAnimationFrame(() => {
+        const rect = target.getBoundingClientRect();
+        const viewport = window.visualViewport;
+        const visibleBottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+        const desiredBottom = visibleBottom - 28;
+        const overflow = rect.bottom - desiredBottom;
+        if (overflow > 0) window.scrollBy({ top: overflow, behavior: "smooth" });
+      });
+    };
+
+    // First pass after React has committed the feedback; second pass catches
+    // Safari toolbar/viewport settling during the initial smooth scroll.
+    timers.push(window.setTimeout(revealContinue, 40));
+    timers.push(window.setTimeout(revealContinue, 320));
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      window.cancelAnimationFrame(frame);
+    };
   }, [showFeedback]);
 
   function persistProgress(nextProgress: ModuleProgress) {
@@ -4741,7 +4765,7 @@ function HydraulicFundamentalsScreen({ journey, onSaveJourney, onComplete }: { j
     persistProgress(nextProgress);
   }
 
-  return <Shell><section className="mx-auto max-w-5xl px-5 pb-24 pt-7 sm:px-8 sm:pb-12 sm:pt-12"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / hydraulicFundamentalsModule.sections.length) * 100}%` }} /></div><div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Hydraulic Pressure</p><h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{hydraulicFundamentalsModule.title}</h1><p className="mt-2 text-sm text-[#9AA3B2] sm:text-base">{hydraulicFundamentalsModule.subtitle}</p></div><Badge>Section {progress.currentSectionIndex + 1} of {hydraulicFundamentalsModule.sections.length}</Badge></div><div ref={sectionTopRef} className="scroll-mt-4"><Card className="p-5 sm:p-8"><h2 className="text-2xl font-semibold sm:text-3xl">{section.title}</h2><p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[#C8D2DD] sm:text-lg">{section.body}</p>{section.sectionId === "hyd-fund-001" && <HydraulicCuriosityDiagram />}{section.sectionId === "hyd-fund-002" && <HydraulicPressureDiagram />}{section.sectionId === "hyd-fund-003" && <HydraulicAreaForceDiagram />}{section.sectionId === "hyd-fund-005" && <HydraulicWorkedExampleDiagram />}{section.sectionId === "hyd-fund-006" && <HydraulicSolvingMethodDiagram />}{section.keyPoint && <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{section.sectionId === "hyd-fund-008" ? "Pocket principle" : "Key idea"}</div><p className="mt-3 text-lg font-medium text-[#D9F8FF]">{section.keyPoint}</p></div>}{miniCheck && <div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5 sm:p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div><p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p><div className="mt-5 grid gap-3">{miniCheck.options.map((option) => <button key={option.optionId} onClick={() => answerMiniCheck(option.optionId)} className={`rounded-xl border p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"}`}><span className="font-semibold text-[#D9F8FF]">{option.label}.</span> <span className="text-[#C8D2DD]">{option.text}</span></button>)}</div>{showFeedback && <div ref={feedbackRef} className={`mt-5 scroll-mb-4 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}><p className="font-medium">{selectedCorrect ? "Exactly" : "Not quite"}</p><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p><div className="mt-4 sm:hidden"><PrimaryButton className="w-full" onClick={goNext}>{isFinalSection ? "Continue to practice" : "Continue"}</PrimaryButton></div></div>}</div>}</Card></div><div className={`mt-5 rounded-2xl border border-white/10 bg-[#111418] p-3 sm:mt-7 sm:block sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 ${miniCheck ? "hidden" : "block"}`}><div className="mx-auto flex max-w-5xl gap-3"><SecondaryButton className="flex-1 sm:flex-none" onClick={goBack}>Back</SecondaryButton><PrimaryButton className={`flex-1 sm:ml-auto sm:flex-none ${miniCheck && !showFeedback ? "cursor-not-allowed opacity-40" : ""}`} onClick={goNext} disabled={Boolean(miniCheck && !showFeedback)} aria-disabled={Boolean(miniCheck && !showFeedback)}>{isFinalSection ? "Continue to practice" : "Continue"}</PrimaryButton></div></div></section></Shell>;
+  return <Shell><section className="mx-auto max-w-5xl px-5 pb-24 pt-7 sm:px-8 sm:pb-12 sm:pt-12"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / hydraulicFundamentalsModule.sections.length) * 100}%` }} /></div><div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Hydraulic Pressure</p><h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{hydraulicFundamentalsModule.title}</h1><p className="mt-2 text-sm text-[#9AA3B2] sm:text-base">{hydraulicFundamentalsModule.subtitle}</p></div><Badge>Section {progress.currentSectionIndex + 1} of {hydraulicFundamentalsModule.sections.length}</Badge></div><div ref={sectionTopRef} className="scroll-mt-4"><Card className="p-5 sm:p-8"><h2 className="text-2xl font-semibold sm:text-3xl">{section.title}</h2><p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[#C8D2DD] sm:text-lg">{section.body}</p>{section.sectionId === "hyd-fund-001" && <HydraulicCuriosityDiagram />}{section.sectionId === "hyd-fund-002" && <HydraulicPressureDiagram />}{section.sectionId === "hyd-fund-003" && <HydraulicAreaForceDiagram />}{section.sectionId === "hyd-fund-005" && <HydraulicWorkedExampleDiagram />}{section.sectionId === "hyd-fund-006" && <HydraulicSolvingMethodDiagram />}{section.keyPoint && <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{section.sectionId === "hyd-fund-008" ? "Pocket principle" : "Key idea"}</div><p className="mt-3 text-lg font-medium text-[#D9F8FF]">{section.keyPoint}</p></div>}{miniCheck && <div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5 sm:p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div><p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p><div className="mt-5 grid gap-3">{miniCheck.options.map((option) => <button key={option.optionId} onClick={() => answerMiniCheck(option.optionId)} className={`rounded-xl border p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"}`}><span className="font-semibold text-[#D9F8FF]">{option.label}.</span> <span className="text-[#C8D2DD]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}><p className="font-medium">{selectedCorrect ? "Exactly" : "Not quite"}</p><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p><div ref={continueRef} className="mt-4 scroll-mb-7 sm:hidden"><PrimaryButton className="w-full" onClick={goNext}>{isFinalSection ? "Continue to practice" : "Continue"}</PrimaryButton></div></div>}</div>}</Card></div><div className={`mt-5 rounded-2xl border border-white/10 bg-[#111418] p-3 sm:mt-7 sm:block sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 ${miniCheck ? "hidden" : "block"}`}><div className="mx-auto flex max-w-5xl gap-3"><SecondaryButton className="flex-1 sm:flex-none" onClick={goBack}>Back</SecondaryButton><PrimaryButton className={`flex-1 sm:ml-auto sm:flex-none ${miniCheck && !showFeedback ? "cursor-not-allowed opacity-40" : ""}`} onClick={goNext} disabled={Boolean(miniCheck && !showFeedback)} aria-disabled={Boolean(miniCheck && !showFeedback)}>{isFinalSection ? "Continue to practice" : "Continue"}</PrimaryButton></div></div></section></Shell>;
 }
 
 function HydraulicFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuidedPractice }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuidedPractice: () => void }) {
