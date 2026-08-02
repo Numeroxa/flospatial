@@ -4742,20 +4742,134 @@ function HydraulicFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onSt
 function GuidedHydraulicPracticeIntroScreen({ onStart }: { onStart: () => void }) {
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Evidence check</p><h1 className="mt-5 text-4xl font-semibold">Guided Hydraulic Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Three coached questions will help you apply the same method: find what stays the same, compare the piston areas, then calculate.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["3 questions", "Immediate feedback", "No timer"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">The prompts will step back as soon as the method is clear.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Begin practice</PrimaryButton></div></Card></section></Shell>;
 }
+
 function GuidedHydraulicQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  useEffect(() => { setStartedAt(Date.now()); setSelectedOptionId(null); setShowFeedback(false); }, [questionIndex]);
+
+  useEffect(() => {
+    setStartedAt(Date.now());
+    setSelectedOptionId(null);
+    setShowFeedback(false);
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+  }, [questionIndex]);
+
   const question = guidedHydraulicPracticeQuestions[questionIndex];
   if (!question) return null;
+
   const selectedCorrect = selectedOptionId === question.correctOptionId;
   const progress = ((questionIndex + 1) / guidedHydraulicPracticeQuestions.length) * 100;
-  function select(optionId: string) { if (showFeedback) return; setSelectedOptionId(optionId); setShowFeedback(true); }
-  function next() { if (!selectedOptionId) return; const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false); onAnswer(response, questionIndex === guidedHydraulicPracticeQuestions.length - 1); }
-  const answered = journey.responses.filter((r) => r.sessionId === sessionId).length;
-  return <Shell right="Guided practice"><section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-10 sm:pt-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-5 flex items-end justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Guided Hydraulic Practice</p><h1 className="mt-3 text-3xl font-semibold">Hydraulic reasoning</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {guidedHydraulicPracticeQuestions.length}<br /><span className="text-xs">{answered} saved</span></div></div><Card className="p-5 sm:p-6"><p className="text-lg leading-relaxed text-[#F4F6F8] sm:text-xl">{question.stem}</p><div className="mt-5 grid gap-3">{(showFeedback ? question.options.filter((option) => option.optionId === selectedOptionId) : question.options).map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} disabled={showFeedback} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"} ${showFeedback ? "cursor-default" : ""}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0"><PrimaryButton className="w-full sm:w-auto" onClick={next}>{questionIndex === guidedHydraulicPracticeQuestions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div>}}</Card></section></Shell>;
+  const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
+  const visibleOptions = showFeedback
+    ? question.options.filter((option) => option.optionId === selectedOptionId)
+    : question.options;
+
+  function select(optionId: string) {
+    if (showFeedback) return;
+    setSelectedOptionId(optionId);
+    setShowFeedback(true);
+  }
+
+  function next() {
+    if (!selectedOptionId) return;
+    const response = createAssessmentResponse(
+      sessionId,
+      question,
+      selectedOptionId,
+      Date.now() - startedAt,
+      false
+    );
+    onAnswer(response, questionIndex === guidedHydraulicPracticeQuestions.length - 1);
+  }
+
+  return (
+    <Shell right="Guided practice">
+      <section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-10 sm:pt-10">
+        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5">
+          <div
+            className="h-full rounded-full bg-[#5ED3F3]/70 transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">
+              Guided Hydraulic Practice
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold">Hydraulic reasoning</h1>
+          </div>
+          <div className="text-right text-sm text-[#8D98A6]">
+            Question {questionIndex + 1} of {guidedHydraulicPracticeQuestions.length}
+            <br />
+            <span className="text-xs">{answered} saved</span>
+          </div>
+        </div>
+
+        <Card className="p-5 sm:p-6">
+          <p className="text-lg leading-relaxed text-[#F4F6F8] sm:text-xl">
+            {question.stem}
+          </p>
+
+          <div className="mt-5 grid gap-3">
+            {visibleOptions.map((option) => {
+              const selected = option.optionId === selectedOptionId;
+              return (
+                <button
+                  key={option.optionId}
+                  type="button"
+                  onClick={() => select(option.optionId)}
+                  disabled={showFeedback}
+                  className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${
+                    selected
+                      ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10"
+                      : "border-white/10 hover:border-[#5ED3F3]/40"
+                  } ${showFeedback ? "cursor-default" : ""}`}
+                >
+                  <span className="mr-3 text-[#5ED3F3]">{option.label}</span>
+                  <span className="text-[#DCE3EA]">{option.text}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {showFeedback && (
+            <div
+              className={`mt-5 rounded-2xl border p-5 ${
+                selectedCorrect
+                  ? "border-[#38D39F]/40 bg-[#101D1A]"
+                  : "border-[#FFB86B]/40 bg-[#211813]"
+              }`}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p>
+                  <p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>
+                  {!selectedCorrect && question.feedbackCue && (
+                    <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]">
+                      <span className="text-[#6E7A88]">What to notice next time: </span>
+                      {question.feedbackCue}
+                    </p>
+                  )}
+                </div>
+
+                <div className="shrink-0">
+                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
+                    {questionIndex === guidedHydraulicPracticeQuestions.length - 1
+                      ? "Complete practice"
+                      : "Next question"}
+                  </PrimaryButton>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card>
+      </section>
+    </Shell>
+  );
 }
+
 function GuidedHydraulicPracticeDebriefScreen({ journey, onWhy, onNext, onDashboard }: { journey: MvpGuestJourney; onWhy: () => void; onNext: () => void; onDashboard: () => void }) {
   const debrief = getLatestDebrief(journey);
   const rec = getCurrentRecommendation(journey);
