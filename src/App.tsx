@@ -4747,6 +4747,7 @@ function GuidedHydraulicQuestionScreen({ journey, sessionId, questionIndex, onAn
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const feedbackActionRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setStartedAt(Date.now());
@@ -4754,6 +4755,36 @@ function GuidedHydraulicQuestionScreen({ journey, sessionId, questionIndex, onAn
     setShowFeedback(false);
     window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
   }, [questionIndex]);
+
+  useEffect(() => {
+    if (!showFeedback) return;
+
+    const timers: number[] = [];
+
+    const revealFeedbackAction = () => {
+      const target = feedbackActionRef.current;
+      if (!target) return;
+
+      target.scrollIntoView({ behavior: "smooth", block: "end" });
+
+      window.requestAnimationFrame(() => {
+        const rect = target.getBoundingClientRect();
+        const viewport = window.visualViewport;
+        const visibleBottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+        const desiredBottom = visibleBottom - 24;
+        const overflow = rect.bottom - desiredBottom;
+
+        if (overflow > 0) {
+          window.scrollBy({ top: overflow, behavior: "smooth" });
+        }
+      });
+    };
+
+    timers.push(window.setTimeout(revealFeedbackAction, 40));
+    timers.push(window.setTimeout(revealFeedbackAction, 280));
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [showFeedback]);
 
   const question = guidedHydraulicPracticeQuestions[questionIndex];
   if (!question) return null;
@@ -4836,7 +4867,8 @@ function GuidedHydraulicQuestionScreen({ journey, sessionId, questionIndex, onAn
 
           {showFeedback && (
             <div
-              className={`mt-5 rounded-2xl border p-5 ${
+              ref={feedbackActionRef}
+              className={`mt-5 scroll-mb-6 rounded-2xl border p-5 ${
                 selectedCorrect
                   ? "border-[#38D39F]/40 bg-[#101D1A]"
                   : "border-[#FFB86B]/40 bg-[#211813]"
