@@ -656,7 +656,7 @@ function makeGearIndependentQuestion(questionId: string, concept: string, stem: 
   return { questionId, sessionType: "gear_independent_practice", pathwayId: "fire_service", domain: "mechanical", subcompetency: "gears", concept, difficulty: "applied", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
 }
 
-const gearIndependentPracticeQuestions: MvpQuestion[] = [
+const gearIndependentPracticeQuestionPool: MvpQuestion[] = [
   makeGearIndependentQuestion("GEAR-IP-001", "direct_mesh_direction", "Gear A turns clockwise. Which way does Gear B turn?", ["Anticlockwise", "Clockwise", "It does not turn", "Direction cannot be known"], "A", "Directly meshed gears rotate in opposite directions, so Gear B turns anticlockwise."),
   makeGearIndependentQuestion("GEAR-IP-002", "three_gear_direction", "Gear A turns clockwise. Which way does Gear C turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends on gear size"], "A", "Two gear contacts produce two reversals, so Gear C turns in the same direction as Gear A."),
   makeGearIndependentQuestion("GEAR-IP-003", "five_gear_direction", "Gear A turns anticlockwise. Which way does Gear E turn?", ["Anticlockwise", "Clockwise", "It cannot turn", "It depends on tooth count"], "A", "Four contacts produce four reversals, so the final gear turns in the same direction as Gear A."),
@@ -683,6 +683,23 @@ const gearIndependentPracticeQuestions: MvpQuestion[] = [
   makeGearIndependentQuestion("GEAR-IP-024", "four_gear_direction", "Four equal gears are arranged in an offset train. Gear A turns anticlockwise. Which way does Gear D turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "The offset layout makes direction impossible to predict"], "A", "The visual layout does not change the contact rule. Three contacts produce three reversals, so Gear D turns clockwise."),
   makeGearIndependentQuestion("GEAR-IP-025", "direction_and_speed", "Gear A has 20 teeth and turns clockwise at 80 rpm. It drives 10-tooth Gear B, which drives 40-tooth Gear C. What does Gear C do?", ["Turns clockwise at 40 rpm", "Turns anticlockwise at 40 rpm", "Turns clockwise at 160 rpm", "Turns anticlockwise at 160 rpm"], "A", "Two contacts preserve the original direction. The 20-tooth input to 40-tooth output gives half the input speed: 40 rpm."),
 ];
+
+const gearIndependentCoreQuestionIds = new Set([
+  "GEAR-IP-001",
+  "GEAR-IP-002",
+  "GEAR-IP-003",
+  "GEAR-IP-005",
+  "GEAR-IP-007",
+  "GEAR-IP-008",
+  "GEAR-IP-009",
+  "GEAR-IP-010",
+  "GEAR-IP-011",
+  "GEAR-IP-012",
+  "GEAR-IP-015",
+  "GEAR-IP-016",
+]);
+
+const gearIndependentPracticeQuestions: MvpQuestion[] = gearIndependentPracticeQuestionPool.filter((question) => gearIndependentCoreQuestionIds.has(question.questionId));
 
 function makeGearAssessmentQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): MvpQuestion {
   const prepared = buildQuestionOptions(questionId, options, correctLabel);
@@ -1333,10 +1350,10 @@ For movement questions, trace the input movement through the fluid to the output
 const gearFundamentalsModule: LearningModule = {
   moduleId: "gear_fundamentals",
   title: "Gear Direction",
-  subtitle: "Find the driver, count the meshes, decide the final direction",
+  subtitle: "Direction first, then simple tooth-count and speed relationships",
   targetDomain: "mechanical",
   targetSubcompetency: "gears",
-  estimatedMinutes: 9,
+  estimatedMinutes: 11,
   sections: [
     {
       sectionId: "gear-fund-001",
@@ -1362,7 +1379,7 @@ const gearFundamentalsModule: LearningModule = {
     {
       sectionId: "gear-fund-004",
       title: "Count the meshes, not the gears",
-      body: "This is the shortcut to remember. Each contact between two gears is one mesh and one reversal. Count those contacts from the driver to the target gear.\n\nOdd number of meshes → opposite direction.\nEven number of meshes → same direction.",
+      body: "Each contact between two gears is one mesh and one reversal. Count those contacts from the driver to the target gear.\n\nOdd number of meshes → opposite direction.\nEven number of meshes → same direction.",
       keyPoint: "Count the meshes, not the gears.",
       miniCheck: makeMiniCheck("GEAR-FUND-MC-004", "The path from the driver to the target gear contains three gear meshes. Compared with the driver, the target turns:", ["In the opposite direction", "In the same direction", "At the same speed only", "It cannot be predicted"], "A", "Three is odd, so there are an odd number of reversals. The target turns in the opposite direction."),
     },
@@ -1377,21 +1394,35 @@ const gearFundamentalsModule: LearningModule = {
       sectionId: "gear-fund-006",
       title: "Idler gears add another reversal",
       body: "An idler sits between a driver and another gear. It adds another gear mesh, so it adds another reversal. In a simple three-gear line, the first and last gears therefore turn the same way.\n\nThe idler adds another direction reversal, but it does not change the overall gear ratio set by the first and last gears.",
-      keyPoint: "An idler adds a reversal. For direction, count it. For overall ratio, it usually cancels out.",
+      keyPoint: "For direction, count the idler. For overall ratio, it usually cancels out.",
       miniCheck: makeMiniCheck("GEAR-FUND-MC-006", "Gear A drives an idler gear B, which drives Gear C. If A turns clockwise, which way does C turn?", ["Clockwise", "Anticlockwise", "It depends on the size of B", "C must remain stationary"], "A", "A→B reverses once and B→C reverses again. Gear C therefore turns clockwise."),
     },
     {
       sectionId: "gear-fund-007",
-      title: "Your gear-direction method",
-      body: "Use the same method every time:\n\n1. Find the driver.\n2. Trace the drive path.\n3. Count the gear meshes.\n4. Odd meshes → opposite direction.\n5. Even meshes → same direction.\n\nOnly consider gear size if the question also asks about speed or turning force.",
-      keyPoint: "Find the driver → count the meshes → decide odd or even.",
-      miniCheck: makeMiniCheck("GEAR-FUND-MC-007", "After finding the driver and tracing the drive path, what should you count to determine final direction?", ["The gear meshes", "The gear teeth", "The largest gears", "The colours"], "A", "Each gear mesh reverses direction, so counting meshes tells you whether the final gear is the same or opposite."),
+      title: "Teeth tell you the speed relationship",
+      body: "Now separate speed from direction. When two gears mesh, the same number of teeth pass the contact point on both gears. A smaller gear therefore completes more revolutions than a larger gear.\n\nExample: a 10-tooth driver turns a 20-tooth gear. The driven gear has twice as many teeth, so it turns at half the speed.",
+      keyPoint: "More teeth → fewer revolutions. Fewer teeth → more revolutions.",
+      miniCheck: makeMiniCheck("GEAR-FUND-MC-007", "A 12-tooth gear drives a 36-tooth gear. Compared with the driver, the 36-tooth gear turns:", ["One-third as fast", "Three times as fast", "At the same speed", "Nine times as fast"], "A", "The driven gear has three times as many teeth, so it turns at one-third the speed."),
     },
     {
       sectionId: "gear-fund-008",
+      title: "Worked example: tooth count and rpm",
+      body: "Suppose a 12-tooth driver turns at 90 rpm and drives a 36-tooth gear.\n\nThe driven gear has three times as many teeth. It therefore turns at one-third the speed: 30 rpm.\n\nYou do not need a new direction rule. Directly meshed gears still rotate in opposite directions.",
+      keyPoint: "90 rpm ÷ 3 = 30 rpm. Solve speed from tooth count; solve direction from gear meshes.",
+      miniCheck: makeMiniCheck("GEAR-FUND-MC-008", "A 40-tooth driver turns at 50 rpm and drives a 20-tooth gear. How fast does the smaller driven gear turn?", ["100 rpm", "25 rpm", "50 rpm", "200 rpm"], "A", "The driven gear has half as many teeth, so it turns twice as fast: 100 rpm."),
+    },
+    {
+      sectionId: "gear-fund-009",
+      title: "Solve direction and speed separately",
+      body: "When a question asks for both direction and speed, do not try to solve everything at once.\n\n1. Find the driver.\n2. Count the meshes to solve direction.\n3. Compare the first and target tooth counts to solve speed.\n4. Combine the two answers.",
+      keyPoint: "Direction: count meshes. Speed: compare tooth counts.",
+      miniCheck: makeMiniCheck("GEAR-FUND-MC-009", "A 24-tooth clockwise driver directly turns a 12-tooth gear. Which answer is correct?", ["Anticlockwise and twice as fast", "Clockwise and twice as fast", "Anticlockwise and half as fast", "Clockwise and half as fast"], "A", "One mesh reverses direction. The driven gear has half as many teeth, so it turns twice as fast."),
+    },
+    {
+      sectionId: "gear-fund-010",
       title: "Take this with you",
-      body: "You now have a quick method for simple gear-direction questions. Guided Gear Practice will add unfamiliar layouts and distractions while keeping the same reasoning process.",
-      keyPoint: "Pocket principle: every mesh reverses. Count the meshes.",
+      body: "You now have the complete method needed for the first Vivalsa gear practice sets. Guided Practice will change the layouts and add distractions, but the reasoning stays the same.",
+      keyPoint: "Find the driver → count the meshes → solve direction → compare tooth counts.",
     },
   ],
 };
@@ -4835,6 +4866,31 @@ function GearSizeDiagram() {
   );
 }
 
+function GearRatioWorkedExampleDiagram() {
+  return (
+    <div className="mt-7 rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-white/5 bg-[#171C23] p-4 text-center">
+          <p className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Driver</p>
+          <p className="mt-2 text-2xl font-semibold text-[#F4F6F8]">12 teeth</p>
+          <p className="mt-1 text-lg text-[#D9F8FF]">90 rpm</p>
+        </div>
+        <div className="flex items-center justify-center rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-4 text-center">
+          <p className="text-sm font-semibold leading-relaxed text-[#5ED3F3]">36 teeth is<br />3 × larger</p>
+        </div>
+        <div className="rounded-2xl border border-white/5 bg-[#171C23] p-4 text-center">
+          <p className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Driven</p>
+          <p className="mt-2 text-2xl font-semibold text-[#F4F6F8]">36 teeth</p>
+          <p className="mt-1 text-lg text-[#D9F8FF]">30 rpm</p>
+        </div>
+      </div>
+      <p className="mt-4 text-center text-sm leading-relaxed text-[#C8D2DD]">
+        Three times as many teeth → one-third the rotational speed.
+      </p>
+    </div>
+  );
+}
+
 function GearFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
   const existingProgress = getCurrentGearProgress(journey);
   const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "gear_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
@@ -4908,6 +4964,7 @@ function GearFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journe
             {section.sectionId === "gear-fund-004" && <GearMeshCountingDiagram />}
             {section.sectionId === "gear-fund-005" && <GearSizeDiagram />}
             {section.sectionId === "gear-fund-006" && <GearIdlerDiagram />}
+            {section.sectionId === "gear-fund-008" && <GearRatioWorkedExampleDiagram />}
 
             {section.keyPoint && (
               <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5">
@@ -5500,7 +5557,7 @@ function GuidedGearPracticeDebriefScreen({ journey, onWhy, onDashboard, onStartG
 
 
 function GearIndependentPracticeIntroScreen({ onStart }: { onStart: () => void }) {
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Independent practice</p><h1 className="mt-5 text-4xl font-semibold">Independent Gear Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Twenty-five diagram-based problems covering direction, idlers, relative speed and simple gear ratios.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["25 questions", "Immediate answer feedback", "No guided diagram cues"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">This is practice, not the final check. You will still see whether each answer is correct, but the diagrams will no longer tell you what to notice.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Begin independent practice</PrimaryButton></div></Card></section></Shell>;
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Independent practice</p><h1 className="mt-5 text-4xl font-semibold">Independent Gear Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Twelve diagram-based problems covering direction, idlers, relative speed and simple gear ratios.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["12 questions", "Immediate answer feedback", "No guided diagram cues"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">This is practice, not the final check. You will still see whether each answer is correct, but the diagrams will no longer tell you what to notice.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Begin independent practice</PrimaryButton></div></Card></section></Shell>;
 }
 
 function GearIndependentPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
