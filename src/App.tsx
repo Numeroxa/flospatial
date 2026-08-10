@@ -1376,7 +1376,7 @@ const gearFundamentalsModule: LearningModule = {
     {
       sectionId: "gear-fund-006",
       title: "Idler gears add another reversal",
-      body: "An idler sits between a driver and another gear. It adds another gear mesh, so it adds another reversal. In a simple three-gear line, the first and last gears therefore turn the same way.\n\nThe idler changes the direction relationship, but it does not change the overall gear ratio set by the first and last gears.",
+      body: "An idler sits between a driver and another gear. It adds another gear mesh, so it adds another reversal. In a simple three-gear line, the first and last gears therefore turn the same way.\n\nThe idler adds another direction reversal, but it does not change the overall gear ratio set by the first and last gears.",
       keyPoint: "An idler adds a reversal. For direction, count it. For overall ratio, it usually cancels out.",
       miniCheck: makeMiniCheck("GEAR-FUND-MC-006", "Gear A drives an idler gear B, which drives Gear C. If A turns clockwise, which way does C turn?", ["Clockwise", "Anticlockwise", "It depends on the size of B", "C must remain stationary"], "A", "A→B reverses once and B→C reverses again. Gear C therefore turns clockwise."),
     },
@@ -4704,22 +4704,69 @@ function GearMeshCountingDiagram() {
 }
 
 function GearIdlerDiagram() {
+  const teeth = (cx: number, cy: number, r: number, count: number, keyPrefix: string) =>
+    Array.from({ length: count }).map((_, index) => {
+      const angle = (index * 360 / count) * Math.PI / 180;
+      return (
+        <line
+          key={`${keyPrefix}-${index}`}
+          x1={cx + Math.cos(angle) * (r + 3)}
+          y1={cy + Math.sin(angle) * (r + 3)}
+          x2={cx + Math.cos(angle) * (r + 16)}
+          y2={cy + Math.sin(angle) * (r + 16)}
+          stroke="rgba(255,255,255,.25)"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
+      );
+    });
+
   return (
-    <div className="mt-7 rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">
-      <div className="grid grid-cols-3 items-center gap-2 text-center">
-        {[
-          ["A","DRIVER","CW"],
-          ["B","IDLER","CCW"],
-          ["C","OUTPUT","CW"],
-        ].map(([label, role, direction]) => (
-          <div key={label} className="rounded-2xl border border-white/10 bg-[#171C23] px-2 py-5">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-4 border-white/20 text-2xl font-bold text-[#F4F6F8] sm:h-24 sm:w-24">{label}</div>
-            <p className="mt-3 text-xs font-semibold text-[#6E7A88]">{role}</p>
-            <p className="mt-1 text-sm font-semibold text-[#D9F8FF]">{direction}</p>
-          </div>
-        ))}
+    <div className="mt-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] px-3 py-5 sm:p-7">
+      <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">
+        Idler gear
       </div>
-      <p className="mt-4 text-center text-sm leading-relaxed text-[#C8D2DD]">Two meshes = two reversals, so A and C turn the same way.</p>
+
+      <svg
+        viewBox="0 0 760 330"
+        role="img"
+        aria-label="Three visibly meshed gears. Driver A clockwise, idler B anticlockwise, output C clockwise."
+        className="h-auto w-full"
+      >
+        <defs>
+          <marker id="idlerArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+            <path d="M0 0L10 5L0 10z" fill="#5ED3F3" />
+          </marker>
+        </defs>
+
+        <circle cx="205" cy="145" r="72" fill="#171C23" stroke="rgba(255,255,255,.22)" strokeWidth="4" />
+        <circle cx="380" cy="145" r="72" fill="#171C23" stroke="rgba(255,255,255,.22)" strokeWidth="4" />
+        <circle cx="555" cy="145" r="72" fill="#171C23" stroke="rgba(255,255,255,.22)" strokeWidth="4" />
+
+        {teeth(205,145,72,12,"idler-a")}
+        {teeth(380,145,72,12,"idler-b")}
+        {teeth(555,145,72,12,"idler-c")}
+
+        <text x="205" y="153" textAnchor="middle" fill="#F4F6F8" fontSize="28" fontWeight="700">A</text>
+        <text x="380" y="153" textAnchor="middle" fill="#F4F6F8" fontSize="28" fontWeight="700">B</text>
+        <text x="555" y="153" textAnchor="middle" fill="#F4F6F8" fontSize="28" fontWeight="700">C</text>
+
+        <path d="M150 88 C112 125 112 170 150 207" fill="none" stroke="#5ED3F3" strokeWidth="7" markerEnd="url(#idlerArrow)" />
+        <path d="M435 207 C473 170 473 125 435 88" fill="none" stroke="#5ED3F3" strokeWidth="7" markerEnd="url(#idlerArrow)" />
+        <path d="M500 88 C462 125 462 170 500 207" fill="none" stroke="#5ED3F3" strokeWidth="7" markerEnd="url(#idlerArrow)" />
+
+        <text x="205" y="260" textAnchor="middle" fill="#6E7A88" fontSize="18" fontWeight="700">DRIVER</text>
+        <text x="380" y="260" textAnchor="middle" fill="#6E7A88" fontSize="18" fontWeight="700">IDLER</text>
+        <text x="555" y="260" textAnchor="middle" fill="#6E7A88" fontSize="18" fontWeight="700">OUTPUT</text>
+
+        <text x="205" y="292" textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="700">Clockwise</text>
+        <text x="380" y="292" textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="700">Anticlockwise</text>
+        <text x="555" y="292" textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="700">Clockwise</text>
+      </svg>
+
+      <p className="mt-4 text-center text-sm leading-relaxed text-[#C8D2DD]">
+        Two meshes = two reversals, so A and C turn the same way.
+      </p>
     </div>
   );
 }
@@ -4756,24 +4803,34 @@ function GearTrainDiagram() {
 
 function GearSizeDiagram() {
   return (
-    <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">
-      <div className="mb-5 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Gear size diagram</div>
-      <svg viewBox="0 0 760 310" role="img" aria-label="Small gear driving a larger gear" className="h-auto w-full">
-        <circle cx="250" cy="160" r="55" fill="#171C23" stroke="rgba(255,255,255,0.22)" strokeWidth="4" />
-        <circle cx="445" cy="160" r="105" fill="#171C23" stroke="rgba(255,255,255,0.22)" strokeWidth="4" />
-        {Array.from({length:10}).map((_,i)=>{ const a=i*36*Math.PI/180; return <line key={`small-${i}`} x1={250+Math.cos(a)*58} y1={160+Math.sin(a)*58} x2={250+Math.cos(a)*72} y2={160+Math.sin(a)*72} stroke="rgba(255,255,255,0.22)" strokeWidth="5" strokeLinecap="round" /> })}
-        {Array.from({length:20}).map((_,i)=>{ const a=i*18*Math.PI/180; return <line key={`large-${i}`} x1={445+Math.cos(a)*108} y1={160+Math.sin(a)*108} x2={445+Math.cos(a)*123} y2={160+Math.sin(a)*123} stroke="rgba(255,255,255,0.22)" strokeWidth="5" strokeLinecap="round" /> })}
-        <text x="250" y="166" textAnchor="middle" fill="#F4F6F8" fontSize="22" fontWeight="700">10 teeth</text>
-        <text x="445" y="166" textAnchor="middle" fill="#F4F6F8" fontSize="22" fontWeight="700">20 teeth</text>
-        <text x="250" y="265" textAnchor="middle" fill="#D9F8FF" fontSize="18">Smaller driver</text>
-        <text x="445" y="285" textAnchor="middle" fill="#D9F8FF" fontSize="18">Larger driven gear</text>
-        <path d="M 140 60 C 100 115 100 195 140 250" fill="none" stroke="#5ED3F3" strokeWidth="6" />
-        <text x="610" y="95" fill="#AAB4C0" fontSize="18">Larger gear</text>
-        <text x="610" y="125" fill="#AAB4C0" fontSize="18">turns more slowly</text>
-        <text x="610" y="165" fill="#5ED3F3" fontSize="18">More teeth = more movement</text>
-        <text x="610" y="195" fill="#5ED3F3" fontSize="18">needed for one turn</text>
+    <div className="mt-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-4 sm:p-7">
+      <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Gear size diagram</div>
+      <svg viewBox="80 20 500 275" role="img" aria-label="A small 10-tooth driver gear meshing with a larger 20-tooth driven gear" className="h-auto w-full">
+        <defs>
+          <marker id="gearSizeArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+            <path d="M0 0L10 5L0 10z" fill="#5ED3F3" />
+          </marker>
+        </defs>
+        <circle cx="250" cy="145" r="58" fill="#171C23" stroke="rgba(255,255,255,0.22)" strokeWidth="4" />
+        <circle cx="435" cy="145" r="108" fill="#171C23" stroke="rgba(255,255,255,0.22)" strokeWidth="4" />
+        {Array.from({length:10}).map((_,i)=>{ const a=i*36*Math.PI/180; return <line key={`small-${i}`} x1={250+Math.cos(a)*61} y1={145+Math.sin(a)*61} x2={250+Math.cos(a)*76} y2={145+Math.sin(a)*76} stroke="rgba(255,255,255,0.22)" strokeWidth="5" strokeLinecap="round" /> })}
+        {Array.from({length:20}).map((_,i)=>{ const a=i*18*Math.PI/180; return <line key={`large-${i}`} x1={435+Math.cos(a)*111} y1={145+Math.sin(a)*111} x2={435+Math.cos(a)*126} y2={145+Math.sin(a)*126} stroke="rgba(255,255,255,0.22)" strokeWidth="5" strokeLinecap="round" /> })}
+        <text x="250" y="152" textAnchor="middle" fill="#F4F6F8" fontSize="22" fontWeight="700">10 teeth</text>
+        <text x="435" y="152" textAnchor="middle" fill="#F4F6F8" fontSize="22" fontWeight="700">20 teeth</text>
+        <path d="M175 70 C135 110 135 180 175 220" fill="none" stroke="#5ED3F3" strokeWidth="7" markerEnd="url(#gearSizeArrow)" />
+        <text x="250" y="270" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="700">Smaller driver</text>
+        <text x="435" y="285" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="700">Larger driven gear</text>
       </svg>
-      <p className="mt-5 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">When a small gear drives a larger gear, the larger gear usually turns more slowly.</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl border border-white/5 bg-[#171C23] p-4">
+          <p className="text-sm font-semibold text-[#F4F6F8]">Direction</p>
+          <p className="mt-1 text-sm leading-relaxed text-[#C8D2DD]">A direct mesh still reverses direction, whatever the gear sizes.</p>
+        </div>
+        <div className="rounded-2xl border border-white/5 bg-[#171C23] p-4">
+          <p className="text-sm font-semibold text-[#F4F6F8]">Speed</p>
+          <p className="mt-1 text-sm leading-relaxed text-[#C8D2DD]">The larger driven gear turns more slowly because more teeth must pass for one full turn.</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -4904,12 +4961,6 @@ function GearFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journe
           </div>
         </div>
 
-        {miniCheck && (
-          <div className="mt-5 hidden sm:flex sm:justify-between">
-            <SecondaryButton onClick={goBack}>Back</SecondaryButton>
-            <PrimaryButton onClick={goNext} disabled={!showFeedback}>{isFinalSection ? "Complete module" : "Continue"}</PrimaryButton>
-          </div>
-        )}
       </section>
     </Shell>
   );
@@ -5676,15 +5727,21 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
   const clockwisePath = `M ${driver.cx - arrowRadius * 0.72} ${driver.cy - arrowRadius * 0.68} A ${arrowRadius} ${arrowRadius} 0 1 1 ${driver.cx + arrowRadius * 0.76} ${driver.cy + arrowRadius * 0.62}`;
   const anticlockwisePath = `M ${driver.cx + arrowRadius * 0.72} ${driver.cy - arrowRadius * 0.68} A ${arrowRadius} ${arrowRadius} 0 1 0 ${driver.cx - arrowRadius * 0.76} ${driver.cy + arrowRadius * 0.62}`;
   const aria = `${nodes.length}-gear diagram. Gear ${driver.label} turns ${spec.driverDirection}.`;
+  const leftMost = Math.min(...nodes.map((node) => node.cx - node.radius));
+  const rightMost = Math.max(...nodes.map((node) => node.cx + node.radius));
+  const diagramMinX = Math.max(0, leftMost - 75);
+  const diagramMaxX = Math.min(760, rightMost + 75);
+  const diagramWidth = Math.max(430, diagramMaxX - diagramMinX);
+  const centeredMinX = Math.max(0, Math.min(760 - diagramWidth, (diagramMinX + diagramMaxX - diagramWidth) / 2));
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-4 sm:p-6">
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-6">
       <div className="mb-3 flex items-center justify-between gap-4">
         {!hideContextLabel && <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{mode === "guided" ? "Guided diagram" : mode === "practice" ? "Practice diagram" : "Gear diagram"}</div>}
         {mode === "practice" && <div className="text-xs text-[#6E7A88]">No guided cues</div>}
         {mode === "assessment" && <div className={`text-xs text-[#6E7A88] ${hideContextLabel ? "ml-auto" : ""}`}>No hints</div>}
       </div>
-      <svg viewBox="0 0 760 315" role="img" aria-label={aria} className="h-auto w-full">
+      <svg viewBox={`${centeredMinX} 0 ${diagramWidth} 315`} role="img" aria-label={aria} className="h-auto w-full">
         <defs>
           <marker id={markerId} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" />
@@ -5707,7 +5764,7 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
           );
         })}
         <path d={spec.driverDirection === "clockwise" ? clockwisePath : anticlockwisePath} fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd={`url(#${markerId})`} />
-        <text x={driver.cx} y="292" textAnchor="middle" fill="#D9F8FF" fontSize="16">Gear {driver.label}: {spec.driverDirection}</text>
+        <text x={driver.cx} y="292" textAnchor="middle" fill="#D9F8FF" fontSize="17">Gear {driver.label}: {spec.driverDirection === "clockwise" ? "Clockwise" : "Anticlockwise"}</text>
       </svg>
       {mode === "guided" && spec.helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{spec.helper}</p>}
     </div>
