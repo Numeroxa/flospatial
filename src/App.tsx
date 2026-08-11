@@ -1048,7 +1048,7 @@ const guidedNumericalPracticeQuestions: MvpQuestion[] = [
   makeNumericalQuestion("NUM-G-010", "guided_numerical_practice", "tables_data", "table_difference", "What is the difference between the slowest and fastest average response times?", ["2.2 min", "1.9 min", "2.6 min", "13.4 min"], "A", "The slowest is 8.1 minutes and the fastest is 5.9 minutes. 8.1 − 5.9 = 2.2.", "developing", "Identify the maximum and minimum before subtracting.", {"headers": ["Station", "Average response time"], "rows": [["A", "7.5 min"], ["B", "6.2 min"], ["C", "8.1 min"], ["D", "5.9 min"]]}),
 ];
 
-const numericalIndependentPracticeQuestions: MvpQuestion[] = [
+const numericalIndependentPracticeQuestionPool: MvpQuestion[] = [
   makeNumericalQuestion("NUM-IP-001", "numerical_independent_practice", "arithmetic_estimation", "basic_arithmetic", "What is 375 + 248?", ["623", "613", "633", "523"], "A", "375 + 248 = 623.", "applied", undefined, undefined),
   makeNumericalQuestion("NUM-IP-002", "numerical_independent_practice", "arithmetic_estimation", "basic_arithmetic", "What is 960 − 475?", ["485", "495", "475", "585"], "A", "960 − 475 = 485.", "applied", undefined, undefined),
   makeNumericalQuestion("NUM-IP-003", "numerical_independent_practice", "arithmetic_estimation", "multiplication", "What is 24 × 18?", ["432", "442", "384", "468"], "A", "24 × 18 = 24 × (20 − 2) = 480 − 48 = 432.", "applied", undefined, undefined),
@@ -1075,6 +1075,23 @@ const numericalIndependentPracticeQuestions: MvpQuestion[] = [
   makeNumericalQuestion("NUM-IP-024", "numerical_independent_practice", "tables_data", "table_percentage_change", "Actual spending was what percentage above budget?", ["10%", "24%", "9%", "110%"], "A", "The overspend is 24,000. 24,000 ÷ 240,000 = 10%.", "applied", undefined, {"headers": ["Budget", "Actual"], "rows": [["$240,000", "$264,000"]]}),
   makeNumericalQuestion("NUM-IP-025", "numerical_independent_practice", "tables_data", "table_change", "How much did the reading increase from the first measurement to the third?", ["6", "4", "3", "24"], "A", "24 − 18 = 6.", "applied", undefined, {"headers": ["Measurement", "Reading"], "rows": [["1", "18"], ["2", "21"], ["3", "24"], ["4", "22"]]}),
 ];
+
+const numericalIndependentCoreQuestionIds = new Set([
+  "NUM-IP-003",
+  "NUM-IP-005",
+  "NUM-IP-006",
+  "NUM-IP-007",
+  "NUM-IP-010",
+  "NUM-IP-011",
+  "NUM-IP-014",
+  "NUM-IP-016",
+  "NUM-IP-019",
+  "NUM-IP-020",
+  "NUM-IP-021",
+  "NUM-IP-024",
+]);
+
+const numericalIndependentPracticeQuestions: MvpQuestion[] = numericalIndependentPracticeQuestionPool.filter((question) => numericalIndependentCoreQuestionIds.has(question.questionId));
 
 const numericalAssessmentQuestions: MvpQuestion[] = [
   makeNumericalQuestion("NUM-A-001", "numerical_assessment", "tables_data", "table_percentage", "Which station had the highest completion rate?", ["Station C", "Station A", "Station B", "Station D"], "A", "A = 42/50 = 84%; B = 54/72 = 75%; C = 38/40 = 95%; D = 63/75 = 84%.", "applied", undefined, {"headers": ["Station", "Assigned", "Completed"], "rows": [["A", "50", "42"], ["B", "72", "54"], ["C", "40", "38"], ["D", "75", "63"]]}),
@@ -1639,7 +1656,7 @@ const numericalFundamentalsModule: LearningModule = {
   subtitle: "Arithmetic, percentages, ratios, rates and data interpretation",
   targetDomain: "numerical",
   targetSubcompetency: "arithmetic_estimation",
-  estimatedMinutes: 12,
+  estimatedMinutes: 13,
   sections: [
     {
       sectionId: "numerical-fund-001",
@@ -1678,23 +1695,30 @@ const numericalFundamentalsModule: LearningModule = {
     },
     {
       sectionId: "numerical-fund-006",
-      title: "Reduce rates to one unit",
-      body: "Rates become easier when you find the amount for one unit of time, distance or work. For shared-work questions, total worker-hours can be a useful shortcut.",
+      title: "Reduce ordinary rates to one unit",
+      body: "Rates become easier when you find the amount for one unit of time, distance or quantity. Work out the one-unit rate, then scale it to what the question asks.",
       keyPoint: "Find the one-unit rate, then scale.",
       miniCheck: makeMiniCheck("NUM-FUND-MC-006", "A vehicle travels 150 km in 2.5 hours. What is its average speed?", ["60 km/h", "75 km/h", "50 km/h", "62.5 km/h"], "A", "150 ÷ 2.5 = 60 km/h."),
     },
     {
       sectionId: "numerical-fund-007",
-      title: "Read the table before calculating",
-      body: "In data questions, identify the correct row, column and units before doing arithmetic. Many mistakes come from using the wrong figures rather than difficult mathematics.\n\nCalls recorded:\nMonday 42\nTuesday 55\nWednesday 38\nThursday 65",
-      keyPoint: "Select the right data before you calculate.",
-      miniCheck: makeMiniCheck("NUM-FUND-MC-007", "Which day recorded the most calls?", ["Thursday", "Tuesday", "Monday", "Wednesday"], "A", "Thursday has the largest value: 65."),
+      title: "Some work-rate questions run the other way",
+      body: "When more identical workers or pumps share the same fixed job, the time usually decreases. This is different from an ordinary direct rate.\n\nA useful method is to keep the total work constant. For example, 4 pumps working for 6 hours represent 24 pump-hours. If 6 pumps do the same job, the time is 24 ÷ 6 = 4 hours.",
+      keyPoint: "For a fixed job: more workers → less time. Keep total worker-hours or pump-hours constant.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-007", "Four identical workers complete a fixed job in 9 hours. At the same productivity, how long would six workers take?", ["6 hours", "13.5 hours", "4 hours", "9 hours"], "A", "The job is 4 × 9 = 36 worker-hours. 36 ÷ 6 = 6 hours."),
     },
     {
       sectionId: "numerical-fund-008",
+      title: "Read the table before calculating",
+      body: "In data questions, identify the correct row, column and units before doing arithmetic. Many mistakes come from using the wrong figures rather than difficult mathematics.\n\nCalls recorded:\nMonday 42\nTuesday 55\nWednesday 38\nThursday 65",
+      keyPoint: "Select the right data before you calculate.",
+      miniCheck: makeMiniCheck("NUM-FUND-MC-008", "Which day recorded the most calls?", ["Thursday", "Tuesday", "Monday", "Wednesday"], "A", "Thursday has the largest value: 65."),
+    },
+    {
+      sectionId: "numerical-fund-009",
       title: "Check whether the answer is reasonable",
       body: "Before committing, compare your exact answer with your estimate. Check units and ask whether the result is plausible. Numerical reasoning rewards controlled decisions more than elaborate mathematics.\n\nYou are now ready for Guided Numerical Practice.",
-      keyPoint: "Estimate, calculate, then sense-check.",
+      keyPoint: "Identify what is being asked → choose the method → calculate → sense-check.",
     },
   ],
 };
@@ -6732,33 +6756,142 @@ function LeverDebriefScreen({ journey, stage, onWhy, onDashboard, onNext, onRevi
 
 function NumericalFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
   const existingProgress = getCurrentNumericalProgress(journey);
-  const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "numerical_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
+  const progress = existingProgress ?? {
+    moduleProgressId: id("module-progress"),
+    moduleId: "numerical_fundamentals" as const,
+    currentSectionIndex: 0,
+    miniCheckResponses: [],
+    startedAt: now(),
+    updatedAt: now(),
+  };
   const section = numericalFundamentalsModule.sections[progress.currentSectionIndex];
   const miniCheck = section.miniCheck;
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setSelectedOptionId(null); setShowFeedback(false); }, [progress.currentSectionIndex]);
-  const selectedCorrect = miniCheck ? selectedOptionId === miniCheck.correctOptionId : false;
+  const sectionTopRef = useRef<HTMLDivElement | null>(null);
+  const selectedCorrect = Boolean(miniCheck && selectedOptionId === miniCheck.correctOptionId);
+  const isFinalSection = progress.currentSectionIndex === numericalFundamentalsModule.sections.length - 1;
+
+  useEffect(() => {
+    setSelectedOptionId(null);
+    setShowFeedback(false);
+    const frame = window.requestAnimationFrame(() => sectionTopRef.current?.scrollIntoView({ behavior: "auto", block: "start" }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [progress.currentSectionIndex]);
+
+  function persistProgress(nextProgress: ModuleProgress) {
+    const nextJourney = journey.moduleProgress.some((item) => item.moduleProgressId === nextProgress.moduleProgressId)
+      ? updateNumericalProgress(journey, nextProgress)
+      : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() };
+    onSaveJourney(nextJourney);
+  }
+
   function answerMiniCheck(optionId: string) {
     if (!miniCheck || showFeedback) return;
     setSelectedOptionId(optionId);
     setShowFeedback(true);
-    const response: ModuleMiniCheckResponse = { questionId: miniCheck.questionId, selectedOptionId: optionId, correct: optionId === miniCheck.correctOptionId, answeredAt: now() };
-    const nextProgress = { ...progress, miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response], updatedAt: now() };
-    onSaveJourney(existingProgress ? updateNumericalProgress(journey, nextProgress) : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() });
+    const response: ModuleMiniCheckResponse = {
+      questionId: miniCheck.questionId,
+      selectedOptionId: optionId,
+      correct: optionId === miniCheck.correctOptionId,
+      answeredAt: now(),
+    };
+    persistProgress({
+      ...progress,
+      miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response],
+      updatedAt: now(),
+    });
   }
+
   function goNext() {
     if (miniCheck && !showFeedback) return;
-    if (progress.currentSectionIndex >= numericalFundamentalsModule.sections.length - 1) { onComplete(); return; }
-    const nextProgress = { ...progress, currentSectionIndex: progress.currentSectionIndex + 1, updatedAt: now() };
-    onSaveJourney(existingProgress ? updateNumericalProgress(journey, nextProgress) : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() });
+    if (isFinalSection) { onComplete(); return; }
+    persistProgress({ ...progress, currentSectionIndex: progress.currentSectionIndex + 1, updatedAt: now() });
   }
+
   function goBack() {
     if (progress.currentSectionIndex === 0) return;
-    const nextProgress = { ...progress, currentSectionIndex: progress.currentSectionIndex - 1, updatedAt: now() };
-    onSaveJourney(updateNumericalProgress(journey, nextProgress));
+    persistProgress({ ...progress, currentSectionIndex: progress.currentSectionIndex - 1, updatedAt: now() });
   }
-  return <Shell><section className="mx-auto max-w-5xl px-8 py-12"><div className="mb-6 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / numericalFundamentalsModule.sections.length) * 100}%` }} /></div><div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Numerical reasoning</p><h1 className="mt-3 text-4xl font-semibold">{numericalFundamentalsModule.title}</h1><p className="mt-3 text-[#9AA3B2]">{numericalFundamentalsModule.subtitle}</p></div><Badge>Section {progress.currentSectionIndex + 1} of {numericalFundamentalsModule.sections.length}</Badge></div><Card><h2 className="text-3xl font-semibold">{section.title}</h2><p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-[#C8D2DD]">{section.body}</p>{section.keyPoint && <div className="mt-8 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Key point</div><p className="mt-3 text-[#D9F8FF]">{section.keyPoint}</p></div>}{miniCheck && <div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div><p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p><div className="mt-5 grid gap-3">{miniCheck.options.map((option) => <button key={option.optionId} onClick={() => answerMiniCheck(option.optionId)} className={`rounded-xl border p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"}`}><span className="font-semibold text-[#D9F8FF]">{option.label}.</span> <span className="text-[#C8D2DD]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}><p className="font-medium">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p></div>}</div>}<div className="mt-9 flex flex-col gap-3 pb-4 sm:flex-row sm:justify-between sm:pb-0"><PrimaryButton className="sm:order-2" onClick={goNext}>{progress.currentSectionIndex === numericalFundamentalsModule.sections.length - 1 ? "Complete module" : "Continue"}</PrimaryButton><SecondaryButton className="sm:order-1" onClick={goBack}>Back</SecondaryButton></div></Card></section></Shell>;
+
+  const visibleOptions = miniCheck
+    ? (showFeedback ? miniCheck.options.filter((option) => option.optionId === selectedOptionId) : miniCheck.options)
+    : [];
+
+  return (
+    <Shell>
+      <section className="mx-auto max-w-5xl px-5 pb-24 pt-7 sm:px-8 sm:pb-12 sm:pt-12">
+        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5">
+          <div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / numericalFundamentalsModule.sections.length) * 100}%` }} />
+        </div>
+
+        <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Numerical reasoning</p>
+            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{numericalFundamentalsModule.title}</h1>
+            <p className="mt-2 text-sm text-[#9AA3B2] sm:text-base">{numericalFundamentalsModule.subtitle}</p>
+          </div>
+          <Badge>Section {progress.currentSectionIndex + 1} of {numericalFundamentalsModule.sections.length}</Badge>
+        </div>
+
+        <div ref={sectionTopRef} className="scroll-mt-4">
+          <Card className="p-5 sm:p-8">
+            <h2 className="text-2xl font-semibold sm:text-3xl">{section.title}</h2>
+            <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[#C8D2DD] sm:text-lg">{section.body}</p>
+
+            {section.keyPoint && (
+              <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5">
+                <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{isFinalSection ? "Pocket principle" : "Key point"}</div>
+                <p className="mt-3 text-lg font-medium text-[#D9F8FF]">{section.keyPoint}</p>
+              </div>
+            )}
+
+            {miniCheck && (
+              <div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5 sm:p-6">
+                <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div>
+                <p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p>
+                <div className="mt-5 grid gap-3">
+                  {visibleOptions.map((option) => {
+                    const selected = selectedOptionId === option.optionId;
+                    return (
+                      <button
+                        key={option.optionId}
+                        type="button"
+                        onClick={() => answerMiniCheck(option.optionId)}
+                        disabled={showFeedback}
+                        className={`rounded-xl border p-4 text-left transition ${
+                          selected ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"
+                        } ${showFeedback ? "cursor-default" : ""}`}
+                      >
+                        <span className="font-semibold text-[#D9F8FF]">{option.label}.</span>{" "}
+                        <span className="text-[#C8D2DD]">{option.text}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {showFeedback && (
+                  <div className={`mt-4 rounded-xl border p-4 ${
+                    selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"
+                  }`}>
+                    <p className="font-medium">{selectedCorrect ? "Exactly" : "Not quite"}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        </div>
+
+        <div className="mt-5 flex justify-between gap-3 sm:mt-7">
+          <SecondaryButton onClick={goBack}>Back</SecondaryButton>
+          <PrimaryButton onClick={goNext} disabled={Boolean(miniCheck && !showFeedback)}>
+            {isFinalSection ? "Complete module" : "Continue"}
+          </PrimaryButton>
+        </div>
+      </section>
+    </Shell>
+  );
 }
 
 function NumericalFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuided }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuided: () => void }) {
@@ -6772,37 +6905,183 @@ function NumericalPracticeIntroScreen({ stage, onStart }: { stage: NumericalStag
   const config = stage === "guided"
     ? { eyebrow: "Learning through application", title: "Guided Numerical Practice", description: "Ten questions across arithmetic, percentages, ratios, rates and data. Immediate feedback helps you correct the method as you work.", items: ["10 questions", "Immediate feedback", "Four numerical areas"], action: "Begin guided practice" }
     : stage === "independent"
-      ? { eyebrow: "Less-supported practice", title: "Independent Numerical Practice", description: "A larger question set with varied numerical problems. You still receive feedback after each answer, but the method is yours to choose.", items: ["25 questions", "Immediate feedback", "Mixed numerical methods"], action: "Start independent practice" }
+      ? { eyebrow: "Less-supported practice", title: "Independent Numerical Practice", description: "A balanced mixed set across arithmetic, percentages and ratios, rates, and data interpretation. Feedback follows each answer, but the method is yours to choose.", items: ["12 questions", "Immediate feedback", "Mixed numerical methods"], action: "Start independent practice" }
       : { eyebrow: "Assessment-style check", title: "Numerical Check", description: "Twelve mixed questions with no immediate answer feedback. The Mentor will use the result to identify either a clear area to strengthen or a progression step.", items: ["12 questions", "No immediate feedback", "Untimed in v1"], action: "Start Numerical Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.description}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Use mental or written working. The alpha build does not include a calculator.</p><div className="mt-10"><PrimaryButton onClick={onStart}>{config.action}</PrimaryButton></div></Card></section></Shell>;
 }
 
 function NumericalDataTableView({ table }: { table?: NumericalDataTable }) {
   if (!table) return null;
-  return <div className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0E1115]"><table className="w-full table-fixed border-collapse text-left text-xs sm:text-sm"><thead><tr>{table.headers.map((header) => <th key={header} className="break-words border-b border-white/10 px-2 py-2 text-[10px] uppercase leading-tight tracking-[0.08em] text-[#6E7A88] sm:px-3 sm:py-3 sm:text-xs sm:tracking-[0.12em]">{header}</th>)}</tr></thead><tbody>{table.rows.map((row, rowIndex) => <tr key={rowIndex} className="border-b border-white/5 last:border-0">{row.map((cell, cellIndex) => <td key={cellIndex} className="break-words px-2 py-2 leading-tight text-[#DCE3EA] sm:px-3 sm:py-3 sm:leading-normal">{cell}</td>)}</tr>)}</tbody></table></div>;
+  return (
+    <div className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0E1115]">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[320px] table-fixed border-collapse text-left text-xs sm:text-sm">
+          <thead>
+            <tr>
+              {table.headers.map((header) => (
+                <th key={header} className="break-words border-b border-white/10 px-2 py-2 text-[10px] uppercase leading-tight tracking-[0.06em] text-[#6E7A88] sm:px-3 sm:py-3 sm:text-xs sm:tracking-[0.12em]">
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {table.rows.map((row, rowIndex) => (
+              <tr key={rowIndex} className="border-b border-white/5 last:border-0">
+                {row.map((cell, cellIndex) => (
+                  <td key={cellIndex} className="break-words px-2 py-2 leading-tight text-[#DCE3EA] sm:px-3 sm:py-3 sm:leading-normal">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function NumericalReasoningReminder() {
+  return (
+    <div className="mb-5 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 px-4 py-3 sm:px-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5ED3F3]">Reasoning reminder</p>
+      <p className="mt-1 text-sm leading-relaxed text-[#C8D2DD]">
+        What is being asked? <span className="text-[#6E7A88]">→</span> choose the method <span className="text-[#6E7A88]">→</span> calculate <span className="text-[#6E7A88]">→</span> sense-check.
+      </p>
+    </div>
+  );
 }
 
 function NumericalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: NumericalStage }) {
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); setShowFeedback(false); }, [questionIndex]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStartedAt(Date.now());
+    setSelectedOptionId(null);
+    setShowFeedback(false);
+  }, [questionIndex]);
+
   const question = questions[questionIndex];
   if (!question) return null;
+
   const progress = ((questionIndex + 1) / questions.length) * 100;
   const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
+  const immediate = stage !== "assessment";
   const selectedCorrect = selectedOptionId === question.correctOptionId;
   const title = stage === "guided" ? "Guided Numerical Practice" : stage === "independent" ? "Independent Numerical Practice" : "Numerical Check";
+  const visibleOptions = immediate && showFeedback
+    ? question.options.filter((option) => option.optionId === selectedOptionId)
+    : question.options;
+
   function select(optionId: string) {
-    if (showFeedback && stage !== "assessment") return;
+    if (immediate && showFeedback) return;
     setSelectedOptionId(optionId);
-    if (stage !== "assessment") setShowFeedback(true);
+    if (immediate) setShowFeedback(true);
   }
+
   function next() {
     if (!selectedOptionId) return;
-    onAnswer(createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false), questionIndex === questions.length - 1);
+    onAnswer(
+      createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false),
+      questionIndex === questions.length - 1
+    );
   }
-  return <Shell right={title}><section className={`mx-auto max-w-5xl px-8 pt-12 ${stage === "assessment" ? "pb-12" : "pb-44 lg:pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Numerical reasoning</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><NumericalDataTableView table={question.dataTable}/>{stage === "guided" && question.feedbackCue && <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">{question.feedbackCue}</div>}<p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{stage === "assessment" ? <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === questions.length - 1 ? "Finish check" : "Next question"}</PrimaryButton></div> : showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl lg:static lg:mt-7 lg:rounded-2xl lg:border lg:p-5 lg:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div></div>}</Card></section></Shell>;
+
+  return (
+    <Shell right={title}>
+      <section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
+        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5">
+          <div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} />
+        </div>
+
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p>
+            <h1 className="mt-3 text-3xl font-semibold">Numerical reasoning</h1>
+          </div>
+          <div className="text-right text-sm text-[#8D98A6]">
+            Question {questionIndex + 1} of {questions.length}
+            <br />
+            <span className="text-xs">{answered} saved</span>
+          </div>
+        </div>
+
+        {stage !== "assessment" && <NumericalReasoningReminder />}
+
+        <Card>
+          <NumericalDataTableView table={question.dataTable} />
+
+          {stage === "guided" && question.feedbackCue && (
+            <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">
+              {question.feedbackCue}
+            </div>
+          )}
+
+          <p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p>
+
+          <div className="mt-6 grid gap-3">
+            {visibleOptions.map((option) => {
+              const selected = selectedOptionId === option.optionId;
+              return (
+                <button
+                  key={option.optionId}
+                  type="button"
+                  onClick={() => select(option.optionId)}
+                  disabled={immediate && showFeedback}
+                  className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${
+                    selected
+                      ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10"
+                      : "border-white/10 hover:border-[#5ED3F3]/40"
+                  } ${immediate && showFeedback ? "cursor-default" : ""}`}
+                >
+                  <span className="mr-3 text-[#5ED3F3]">{option.label}</span>
+                  <span className="text-[#DCE3EA]">{option.text}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {immediate && showFeedback && (
+            <div className={`mt-5 rounded-2xl border p-5 ${
+              selectedCorrect
+                ? "border-[#38D39F]/40 bg-[#101D1A]"
+                : "border-[#FFB86B]/40 bg-[#211813]"
+            }`}>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p>
+                  <p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>
+                  {!selectedCorrect && question.feedbackCue && (
+                    <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]">
+                      <span className="text-[#6E7A88]">What to notice next time: </span>
+                      {question.feedbackCue}
+                    </p>
+                  )}
+                </div>
+                <div className="shrink-0">
+                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
+                    {questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}
+                  </PrimaryButton>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!immediate && (
+            <div className="mt-8 flex justify-end">
+              <PrimaryButton disabled={!selectedOptionId} onClick={next}>
+                {questionIndex === questions.length - 1 ? "Finish check" : "Next question"}
+              </PrimaryButton>
+            </div>
+          )}
+        </Card>
+      </section>
+    </Shell>
+  );
 }
 
 function NumericalDebriefScreen({ journey, stage, onWhy, onDashboard, onNext, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; stage: NumericalStage; onWhy: () => void; onDashboard: () => void; onNext?: () => void; onReviewIncorrect?: () => void; onReviewAll?: () => void }) {
