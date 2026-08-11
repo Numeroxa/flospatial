@@ -6218,172 +6218,111 @@ function getLeverDiagramSpec(questionId: string): LeverDiagramSpec {
   const secondClass = new Set(["LEV-GP-009", "LEV-IP-014", "LEV-IP-017", "LEV-AS-007"]);
   const thirdClass = new Set(["LEV-IP-015", "LEV-IP-018"]);
   const closeLoad = new Set(["LEV-GP-003", "LEV-GP-004", "LEV-IP-003", "LEV-IP-004", "LEV-IP-022", "LEV-AS-002", "LEV-AS-003", "MMA-LEV-002"]);
-  if (questionId === "MMA-LEV-001") return { fulcrumX: 340, loadX: 280, effortX: 620, loadLabel: "0.5 m", effortLabel: "2 m" };
-  if (questionId === "MMA-LEV-004") return { fulcrumX: 340, loadX: 250, effortX: 650, loadLabel: "1 m", effortLabel: "3 m" };
-  if (questionId === "MMA-LEV-005") return { fulcrumX: 340, loadX: 260, effortX: 650, loadLabel: "1 m", effortLabel: "4 m" };
-  if (questionId === "MMA-LEV-006") return { fulcrumX: 360, loadX: 260, effortX: 650, loadLabel: "0.75 m", effortLabel: "?" };
+
+  const exact: Record<string, LeverDiagramSpec> = {
+    "LEV-GP-005": { fulcrumX: 360, loadX: 260, effortX: 610, loadLabel: "1 m", effortLabel: "2 m", helper: "Compare force × distance on each side." },
+    "LEV-GP-006": { fulcrumX: 360, loadX: 290, effortX: 620, loadLabel: "0.5 m", effortLabel: "2 m", helper: "Balance the turning effects." },
+    "LEV-GP-010": { fulcrumX: 360, loadX: 290, effortX: 610, loadLabel: "0.5 m", effortLabel: "1.5 m", helper: "Compare turning effects on the two sides." },
+
+    "LEV-IP-006": { fulcrumX: 350, loadX: 270, effortX: 620, loadLabel: "1 m", effortLabel: "3 m" },
+    "LEV-IP-007": { fulcrumX: 350, loadX: 270, effortX: 620, loadLabel: "1 m", effortLabel: "3 m" },
+    "LEV-IP-008": { fulcrumX: 360, loadX: 290, effortX: 620, loadLabel: "0.5 m", effortLabel: "2 m" },
+    "LEV-IP-009": { fulcrumX: 350, loadX: 270, effortX: 620, loadLabel: "1 m", effortLabel: "3 m" },
+    "LEV-IP-010": { fulcrumX: 350, loadX: 285, effortX: 630, loadLabel: "1 m", effortLabel: "4 m" },
+    "LEV-IP-011": { fulcrumX: 380, loadX: 190, effortX: 640, loadLabel: "2 m", effortLabel: "?" },
+    "LEV-IP-019": { fulcrumX: 380, loadX: 210, effortX: 550, loadLabel: "Equal arm", effortLabel: "Equal arm" },
+    "LEV-IP-023": { fulcrumX: 350, loadX: 295, effortX: 635, loadLabel: "1 ×", effortLabel: "5 ×" },
+    "LEV-IP-024": { fulcrumX: 350, loadX: 285, effortX: 630, loadLabel: "1 m", effortLabel: "4 m" },
+    "LEV-IP-025": { fulcrumX: 360, loadX: 300, effortX: 620, loadLabel: "0.4 m", effortLabel: "2 m" },
+
+    "LEV-AS-004": { fulcrumX: 360, loadX: 290, effortX: 610, loadLabel: "0.5 m", effortLabel: "1.5 m" },
+    "LEV-AS-005": { fulcrumX: 360, loadX: 255, effortX: 620, loadLabel: "1.2 m", effortLabel: "3 m" },
+    "LEV-AS-006": { fulcrumX: 350, loadX: 285, effortX: 630, loadLabel: "1 m", effortLabel: "4 m" },
+    "LEV-AS-010": { fulcrumX: 360, loadX: 300, effortX: 620, loadLabel: "0.4 m", effortLabel: "2 m" },
+
+    "MMA-LEV-001": { fulcrumX: 340, loadX: 280, effortX: 620, loadLabel: "0.5 m", effortLabel: "2 m" },
+    "MMA-LEV-004": { fulcrumX: 340, loadX: 250, effortX: 650, loadLabel: "1 m", effortLabel: "3 m" },
+    "MMA-LEV-005": { fulcrumX: 340, loadX: 260, effortX: 650, loadLabel: "1 m", effortLabel: "4 m" },
+    "MMA-LEV-006": { fulcrumX: 360, loadX: 260, effortX: 650, loadLabel: "0.75 m", effortLabel: "?" },
+  };
+
+  if (exact[questionId]) return exact[questionId];
   if (secondClass.has(questionId)) return { fulcrumX: 140, loadX: 360, effortX: 650, helper: "Notice which part lies between the other two." };
   if (thirdClass.has(questionId)) return { fulcrumX: 140, effortX: 350, loadX: 650, helper: "Notice which part lies between the fulcrum and load." };
   if (closeLoad.has(questionId)) return { fulcrumX: 300, loadX: 220, effortX: 650, helper: "Compare the two distances from the fulcrum." };
-  if (["LEV-GP-005", "LEV-IP-007", "LEV-AS-006", "MMA-LEV-005"].includes(questionId)) return { fulcrumX: 340, loadX: 250, effortX: 610, loadLabel: "1 m", effortLabel: "3 m", helper: "Compare force × distance on each side." };
-  if (["LEV-GP-006", "LEV-IP-008", "LEV-AS-004", "MMA-LEV-001", "MMA-LEV-004"].includes(questionId)) return { fulcrumX: 340, loadX: 280, effortX: 620, loadLabel: "0.5 m", effortLabel: "2 m", helper: "Balance the turning effects." };
-  if (["LEV-GP-010", "LEV-IP-009", "LEV-IP-025", "LEV-AS-005", "LEV-AS-010", "MMA-LEV-006"].includes(questionId)) return { fulcrumX: 360, loadX: 260, effortX: 650, helper: "Use force × distance about the fulcrum." };
-  if (["LEV-IP-011"].includes(questionId)) return { fulcrumX: 380, loadX: 180, effortX: 650, loadLabel: "2 m", effortLabel: "?", helper: "Equal moments balance the seesaw." };
   if (["LEV-GP-002", "LEV-IP-002", "LEV-IP-020"].includes(questionId)) return { fulcrumX: 300, loadX: 190, effortX: 650, helper: "The farther effort point gives the greater turning effect." };
   return { fulcrumX: 360, loadX: 210, effortX: 630, helper: "Find the fulcrum, then compare the two arms." };
 }
 
-function LeverConceptDiagram() {
-  return <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5"><svg viewBox="0 0 760 300" role="img" aria-label="Lever diagram showing load, fulcrum and effort" className="h-auto w-full"><defs><marker id="leverArrowConcept" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#5ED3F3" /></marker></defs><line x1="90" y1="150" x2="680" y2="150" stroke="#DDE3EA" strokeWidth="18" strokeLinecap="round"/><polygon points="360,158 315,238 405,238" fill="#5ED3F3" opacity="0.55"/><path d="M190 65 V130" stroke="#FFB86B" strokeWidth="5" markerEnd="url(#leverArrowConcept)"/><rect x="145" y="35" width="90" height="42" rx="8" fill="#212831" stroke="rgba(255,255,255,0.16)"/><text x="190" y="62" textAnchor="middle" fill="#F4F6F8" fontSize="18">Load</text><path d="M625 65 V130" stroke="#5ED3F3" strokeWidth="5" markerEnd="url(#leverArrowConcept)"/><text x="625" y="48" textAnchor="middle" fill="#D9F8FF" fontSize="18">Effort</text><text x="360" y="270" textAnchor="middle" fill="#D9F8FF" fontSize="18">Fulcrum</text></svg></div>;
-}
+function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode: LeverQuestionMode }) {
+  const spec = getLeverDiagramSpec(question.questionId);
+  const guided = mode === "guided";
+  const downArrowId = `lever-down-arrow-${question.questionId}`;
+  const armArrowId = `lever-arm-arrow-${question.questionId}`;
+  const numericArms = Boolean(spec.loadLabel || spec.effortLabel);
 
-function LeverFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
-  const existingProgress = getCurrentLeverProgress(journey);
-  const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "lever_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const sectionTopRef = useRef<HTMLDivElement | null>(null);
-  const section = leverFundamentalsModule.sections[progress.currentSectionIndex];
-  const miniCheck = section.miniCheck;
-  const selectedCorrect = Boolean(miniCheck && selectedOptionId === miniCheck.correctOptionId);
-  const isFinalSection = progress.currentSectionIndex === leverFundamentalsModule.sections.length - 1;
-
-  useEffect(() => {
-    setSelectedOptionId(null);
-    setShowFeedback(false);
-    const frame = window.requestAnimationFrame(() => sectionTopRef.current?.scrollIntoView({ behavior: "auto", block: "start" }));
-    return () => window.cancelAnimationFrame(frame);
-  }, [progress.currentSectionIndex]);
-
-  function persistProgress(nextProgress: ModuleProgress) {
-    const nextJourney = journey.moduleProgress.some((item) => item.moduleProgressId === nextProgress.moduleProgressId)
-      ? updateLeverProgress(journey, nextProgress)
-      : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() };
-    onSaveJourney(nextJourney);
-  }
-
-  function answerMiniCheck(optionId: string) {
-    if (!miniCheck || showFeedback) return;
-    setSelectedOptionId(optionId);
-    setShowFeedback(true);
-    const response: ModuleMiniCheckResponse = {
-      questionId: miniCheck.questionId,
-      selectedOptionId: optionId,
-      correct: optionId === miniCheck.correctOptionId,
-      answeredAt: now(),
-    };
-    persistProgress({
-      ...progress,
-      miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response],
-      updatedAt: now(),
-    });
-  }
-
-  function goNext() {
-    if (miniCheck && !showFeedback) return;
-    if (isFinalSection) { onComplete(); return; }
-    persistProgress({
-      ...progress,
-      currentSectionIndex: Math.min(progress.currentSectionIndex + 1, leverFundamentalsModule.sections.length - 1),
-      updatedAt: now(),
-    });
-  }
-
-  function goBack() {
-    persistProgress({
-      ...progress,
-      currentSectionIndex: Math.max(progress.currentSectionIndex - 1, 0),
-      updatedAt: now(),
-    });
-  }
-
-  const visibleOptions = miniCheck
-    ? (showFeedback ? miniCheck.options.filter((option) => option.optionId === selectedOptionId) : miniCheck.options)
-    : [];
+  const armY = 205;
+  const loadLeft = Math.min(spec.loadX, spec.fulcrumX);
+  const loadRight = Math.max(spec.loadX, spec.fulcrumX);
+  const effortLeft = Math.min(spec.effortX, spec.fulcrumX);
+  const effortRight = Math.max(spec.effortX, spec.fulcrumX);
 
   return (
-    <Shell>
-      <section className="mx-auto max-w-5xl px-5 pb-24 pt-7 sm:px-8 sm:pb-12 sm:pt-12">
-        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5">
-          <div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / leverFundamentalsModule.sections.length) * 100}%` }} />
-        </div>
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-6">
+      <svg viewBox="45 0 670 330" role="img" aria-label="Lever diagram showing load arm and effort arm measured from the fulcrum" className="h-auto w-full">
+        <defs>
+          <marker id={downArrowId} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="#5ED3F3" />
+          </marker>
+          <marker id={armArrowId} markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse">
+            <path d="M0 0 L8 4 L0 8 z" fill="#5ED3F3" />
+          </marker>
+        </defs>
 
-        <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Lever Fundamentals</p>
-            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{leverFundamentalsModule.title}</h1>
-            <p className="mt-2 text-sm text-[#9AA3B2] sm:text-base">{leverFundamentalsModule.subtitle}</p>
-          </div>
-          <Badge>Section {progress.currentSectionIndex + 1} of {leverFundamentalsModule.sections.length}</Badge>
-        </div>
+        <line x1="80" y1="150" x2="690" y2="150" stroke="#DDE3EA" strokeWidth="16" strokeLinecap="round" />
 
-        <div ref={sectionTopRef} className="scroll-mt-4">
-          <Card className="p-5 sm:p-8">
-            <h2 className="text-2xl font-semibold sm:text-3xl">{section.title}</h2>
-            <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[#C8D2DD] sm:text-lg">{section.body}</p>
+        <polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-42},235 ${spec.fulcrumX+42},235`} fill="#5ED3F3" opacity="0.52" />
+        <text x={spec.fulcrumX} y="272" textAnchor="middle" fill="#DCE3EA" fontSize="16" fontWeight="600">Fulcrum</text>
+        <text x={spec.fulcrumX} y="292" textAnchor="middle" fill="#6E7A88" fontSize="14">(pivot)</text>
 
-            {["lever-fund-001","lever-fund-002","lever-fund-003","lever-fund-004","lever-fund-005"].includes(section.sectionId) && <LeverConceptDiagram />}
+        <rect x={spec.loadX-38} y="68" width="76" height="52" rx="9" fill="#2A313A" stroke="rgba(255,255,255,0.18)" />
+        <path d={`M ${spec.loadX} 34 V 124`} stroke="#FFB86B" strokeWidth="5" markerEnd={`url(#${downArrowId})`} />
+        <path d={`M ${spec.effortX} 34 V 124`} stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${downArrowId})`} />
+        <text x={spec.loadX} y="99" textAnchor="middle" fill="#F4F6F8" fontSize="18" fontWeight="600">Load</text>
+        <text x={spec.effortX} y="28" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Effort</text>
 
-            {section.keyPoint && (
-              <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5">
-                <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{section.sectionId === "lever-fund-008" ? "Pocket principle" : "Key idea"}</div>
-                <p className="mt-3 text-lg font-medium text-[#D9F8FF]">{section.keyPoint}</p>
-              </div>
+        {numericArms && (
+          <>
+            <line x1={spec.loadX} y1="124" x2={spec.loadX} y2={armY+15} stroke="#8D98A6" strokeWidth="2" strokeDasharray="7 7" />
+            <line x1={spec.effortX} y1="124" x2={spec.effortX} y2={armY+15} stroke="#8D98A6" strokeWidth="2" strokeDasharray="7 7" />
+            <line x1={spec.fulcrumX} y1="160" x2={spec.fulcrumX} y2={armY+15} stroke="#8D98A6" strokeWidth="2" strokeDasharray="7 7" />
+
+            {spec.loadLabel && (
+              <>
+                <line x1={loadLeft + 10} y1={armY} x2={loadRight - 10} y2={armY} stroke="#FFB86B" strokeWidth="4" markerStart={`url(#${armArrowId})`} markerEnd={`url(#${armArrowId})`} />
+                <text x={(spec.loadX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="17" fontWeight="700">{spec.loadLabel}</text>
+                <text x={(spec.loadX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#FFB86B" fontSize="14">Load arm</text>
+              </>
             )}
 
-            {miniCheck && (
-              <div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5 sm:p-6">
-                <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div>
-                <p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p>
-
-                <div className="mt-5 grid gap-3">
-                  {visibleOptions.map((option) => {
-                    const selected = selectedOptionId === option.optionId;
-                    return (
-                      <button
-                        key={option.optionId}
-                        type="button"
-                        onClick={() => answerMiniCheck(option.optionId)}
-                        disabled={showFeedback}
-                        className={`rounded-xl border p-4 text-left transition ${selected ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"} ${showFeedback ? "cursor-default" : ""}`}
-                      >
-                        <span className="font-semibold text-[#D9F8FF]">{option.label}.</span>{" "}
-                        <span className="text-[#C8D2DD]">{option.text}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {showFeedback && (
-                  <div className={`mt-4 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}>
-                    <p className="font-medium">{selectedCorrect ? "Exactly" : "Not quite"}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p>
-                  </div>
-                )}
-              </div>
+            {spec.effortLabel && (
+              <>
+                <line x1={effortLeft + 10} y1={armY} x2={effortRight - 10} y2={armY} stroke="#5ED3F3" strokeWidth="4" markerStart={`url(#${armArrowId})`} markerEnd={`url(#${armArrowId})`} />
+                <text x={(spec.effortX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="17" fontWeight="700">{spec.effortLabel}</text>
+                <text x={(spec.effortX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#5ED3F3" fontSize="14">Effort arm</text>
+              </>
             )}
-          </Card>
-        </div>
+          </>
+        )}
+      </svg>
 
-        <div className="mt-5 flex justify-between gap-3 sm:mt-7">
-          <SecondaryButton onClick={goBack}>Back</SecondaryButton>
-          <PrimaryButton onClick={goNext} disabled={Boolean(miniCheck && !showFeedback)}>
-            {isFinalSection ? "Complete module" : "Continue"}
-          </PrimaryButton>
-        </div>
-      </section>
-    </Shell>
+      {guided && spec.helper && (
+        <p className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">
+          {spec.helper}
+        </p>
+      )}
+    </div>
   );
-}
-
-function LeverFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuidedLeverPractice }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuidedLeverPractice: () => void }) {
-  const rec = getCurrentRecommendation(journey);
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Lever Fundamentals complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">The next stage is guided diagram practice using the same fulcrum-and-arm method.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuidedLeverPractice}>Begin lever practice</PrimaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
-}
-
-function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode: LeverQuestionMode }) {
-  const spec = getLeverDiagramSpec(question.questionId); const guided = mode === "guided"; const arrowId = `lever-arrow-${question.questionId}`;
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-6"><svg viewBox="45 0 670 300" role="img" aria-label="Lever reasoning diagram" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#5ED3F3" /></marker></defs><line x1="80" y1="150" x2="690" y2="150" stroke="#DDE3EA" strokeWidth="16" strokeLinecap="round"/><polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-42},235 ${spec.fulcrumX+42},235`} fill="#5ED3F3" opacity="0.52"/><rect x={spec.loadX-34} y="76" width="68" height="48" rx="8" fill="#2A313A" stroke="rgba(255,255,255,0.18)"/><path d={`M ${spec.loadX} 42 V 126`} stroke="#FFB86B" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d={`M ${spec.effortX} 42 V 126`} stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x={spec.loadX} y="104" textAnchor="middle" fill="#F4F6F8" fontSize="17">Load</text><text x={spec.effortX} y="30" textAnchor="middle" fill="#D9F8FF" fontSize="17">Effort</text>{spec.loadLabel && <text x={(spec.loadX + spec.fulcrumX)/2} y="190" textAnchor="middle" fill="#8D98A6" fontSize="16">{spec.loadLabel}</text>}{spec.effortLabel && <text x={(spec.effortX + spec.fulcrumX)/2} y="190" textAnchor="middle" fill="#8D98A6" fontSize="16">{spec.effortLabel}</text>}<text x={spec.fulcrumX} y="268" textAnchor="middle" fill="#6E7A88" fontSize="15">pivot</text></svg>{guided && spec.helper && <p className="mt-4 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{spec.helper}</p>}</div>;
 }
 
 function LeverPracticeIntroScreen({ stage, onStart }: { stage: "guided" | "independent" | "assessment"; onStart: () => void }) {
