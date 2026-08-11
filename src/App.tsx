@@ -893,7 +893,7 @@ const leverAssessmentQuestions: MvpQuestion[] = [
   makeLeverAssessmentQuestion("LEV-AS-010", "integrated", "A 600 N load is 0.5 m from the fulcrum. A 100 N effort is applied on the other side. How far from the fulcrum must the effort act to balance?", ["3 m", "6 m", "1 m", "0.3 m"], "A", "The load moment is 300 N·m. 300 ÷ 100 = 3 m."),
 ];
 
-const mixedMechanicalPracticeQuestions: MvpQuestion[] = [
+const mixedMechanicalPracticeQuestionPool: MvpQuestion[] = [
   makeMixedQuestion("MIX-HYD-001", "hydraulics", "pressure_transfer", "A sealed hydraulic system has a small input piston connected to a larger output piston. What carries the effect of the input force to the output piston?", ["Pressure transmitted through the fluid", "Air above the piston", "The weight of the load", "The size of the handle only"], "A", "In a sealed hydraulic system, pressure is transmitted through the fluid.", "Trace the pressure path through the fluid."),
   makeMixedQuestion("MIX-HYD-002", "hydraulics", "piston_area_force", "The same pressure acts on two output pistons. One piston has a larger area. Which produces greater force?", ["The larger-area piston", "The smaller-area piston", "Both produce no force", "Area does not matter"], "A", "The same pressure acting over a larger area produces greater force.", "When force is the question, compare piston area."),
   makeMixedQuestion("MIX-HYD-003", "hydraulics", "movement_direction", "Two pistons are connected by sealed fluid. If the left piston is pushed down, what usually happens to the right piston?", ["It moves upward", "It moves downward", "It cannot move", "It moves only if the fluid is removed"], "A", "Pushing one piston down displaces fluid and usually drives the other piston upward.", "Trace input movement, fluid displacement and output movement."),
@@ -916,13 +916,30 @@ const mixedMechanicalPracticeQuestions: MvpQuestion[] = [
   makeMixedQuestion("MIX-LEV-005", "levers", "lever_method", "What is usually the best first step in a lever question?", ["Locate the fulcrum, load and effort", "Choose the longest word", "Ignore where the force is applied", "Assume all levers work the same way"], "A", "Lever questions are best solved by locating the fulcrum, load and effort first.", "Find fulcrum, load and effort before choosing."),
 ];
 
+const mixedMechanicalPracticeCoreQuestionIds = new Set([
+  "MIX-HYD-001",
+  "MIX-HYD-002",
+  "MIX-HYD-004",
+  "MIX-GEAR-001",
+  "MIX-GEAR-003",
+  "MIX-GEAR-004",
+  "MIX-PULL-001",
+  "MIX-PULL-002",
+  "MIX-PULL-003",
+  "MIX-LEV-001",
+  "MIX-LEV-002",
+  "MIX-LEV-005",
+]);
+
+const mixedMechanicalPracticeQuestions: MvpQuestion[] = mixedMechanicalPracticeQuestionPool.filter((question) => mixedMechanicalPracticeCoreQuestionIds.has(question.questionId));
+
 
 function makeMixedAssessmentQuestion(questionId: string, subcompetency: MechanicalSubcompetency, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): MvpQuestion {
   const prepared = buildQuestionOptions(questionId, options, correctLabel);
   return { questionId, sessionType: "mixed_mechanical_assessment", pathwayId: "fire_service", domain: "mechanical", subcompetency, concept, difficulty: "applied", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
 }
 
-const mixedMechanicalAssessmentQuestions: MvpQuestion[] = [
+const mixedMechanicalAssessmentQuestionPool: MvpQuestion[] = [
   makeMixedAssessmentQuestion("MMA-GEAR-001", "gears", "direction", "Gear A turns clockwise. Which way does Gear D turn?", ["Clockwise", "Anticlockwise", "It does not turn", "Direction cannot be known"], "B", "Four gears create three direct contacts, so the final gear turns opposite to the driver."),
   makeMixedAssessmentQuestion("MMA-HYD-001", "hydraulics", "area_force", "The same fluid pressure acts on both pistons. The output piston has twice the area of the input piston. Compared with the input force, the output force is ideally:", ["Twice as large", "Half as large", "The same", "Zero"], "A", "With the same pressure, force increases in proportion to piston area."),
   makeMixedAssessmentQuestion("MMA-PULL-001", "pulleys", "system_recognition", "What is the main effect of this single fixed pulley?", ["It changes the direction of effort", "It halves the effort", "It doubles the load", "It removes rope tension"], "A", "A single fixed pulley mainly changes the direction in which the effort is applied."),
@@ -948,6 +965,27 @@ const mixedMechanicalAssessmentQuestions: MvpQuestion[] = [
   makeMixedAssessmentQuestion("MMA-HYD-006", "hydraulics", "equal_area", "The two pistons have equal area in an ideal sealed hydraulic system. If the input force is 300 N, what output force is expected?", ["300 N", "600 N", "150 N", "Zero"], "A", "Equal piston areas at the same pressure produce equal forces."),
   makeMixedAssessmentQuestion("MMA-GEAR-006", "gears", "integrated", "A 15-tooth gear drives two idlers and then a 45-tooth output gear. Compared with the driver, the output turns:", ["In the opposite direction at one-third the speed", "In the same direction at three times the speed", "In the same direction at one-third the speed", "In the opposite direction at three times the speed"], "A", "Three direct contacts reverse the final direction. The 45-tooth output turns at one-third the speed of the 15-tooth driver."),
 ];
+
+const mixedMechanicalAssessmentCoreQuestionIds = new Set([
+  "MMA-HYD-001",
+  "MMA-HYD-002",
+  "MMA-HYD-004",
+  "MMA-HYD-005",
+  "MMA-GEAR-001",
+  "MMA-GEAR-003",
+  "MMA-GEAR-004",
+  "MMA-GEAR-005",
+  "MMA-PULL-001",
+  "MMA-PULL-002",
+  "MMA-PULL-003",
+  "MMA-PULL-005",
+  "MMA-LEV-001",
+  "MMA-LEV-002",
+  "MMA-LEV-004",
+  "MMA-LEV-006",
+]);
+
+const mixedMechanicalAssessmentQuestions: MvpQuestion[] = mixedMechanicalAssessmentQuestionPool.filter((question) => mixedMechanicalAssessmentCoreQuestionIds.has(question.questionId));
 
 
 function moduleOption(questionId: string, label: "A" | "B" | "C" | "D", text: string): QuestionOption {
@@ -3540,53 +3578,114 @@ function completeGearAssessment(journey: MvpGuestJourney, sessionId: string): Mv
 function completeMixedMechanicalPractice(journey: MvpGuestJourney, sessionId: string): MvpGuestJourney {
   const session = journey.sessions.find((s) => s.sessionId === sessionId);
   if (!session) return journey;
+
   const completedSession = { ...session, completedAt: now() };
   const responses = journey.responses.filter((r) => r.sessionId === sessionId);
   const summary = calculateMixedPracticeSummary(completedSession, responses);
   const breakdown = summary.conceptBreakdown;
   const weakest = [...breakdown].sort((a, b) => a.accuracy - b.accuracy)[0];
-  const focusMap: Record<string, { title: string; label: string; recommendationType: Recommendation["recommendationType"]; moduleTitle: string }> = {
-    gears: { title: "Gear reasoning now appears to be the largest remaining preparation focus.", label: "Gear reasoning", recommendationType: "start_gear_fundamentals", moduleTitle: "Start Gear Fundamentals" },
-    pulleys: { title: "Pulley reasoning now appears to be the largest remaining preparation focus.", label: "Pulley reasoning", recommendationType: "start_pulley_fundamentals", moduleTitle: "Start Pulley Fundamentals" },
-    levers: { title: "Lever reasoning now appears to be the largest remaining preparation focus.", label: "Lever reasoning", recommendationType: "start_lever_fundamentals", moduleTitle: "Start Lever Fundamentals" },
-    hydraulics: { title: "Hydraulic-force reasoning still needs reinforcement in mixed practice.", label: "Hydraulic-force reasoning", recommendationType: "review_hydraulic_fundamentals", moduleTitle: "Review Hydraulic Fundamentals" },
-  };
-  const noClearWeakness = summary.accuracy >= 0.9 && breakdown.every((item) => item.accuracy >= 0.8);
-  const focus = noClearWeakness ? {
-    title: "No specific mechanical weakness was identified in this mixed practice session.",
-    label: "Structured mechanical foundations",
-    recommendationType: "start_hydraulic_fundamentals" as Recommendation["recommendationType"],
-    moduleTitle: "Continue with Hydraulic Fundamentals",
-  } : (focusMap[weakest?.concept ?? "gears"] ?? focusMap.gears);
-  const hydraulic = breakdown.find((item) => item.concept === "hydraulics");
-  const evidenceText = breakdown.map((item) => `${item.concept[0].toUpperCase()}${item.concept.slice(1)}: ${item.correct} of ${item.attempted}`).join(". ");
-  const why: WhyExplanation = noClearWeakness ? {
+  const labels: Record<string, string> = { hydraulics: "Hydraulics", gears: "Gears", pulleys: "Pulleys", levers: "Levers" };
+  const weakestLabel = labels[weakest?.concept ?? "gears"] ?? "Mechanical reasoning";
+  const readyForAssessment = summary.accuracy >= 0.8 && breakdown.every((item) => item.attempted > 0 && item.accuracy >= 2 / 3);
+
+  let recommendationType: Recommendation["recommendationType"];
+  let title: string;
+  let summaryText: string;
+  let actionLabel: string;
+  let currentFocus: string;
+  let interpretation: string;
+
+  if (readyForAssessment) {
+    recommendationType = "begin_mixed_mechanical_assessment";
+    title = "Take the Mixed Mechanical Assessment";
+    summaryText = "The four mechanical methods remained available when they were interleaved. The next useful step is a no-feedback integrated check.";
+    actionLabel = "Start mixed assessment";
+    currentFocus = "Integrated mechanical reasoning";
+    interpretation = "This mixed practice was strong across all four areas. The next step is assessment-style evidence rather than more isolated mechanical teaching.";
+  } else {
+    currentFocus = `${weakestLabel} reasoning`;
+    const weak = weakest?.accuracy ?? 0;
+    if (weakest?.concept === "hydraulics") {
+      recommendationType = weak <= 1 / 3 ? "begin_guided_hydraulic_practice" : "continue_hydraulic_independent_practice";
+      title = weak <= 1 / 3 ? "Target Guided Hydraulic Practice" : "Target Independent Hydraulic Practice";
+      actionLabel = weak <= 1 / 3 ? "Start guided practice" : "Start independent practice";
+    } else if (weakest?.concept === "gears") {
+      recommendationType = weak <= 1 / 3 ? "continue_guided_gear_practice" : "continue_gear_independent_practice";
+      title = weak <= 1 / 3 ? "Target Guided Gear Practice" : "Target Independent Gear Practice";
+      actionLabel = weak <= 1 / 3 ? "Start guided practice" : "Start independent practice";
+    } else if (weakest?.concept === "pulleys") {
+      recommendationType = weak <= 1 / 3 ? "continue_guided_pulley_practice" : "continue_pulley_independent_practice";
+      title = weak <= 1 / 3 ? "Target Guided Pulley Practice" : "Target Independent Pulley Practice";
+      actionLabel = weak <= 1 / 3 ? "Start guided practice" : "Start independent practice";
+    } else {
+      recommendationType = weak <= 1 / 3 ? "continue_guided_lever_practice" : "continue_lever_independent_practice";
+      title = weak <= 1 / 3 ? "Target Guided Lever Practice" : "Target Independent Lever Practice";
+      actionLabel = weak <= 1 / 3 ? "Start guided practice" : "Start independent practice";
+    }
+    summaryText = `${weakestLabel} was the least stable area once the four mechanical methods were mixed. Use a short targeted set before another integrated attempt.`;
+    interpretation = `This is a strengthening recommendation. ${weakestLabel} was the clearest area to strengthen when the learner had to choose between mechanical methods.`;
+  }
+
+  const evidenceText = breakdown.map((item) => `${labels[item.concept] ?? item.concept}: ${item.correct}/${item.attempted}`).join(" · ");
+  const why: WhyExplanation = {
     whyExplanationId: id("why"),
-    title: "Why structured mechanical foundations are recommended",
-    observation: "No specific mechanical weakness was identified in this mixed practice session.",
-    evidence: `Mixed Mechanical Practice evidence: ${evidenceText}.`,
-    interpretation: "Your results were strong across hydraulics, gears, pulleys and levers. This recommendation is therefore a progression recommendation, not a strengthening recommendation.",
-    recommendation: "Hydraulic Fundamentals is suggested as the next structured learning module so the preparation journey can continue in an organised sequence.",
-    confidence: "Moderate. The mixed practice result is encouraging, but one strong session is not enough for a broad readiness judgement.",
-    createdAt: now(),
-  } : {
-    whyExplanationId: id("why"),
-    title: `Why ${focus.moduleTitle} is recommended`,
-    observation: hydraulic && hydraulic.accuracy >= 0.75 ? `Hydraulic reasoning remained relatively stable in mixed practice. ${focus.title}` : focus.title,
-    evidence: `Mixed Mechanical Practice evidence: ${evidenceText}.`,
-    interpretation: `This suggests the earlier hydraulic focus is no longer the only useful signal. Vivalsa is now using mixed mechanical evidence to identify the next preparation focus.`,
-    recommendation: `${focus.moduleTitle} is recommended as the next step.`,
-    confidence: "Moderate. This is based on one mixed practice session, so it is useful for guidance but not a full readiness judgement.",
+    title: `Why ${title} is recommended`,
+    observation: readyForAssessment ? "Mixed Mechanical Practice was strong across all four mechanical areas." : `${weakestLabel} was the lowest area in Mixed Mechanical Practice.`,
+    evidence: `Overall: ${summary.correct}/${summary.attempted}. ${evidenceText}.`,
+    interpretation,
+    recommendation: `${title} is recommended next.`,
+    confidence: "Moderate. This is based on one 12-question mixed practice set and is intended to choose the next preparation step.",
     createdAt: now(),
   };
-  const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType: focus.recommendationType, title: focus.moduleTitle, summary: noClearWeakness ? "No specific weakness was identified in mixed practice. This is suggested as the next structured learning step, not because hydraulics appears weak." : `Build the foundation concepts for ${focus.label.toLowerCase()} before the next mixed practice check.`, actionLabel: noClearWeakness ? "Start Hydraulic Fundamentals" : focus.moduleTitle, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
+
+  const recommendation: Recommendation = {
+    recommendationId: id("rec"),
+    recommendationType,
+    title,
+    summary: summaryText,
+    actionLabel,
+    confidence: "moderate",
+    whyExplanationId: why.whyExplanationId,
+    status: "active",
+    createdAt: now(),
+  };
+
   const previousRecommendation = getCurrentRecommendation(journey);
-  const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
-  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: "developing_evidence", label: "Developing evidence", explanation: "Vivalsa now has evidence from a mixed mechanical practice session and can begin identifying the next focus area, but broader readiness still requires more evidence.", confidence: "moderate", createdAt: now() };
-  const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "mixed_mechanical_practice_completed", label: "Mixed Mechanical Practice completed", createdAt: now() };
-  const focusMilestone: Milestone = { milestoneId: id("milestone"), type: "second_focus_identified", label: noClearWeakness ? "No clear mechanical weakness identified" : `${focus.label} identified as next focus`, createdAt: now() };
-  const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Mixed mechanical practice complete", summary: noClearWeakness ? "Your mixed mechanical practice was strong across all four areas. No specific mechanical weakness was identified in this session." : (hydraulic && hydraulic.accuracy >= 0.75 ? `Your hydraulic reasoning remained stable during mixed practice. ${focus.label} now appears to be the largest remaining preparation focus.` : `Mixed practice suggests ${focus.label.toLowerCase()} is the next useful focus.`), comparison: evidenceText, interpretation: noClearWeakness ? "Vivalsa is treating the next step as structured progression rather than remediation. Continuing with a fundamentals module keeps the preparation journey organised without implying a weakness." : `Vivalsa uses mixed practice to check whether improved areas stay stable while other mechanical topics are interleaved.`, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
-  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), completedMilestone.milestoneId, focusMilestone.milestoneId].slice(-7);
+  const updatedRecommendations = journey.recommendations.map((rec) =>
+    rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec
+  );
+
+  const readiness: ReadinessSnapshot = {
+    readinessSnapshotId: id("readiness"),
+    state: "developing_evidence",
+    label: readyForAssessment ? "Developing evidence — ready for integrated mechanical check" : `Developing evidence — ${weakestLabel.toLowerCase()} needs consolidation`,
+    explanation: interpretation,
+    confidence: "moderate",
+    createdAt: now(),
+  };
+
+  const completedMilestone: Milestone = {
+    milestoneId: id("milestone"),
+    type: "mixed_mechanical_practice_completed",
+    label: "Mixed Mechanical Practice completed",
+    createdAt: now(),
+  };
+
+  const debrief: Debrief = {
+    debriefId: id("debrief"),
+    sessionId,
+    title: "Mixed mechanical practice complete",
+    summary: `${summary.correct} of ${summary.attempted} correct.`,
+    comparison: evidenceText,
+    interpretation,
+    recommendationId: recommendation.recommendationId,
+    confidence: "moderate",
+    whyExplanationId: why.whyExplanationId,
+    createdAt: now(),
+  };
+
+  const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), completedMilestone.milestoneId].slice(-7);
+
   return {
     ...journey,
     sessions: journey.sessions.map((s) => s.sessionId === sessionId ? completedSession : s),
@@ -3595,8 +3694,17 @@ function completeMixedMechanicalPractice(journey: MvpGuestJourney, sessionId: st
     recommendations: [...updatedRecommendations, recommendation],
     whyExplanations: [...journey.whyExplanations, why],
     readinessSnapshots: [...journey.readinessSnapshots, readiness],
-    milestones: [...journey.milestones, completedMilestone, focusMilestone],
-    dashboardState: { ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }), currentRecommendationId: recommendation.recommendationId, currentFocusLabel: focus.label, readinessSnapshotId: readiness.readinessSnapshotId, recentMilestoneIds, baselineSummary: journey.dashboardState?.baselineSummary, saveStatus: "local_only", updatedAt: now() },
+    milestones: [...journey.milestones, completedMilestone],
+    dashboardState: {
+      ...(journey.dashboardState ?? { dashboardStateId: id("dash"), recentMilestoneIds: [], saveStatus: "local_only" as const, updatedAt: now() }),
+      currentRecommendationId: recommendation.recommendationId,
+      currentFocusLabel: currentFocus,
+      readinessSnapshotId: readiness.readinessSnapshotId,
+      recentMilestoneIds,
+      baselineSummary: journey.dashboardState?.baselineSummary,
+      saveStatus: "local_only",
+      updatedAt: now(),
+    },
     updatedAt: now(),
   };
 }
@@ -3623,7 +3731,7 @@ function completeMixedMechanicalAssessment(journey: MvpGuestJourney, sessionId: 
   const responses = journey.responses.filter((response) => response.sessionId === sessionId);
   const summary = calculateMixedMechanicalAssessmentSummary(completedSession, responses);
   const weakest = [...summary.conceptBreakdown].sort((a, b) => a.accuracy - b.accuracy)[0];
-  const integratedStrong = summary.accuracy >= 0.8 && summary.conceptBreakdown.every((item) => item.accuracy >= 4 / 6);
+  const integratedStrong = summary.accuracy >= 0.8 && summary.conceptBreakdown.every((item) => item.accuracy >= 3 / 4);
   const labels: Record<string, string> = { hydraulics: "Hydraulics", gears: "Gears", pulleys: "Pulleys", levers: "Levers" };
   const weakestLabel = labels[weakest?.concept ?? "gears"] ?? "Mechanical reasoning";
 
@@ -3708,7 +3816,7 @@ function completeMixedMechanicalAssessment(journey: MvpGuestJourney, sessionId: 
     evidence: `Overall: ${summary.correct} of ${summary.attempted}. ${comparison}.`,
     interpretation,
     recommendation: `${title} is recommended next.`,
-    confidence: "Moderate. This is based on one 24-question mixed assessment and should guide the next preparation step rather than define overall aptitude.",
+    confidence: "Moderate. This is based on one 16-question mixed assessment and should guide the next preparation step rather than define overall aptitude.",
     createdAt: now(),
   };
   const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType, title, summary: summaryText, actionLabel, confidence: "moderate", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
@@ -5402,58 +5510,203 @@ function SaveProgressScreen({ journey, onCreateAccount, onContinue }: { journey:
 }
 
 function MixedMechanicalPracticeIntroScreen({ onStart }: { onStart: () => void }) {
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Adaptive evidence check</p><h1 className="mt-5 text-4xl font-semibold">Mixed Mechanical Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">This session mixes hydraulics, gears, pulleys and levers to check what should become your next preparation focus.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["20 questions", "Immediate feedback", "No topic labels"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Vivalsa will silently track each mechanical topic and update your recommendation after the session.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Start mixed practice</PrimaryButton></div></Card></section></Shell>;
-}
-
-function MixedMechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
-  const [startedAt, setStartedAt] = useState(Date.now());
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  useEffect(() => { setStartedAt(Date.now()); setSelectedOptionId(null); setShowFeedback(false); }, [questionIndex]);
-  const question = mixedMechanicalPracticeQuestions[questionIndex];
-  const progress = ((questionIndex + 1) / mixedMechanicalPracticeQuestions.length) * 100;
-  const answered = journey.responses.filter((r) => r.sessionId === sessionId).length;
-  if (!question) return null;
-  const selectedCorrect = selectedOptionId === question.correctOptionId;
-  function select(optionId: string) { if (showFeedback) return; setSelectedOptionId(optionId); setShowFeedback(true); }
-  function next() { if (!selectedOptionId) return; const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false); onAnswer(response, questionIndex === mixedMechanicalPracticeQuestions.length - 1); }
   return (
-    <Shell right="Mixed practice">
-      <section className="mx-auto max-w-5xl px-8 pb-44 pt-12 sm:pb-12">
-        <div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div>
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Practice</p><h1 className="mt-3 text-3xl font-semibold">Mechanical reasoning</h1></div>
-          <div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalPracticeQuestions.length}<br /><span className="text-xs">{answered} saved</span></div>
-        </div>
-        <Card>
-          <p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p>
-          <div className="mt-8 grid gap-4">
-            {question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}
+    <Shell>
+      <section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-6 py-12 sm:px-8 sm:py-16">
+        <Card className="text-center">
+          <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Integrated mechanical practice</p>
+          <h1 className="mt-5 text-4xl font-semibold">Mixed Mechanical Practice</h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">
+            Hydraulics, gears, pulleys and levers are now interleaved. The topic is not announced before each question, so your first task is to recognise which mechanical method applies.
+          </p>
+          <div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">
+            {["12 questions", "Immediate feedback", "No topic labels before answering"].map((item) => (
+              <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>
+            ))}
           </div>
-          {showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl lg:static lg:mt-7 lg:rounded-2xl lg:border lg:p-5 lg:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}>
-            <div className="mx-auto max-w-5xl">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p>
-                  <p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>
-                  {!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}
-                </div>
-                <div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === mixedMechanicalPracticeQuestions.length - 1 ? "Complete mixed practice" : "Next question"}</PrimaryButton></div>
-              </div>
-            </div>
-          </div>}
+          <p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">
+            After each answer, Vivalsa will name the method that applied. The aim is to practise choosing the right tool, not merely remembering four separate topics.
+          </p>
+          <div className="mt-10"><PrimaryButton onClick={onStart}>Start mixed practice</PrimaryButton></div>
         </Card>
       </section>
     </Shell>
   );
 }
 
-function MixedMechanicalPracticeDebriefScreen({ journey, onWhy, onDashboard }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void }) {
-  const debrief = getLatestDebrief(journey);
-  const rec = getCurrentRecommendation(journey);
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed practice debrief</p><h1 className="mt-6 text-4xl font-semibold leading-tight">{debrief?.title ?? "Mixed mechanical practice complete"}</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p><div className="mt-8 grid gap-5"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Mixed practice evidence</div><p className="mt-3 text-[#C8D2DD]">{debrief?.comparison}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div><p className="mt-3 text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>Moderate confidence</Badge></div></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+function MixedMechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
+  const [startedAt, setStartedAt] = useState(Date.now());
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStartedAt(Date.now());
+    setSelectedOptionId(null);
+    setShowFeedback(false);
+  }, [questionIndex]);
+
+  const question = mixedMechanicalPracticeQuestions[questionIndex];
+  if (!question) return null;
+
+  const progress = ((questionIndex + 1) / mixedMechanicalPracticeQuestions.length) * 100;
+  const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
+  const selectedCorrect = selectedOptionId === question.correctOptionId;
+  const visibleOptions = showFeedback
+    ? question.options.filter((option) => option.optionId === selectedOptionId)
+    : question.options;
+
+  const topicLabels: Record<string, string> = {
+    hydraulics: "Hydraulics",
+    gears: "Gears",
+    pulleys: "Pulleys",
+    levers: "Levers",
+  };
+  const methodCues: Record<string, string> = {
+    hydraulics: "Trace pressure through the fluid, then compare piston area, force or movement.",
+    gears: "Find the driver, count the meshes, then compare tooth counts if speed matters.",
+    pulleys: "Find the moving load, trace the rope and count the supporting strands.",
+    levers: "Find the fulcrum, locate load and effort, then compare their distances.",
+  };
+
+  function select(optionId: string) {
+    if (showFeedback) return;
+    setSelectedOptionId(optionId);
+    setShowFeedback(true);
+  }
+
+  function next() {
+    if (!selectedOptionId) return;
+    const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false);
+    onAnswer(response, questionIndex === mixedMechanicalPracticeQuestions.length - 1);
+  }
+
+  return (
+    <Shell right="Mixed practice">
+      <section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
+        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5">
+          <div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} />
+        </div>
+
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Practice</p>
+            <h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1>
+          </div>
+          <div className="text-right text-sm text-[#8D98A6]">
+            Question {questionIndex + 1} of {mixedMechanicalPracticeQuestions.length}
+            <br />
+            <span className="text-xs">{answered} saved</span>
+          </div>
+        </div>
+
+        <Card>
+          <MixedMechanicalAssessmentDiagram question={question} />
+          <p className="mt-6 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p>
+
+          <div className="mt-6 grid gap-3">
+            {visibleOptions.map((option) => {
+              const selected = selectedOptionId === option.optionId;
+              return (
+                <button
+                  key={option.optionId}
+                  type="button"
+                  onClick={() => select(option.optionId)}
+                  disabled={showFeedback}
+                  className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${
+                    selected
+                      ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10"
+                      : "border-white/10 hover:border-[#5ED3F3]/40"
+                  } ${showFeedback ? "cursor-default" : ""}`}
+                >
+                  <span className="mr-3 text-[#5ED3F3]">{option.label}</span>
+                  <span className="text-[#DCE3EA]">{option.text}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {showFeedback && (
+            <div className={`mt-5 rounded-2xl border p-5 ${
+              selectedCorrect
+                ? "border-[#38D39F]/40 bg-[#101D1A]"
+                : "border-[#FFB86B]/40 bg-[#211813]"
+            }`}>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <div className="mb-3 inline-flex rounded-full border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#5ED3F3]">
+                    Method: {topicLabels[question.subcompetency] ?? "Mechanical reasoning"}
+                  </div>
+                  <p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p>
+                  <p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]">
+                    <span className="text-[#6E7A88]">Reasoning cue: </span>
+                    {methodCues[question.subcompetency] ?? question.feedbackCue}
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
+                    {questionIndex === mixedMechanicalPracticeQuestions.length - 1 ? "Complete mixed practice" : "Next question"}
+                  </PrimaryButton>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card>
+      </section>
+    </Shell>
+  );
 }
 
+function MixedMechanicalPracticeDebriefScreen({ journey, onWhy, onDashboard, onStartAssessment }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartAssessment: () => void }) {
+  const debrief = getLatestDebrief(journey);
+  const rec = getCurrentRecommendation(journey);
+  const summary = [...journey.practiceSummaries].reverse().find((item) => item.sessionType === "mixed_mechanical_practice");
+  const labels: Record<string, string> = { hydraulics: "Hydraulics", gears: "Gears", pulleys: "Pulleys", levers: "Levers" };
+  const canAssess = rec?.recommendationType === "begin_mixed_mechanical_assessment";
+
+  return (
+    <Shell>
+      <section className="mx-auto flex min-h-[82vh] max-w-5xl items-center px-6 py-12 sm:px-8 sm:py-16">
+        <Card>
+          <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed practice debrief</p>
+          <h1 className="mt-5 text-4xl font-semibold leading-tight">{debrief?.title ?? "Mixed mechanical practice complete"}</h1>
+          <p className="mt-5 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p>
+
+          {summary && (
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {summary.conceptBreakdown.map((item) => (
+                <div key={item.concept} className="rounded-2xl border border-white/5 bg-[#111418] p-5">
+                  <div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">{labels[item.concept] ?? item.concept}</div>
+                  <div className="mt-3 text-3xl font-semibold">{item.correct}/{item.attempted}</div>
+                  <div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(item.accuracy * 100)}%</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+            <div className="rounded-2xl border border-white/5 bg-[#111418] p-6">
+              <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Interpretation</div>
+              <p className="mt-3 leading-relaxed text-[#C8D2DD]">{debrief?.interpretation}</p>
+            </div>
+            <div className="rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6">
+              <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div>
+              <h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2>
+              <p className="mt-3 leading-relaxed text-[#AAB4C0]">{rec?.summary}</p>
+            </div>
+          </div>
+
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton>
+            {canAssess && <PrimaryButton onClick={onStartAssessment}>Start Mixed Mechanical Assessment</PrimaryButton>}
+            <PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton>
+          </div>
+        </Card>
+      </section>
+    </Shell>
+  );
+}
 
 function GuidedGearPracticeIntroScreen({ onStart }: { onStart: () => void }) {
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Evidence check</p><h1 className="mt-5 text-4xl font-semibold">Guided Gear Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">This practice checks whether gear direction, idler and gear-size concepts are beginning to transfer into problem-solving.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["10 questions", "Immediate feedback", "Diagram-first reasoning"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Vivalsa will use this result to decide whether to return to mixed mechanical practice or continue reinforcing gear reasoning.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Begin gear practice</PrimaryButton></div></Card></section></Shell>;
@@ -6853,7 +7106,28 @@ function MixedMechanicalAssessmentDiagram({ question }: { question: MvpQuestion 
 }
 
 function MixedMechanicalAssessmentIntroScreen({ onStart }: { onStart: () => void }) {
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Integrated evidence check</p><h1 className="mt-5 text-4xl font-semibold">Mixed Mechanical Assessment</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Gears, pulleys, levers and hydraulics are mixed together. The category is not announced, so you must first decide which mechanical method applies.</p><div className="mx-auto mt-9 grid max-w-2xl gap-3 sm:grid-cols-4">{["24 questions", "4 mechanical areas", "No immediate feedback", "Untimed in v1"].map((item)=><div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">The Mentor will use the result to make either a strengthening recommendation or a progression recommendation.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Start mixed assessment</PrimaryButton></div></Card></section></Shell>;
+  return (
+    <Shell>
+      <section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-6 py-12 sm:px-8 sm:py-16">
+        <Card className="text-center">
+          <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Integrated evidence check</p>
+          <h1 className="mt-5 text-4xl font-semibold">Mixed Mechanical Assessment</h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">
+            Hydraulics, gears, pulleys and levers are mixed together without topic labels or immediate feedback. First identify the mechanical principle, then solve the problem.
+          </p>
+          <div className="mx-auto mt-9 grid max-w-2xl gap-3 sm:grid-cols-4">
+            {["16 questions", "4 mechanical areas", "No immediate feedback", "Untimed in v1"].map((item) => (
+              <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>
+            ))}
+          </div>
+          <p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">
+            Four questions from each mechanical area provide a balanced integrated check without turning the session into a long endurance test.
+          </p>
+          <div className="mt-10"><PrimaryButton onClick={onStart}>Start mixed assessment</PrimaryButton></div>
+        </Card>
+      </section>
+    </Shell>
+  );
 }
 
 function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
@@ -6865,7 +7139,7 @@ function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionI
   const progress = ((questionIndex + 1) / mixedMechanicalAssessmentQuestions.length) * 100;
   const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
   function next() { if (!selectedOptionId) return; onAnswer(createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false), questionIndex === mixedMechanicalAssessmentQuestions.length - 1); }
-  return <Shell right="Mixed Mechanical Assessment"><section className="mx-auto max-w-5xl px-8 py-12"><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div><div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question"}</PrimaryButton></div></Card></section></Shell>;
+  return <Shell right="Mixed Mechanical Assessment"><section className="mx-auto max-w-5xl px-6 py-8 sm:px-8 sm:py-12"><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div><div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question"}</PrimaryButton></div></Card></section></Shell>;
 }
 
 function MixedMechanicalAssessmentDebriefScreen({ journey, onWhy, onDashboard, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onReviewIncorrect: () => void; onReviewAll: () => void }) {
@@ -7117,5 +7391,5 @@ export default function VivalsaPrototype() {
     }
   }
 
-  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onStartRecommendation={openCurrentRecommendation} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartHydraulicIndependentPractice={() => setScreen("hydraulic-independent-practice-intro")} onStartMixedPractice={openMixedPracticeIntro} onStartMixedAssessment={openMixedMechanicalAssessmentIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onStartLeverFundamentals={openLeverFundamentals} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} onStartLeverIndependentPractice={openLeverIndependentPracticeIntro} onStartLeverAssessment={openLeverAssessmentIntro} onStartNumericalFundamentals={openNumericalFundamentals} onStartGuidedNumericalPractice={openGuidedNumericalPracticeIntro} onStartNumericalIndependentPractice={openNumericalIndependentPracticeIntro} onStartNumericalAssessment={openNumericalAssessmentIntro} onStartAbstractLogicalFundamentals={openAbstractLogicalFundamentals} onStartGuidedAbstractLogicalPractice={openGuidedAbstractLogicalPracticeIntro} onStartAbstractLogicalIndependentPractice={openAbstractLogicalIndependentPracticeIntro} onStartAbstractLogicalAssessment={openAbstractLogicalAssessmentIntro} onStartVerbalFundamentals={openVerbalFundamentals} onStartGuidedVerbalPractice={openGuidedVerbalPracticeIntro} onStartVerbalIndependentPractice={openVerbalIndependentPracticeIntro} onStartVerbalAssessment={openVerbalAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onNext={continueAfterGuidedHydraulics} onReview={() => setScreen("hydraulic-fundamentals")} onDashboard={() => setScreen("dashboard")} />}{screen === "hydraulic-independent-practice-intro" && <HydraulicIndependentPracticeIntroScreen onStart={startHydraulicIndependentPractice} />}{screen === "hydraulic-independent-practice-question" && activeSession && <HydraulicIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleHydraulicIndependentAnswer} />}{screen === "hydraulic-independent-practice-debrief" && <HydraulicIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onContinue={continueAfterHydraulicIndependentPractice} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("hydraulic_independent_practice", "incorrect", "hydraulic-independent-practice-debrief")} onReviewAll={() => openAnswerReview("hydraulic_independent_practice", "all", "hydraulic-independent-practice-debrief")} />}{screen === "hydraulic-transfer-reflection" && <HydraulicTransferReflectionScreen onContinue={() => setScreen("save-progress")} />}{screen === "save-progress" && <SaveProgressScreen journey={journey} onCreateAccount={createPrototypeAccount} onContinue={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-assessment-intro" && <MixedMechanicalAssessmentIntroScreen onStart={startMixedMechanicalAssessment} />}{screen === "mixed-mechanical-assessment-question" && activeSession && <MixedMechanicalAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedMechanicalAssessmentAnswer} />}{screen === "mixed-mechanical-assessment-debrief" && <MixedMechanicalAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("mixed_mechanical_assessment", "incorrect", "mixed-mechanical-assessment-debrief")} onReviewAll={() => openAnswerReview("mixed_mechanical_assessment", "all", "mixed-mechanical-assessment-debrief")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("gear_independent_practice", "incorrect", "gear-independent-practice-debrief")} onReviewAll={() => openAnswerReview("gear_independent_practice", "all", "gear-independent-practice-debrief")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("gear_assessment", "incorrect", "gear-assessment-debrief")} onReviewAll={() => openAnswerReview("gear_assessment", "all", "gear-assessment-debrief")} onStartPulleys={openPulleyFundamentals} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} onReviewIncorrect={() => openAnswerReview("pulley_independent_practice", "incorrect", "pulley-independent-practice-debrief")} onReviewAll={() => openAnswerReview("pulley_independent_practice", "all", "pulley-independent-practice-debrief")} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverFundamentals} onReviewIncorrect={() => openAnswerReview("pulley_assessment", "incorrect", "pulley-assessment-debrief")} onReviewAll={() => openAnswerReview("pulley_assessment", "all", "pulley-assessment-debrief")} />}{screen === "lever-fundamentals" && <LeverFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeLeverModule} />}{screen === "lever-fundamentals-complete" && <LeverFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} />}{screen === "guided-lever-practice-intro" && <LeverPracticeIntroScreen stage="guided" onStart={startGuidedLeverPractice} />}{screen === "guided-lever-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedLeverAnswer} questions={guidedLeverPracticeQuestions} stage="guided" />}{screen === "guided-lever-practice-debrief" && <LeverDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverIndependentPracticeIntro} />}{screen === "lever-independent-practice-intro" && <LeverPracticeIntroScreen stage="independent" onStart={startLeverIndependentPractice} />}{screen === "lever-independent-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverIndependentPracticeAnswer} questions={leverIndependentPracticeQuestions} stage="independent" />}{screen === "lever-independent-practice-debrief" && <LeverDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverAssessmentIntro} onReviewIncorrect={() => openAnswerReview("lever_independent_practice", "incorrect", "lever-independent-practice-debrief")} onReviewAll={() => openAnswerReview("lever_independent_practice", "all", "lever-independent-practice-debrief")} />}{screen === "lever-assessment-intro" && <LeverPracticeIntroScreen stage="assessment" onStart={startLeverAssessment} />}{screen === "lever-assessment-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverAssessmentAnswer} questions={leverAssessmentQuestions} stage="assessment" />}{screen === "lever-assessment-debrief" && <LeverDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("lever_assessment", "incorrect", "lever-assessment-debrief")} onReviewAll={() => openAnswerReview("lever_assessment", "all", "lever-assessment-debrief")} />}{screen === "numerical-fundamentals" && <NumericalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeNumericalModule} />}{screen === "numerical-fundamentals-complete" && <NumericalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedNumericalPracticeIntro} />}{screen === "guided-numerical-practice-intro" && <NumericalPracticeIntroScreen stage="guided" onStart={startGuidedNumericalPractice} />}{screen === "guided-numerical-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedNumericalAnswer} questions={guidedNumericalPracticeQuestions} stage="guided" />}{screen === "guided-numerical-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalIndependentPracticeIntro} />}{screen === "numerical-independent-practice-intro" && <NumericalPracticeIntroScreen stage="independent" onStart={startNumericalIndependentPractice} />}{screen === "numerical-independent-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalIndependentAnswer} questions={numericalIndependentPracticeQuestions} stage="independent" />}{screen === "numerical-independent-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalAssessmentIntro} onReviewIncorrect={() => openAnswerReview("numerical_independent_practice", "incorrect", "numerical-independent-practice-debrief")} onReviewAll={() => openAnswerReview("numerical_independent_practice", "all", "numerical-independent-practice-debrief")} />}{screen === "numerical-assessment-intro" && <NumericalPracticeIntroScreen stage="assessment" onStart={startNumericalAssessment} />}{screen === "numerical-assessment-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalAssessmentAnswer} questions={numericalAssessmentQuestions} stage="assessment" />}{screen === "numerical-assessment-debrief" && <NumericalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("numerical_assessment", "incorrect", "numerical-assessment-debrief")} onReviewAll={() => openAnswerReview("numerical_assessment", "all", "numerical-assessment-debrief")} />}{screen === "abstract-logical-fundamentals" && <AbstractLogicalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeAbstractLogicalModule} />}{screen === "abstract-logical-fundamentals-complete" && <AbstractLogicalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedAbstractLogicalPracticeIntro} />}{screen === "guided-abstract-logical-practice-intro" && <AbstractLogicalPracticeIntroScreen stage="guided" onStart={startGuidedAbstractLogicalPractice} />}{screen === "guided-abstract-logical-practice-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAbstractLogicalAnswer} questions={guidedAbstractLogicalPracticeQuestions} stage="guided" />}{screen === "guided-abstract-logical-practice-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openAbstractLogicalIndependentPracticeIntro} />}{screen === "abstract-logical-independent-practice-intro" && <AbstractLogicalPracticeIntroScreen stage="independent" onStart={startAbstractLogicalIndependentPractice} />}{screen === "abstract-logical-independent-practice-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAbstractLogicalIndependentAnswer} questions={abstractLogicalIndependentPracticeQuestions} stage="independent" />}{screen === "abstract-logical-independent-practice-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openAbstractLogicalAssessmentIntro} onReviewIncorrect={() => openAnswerReview("abstract_logical_independent_practice", "incorrect", "abstract-logical-independent-practice-debrief")} onReviewAll={() => openAnswerReview("abstract_logical_independent_practice", "all", "abstract-logical-independent-practice-debrief")} />}{screen === "abstract-logical-assessment-intro" && <AbstractLogicalPracticeIntroScreen stage="assessment" onStart={startAbstractLogicalAssessment} />}{screen === "abstract-logical-assessment-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAbstractLogicalAssessmentAnswer} questions={abstractLogicalAssessmentQuestions} stage="assessment" />}{screen === "abstract-logical-assessment-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("abstract_logical_assessment", "incorrect", "abstract-logical-assessment-debrief")} onReviewAll={() => openAnswerReview("abstract_logical_assessment", "all", "abstract-logical-assessment-debrief")} />}{screen === "verbal-fundamentals" && <VerbalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeVerbalModule} />}{screen === "verbal-fundamentals-complete" && <VerbalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedVerbalPracticeIntro} />}{screen === "guided-verbal-practice-intro" && <VerbalPracticeIntroScreen stage="guided" onStart={startGuidedVerbalPractice} />}{screen === "guided-verbal-practice-question" && activeSession && <VerbalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedVerbalAnswer} questions={guidedVerbalPracticeQuestions} stage="guided" />}{screen === "guided-verbal-practice-debrief" && <VerbalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openVerbalIndependentPracticeIntro} />}{screen === "verbal-independent-practice-intro" && <VerbalPracticeIntroScreen stage="independent" onStart={startVerbalIndependentPractice} />}{screen === "verbal-independent-practice-question" && activeSession && <VerbalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleVerbalIndependentAnswer} questions={verbalIndependentPracticeQuestions} stage="independent" />}{screen === "verbal-independent-practice-debrief" && <VerbalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openVerbalAssessmentIntro} onReviewIncorrect={() => openAnswerReview("verbal_independent_practice", "incorrect", "verbal-independent-practice-debrief")} onReviewAll={() => openAnswerReview("verbal_independent_practice", "all", "verbal-independent-practice-debrief")} />}{screen === "verbal-assessment-intro" && <VerbalPracticeIntroScreen stage="assessment" onStart={startVerbalAssessment} />}{screen === "verbal-assessment-question" && activeSession && <VerbalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleVerbalAssessmentAnswer} questions={verbalAssessmentQuestions} stage="assessment" />}{screen === "verbal-assessment-debrief" && <VerbalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("verbal_assessment", "incorrect", "verbal-assessment-debrief")} onReviewAll={() => openAnswerReview("verbal_assessment", "all", "verbal-assessment-debrief")} />}{screen === "answer-review" && reviewContext && <AnswerReviewScreen journey={journey} context={reviewContext} onModeChange={changeAnswerReviewMode} onBack={closeAnswerReview} />}</>;
+  return <>{showWhy && <WhyModal why={why} onClose={() => setShowWhy(false)} />}{screen === "landing" && <LandingScreen onBegin={() => setScreen("pathway-selection")} onLoadTestScenario={loadTestScenario} />}{screen === "pathway-selection" && <PathwaySelectionScreen onSelect={selectFireService} />}{screen === "preparation-context" && <PreparationContextScreen onSave={saveContext} />}{screen === "mechanical-baseline-intro" && <BaselineIntroScreen onStart={startBaseline} />}{screen === "mechanical-baseline-question" && activeSession && <MechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAnswer} />}{screen === "assessment-complete" && <AssessmentCompleteScreen onView={() => setScreen("first-advisor-insight")} />}{screen === "first-advisor-insight" && <FirstAdvisorInsightScreen journey={journey} onWhy={() => setShowWhy(true)} onStartRecommendation={openCurrentRecommendation} />}{screen === "dashboard" && <DashboardScreen journey={journey} onWhy={() => setShowWhy(true)} onReset={resetDemo} onStartHydraulics={openHydraulicFundamentals} onStartGuidedPractice={openGuidedPracticeIntro} onStartHydraulicIndependentPractice={() => setScreen("hydraulic-independent-practice-intro")} onStartMixedPractice={openMixedPracticeIntro} onStartMixedAssessment={openMixedMechanicalAssessmentIntro} onStartGearFundamentals={openGearFundamentals} onStartGuidedGearPractice={openGuidedGearPracticeIntro} onStartGearIndependentPractice={openGearIndependentPracticeIntro} onStartGearAssessment={openGearAssessmentIntro} onStartPulleyFundamentals={openPulleyFundamentals} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} onStartPulleyIndependentPractice={openPulleyIndependentPracticeIntro} onStartPulleyAssessment={openPulleyAssessmentIntro} onStartLeverFundamentals={openLeverFundamentals} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} onStartLeverIndependentPractice={openLeverIndependentPracticeIntro} onStartLeverAssessment={openLeverAssessmentIntro} onStartNumericalFundamentals={openNumericalFundamentals} onStartGuidedNumericalPractice={openGuidedNumericalPracticeIntro} onStartNumericalIndependentPractice={openNumericalIndependentPracticeIntro} onStartNumericalAssessment={openNumericalAssessmentIntro} onStartAbstractLogicalFundamentals={openAbstractLogicalFundamentals} onStartGuidedAbstractLogicalPractice={openGuidedAbstractLogicalPracticeIntro} onStartAbstractLogicalIndependentPractice={openAbstractLogicalIndependentPracticeIntro} onStartAbstractLogicalAssessment={openAbstractLogicalAssessmentIntro} onStartVerbalFundamentals={openVerbalFundamentals} onStartGuidedVerbalPractice={openGuidedVerbalPracticeIntro} onStartVerbalIndependentPractice={openVerbalIndependentPracticeIntro} onStartVerbalAssessment={openVerbalAssessmentIntro} onLoadTestScenario={loadTestScenario} />}{screen === "hydraulic-fundamentals" && <HydraulicFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeHydraulicsModule} />}{screen === "hydraulic-fundamentals-complete" && <HydraulicFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPractice={openGuidedPracticeIntro} />}{screen === "guided-hydraulic-practice-intro" && <GuidedHydraulicPracticeIntroScreen onStart={startGuidedPractice} />}{screen === "guided-hydraulic-practice-question" && activeSession && <GuidedHydraulicQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAnswer} />}{screen === "guided-hydraulic-practice-debrief" && <GuidedHydraulicPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onNext={continueAfterGuidedHydraulics} onReview={() => setScreen("hydraulic-fundamentals")} onDashboard={() => setScreen("dashboard")} />}{screen === "hydraulic-independent-practice-intro" && <HydraulicIndependentPracticeIntroScreen onStart={startHydraulicIndependentPractice} />}{screen === "hydraulic-independent-practice-question" && activeSession && <HydraulicIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleHydraulicIndependentAnswer} />}{screen === "hydraulic-independent-practice-debrief" && <HydraulicIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onContinue={continueAfterHydraulicIndependentPractice} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("hydraulic_independent_practice", "incorrect", "hydraulic-independent-practice-debrief")} onReviewAll={() => openAnswerReview("hydraulic_independent_practice", "all", "hydraulic-independent-practice-debrief")} />}{screen === "hydraulic-transfer-reflection" && <HydraulicTransferReflectionScreen onContinue={() => setScreen("save-progress")} />}{screen === "save-progress" && <SaveProgressScreen journey={journey} onCreateAccount={createPrototypeAccount} onContinue={() => setScreen("dashboard")} />}{screen === "mixed-mechanical-practice-intro" && <MixedMechanicalPracticeIntroScreen onStart={startMixedPractice} />}{screen === "mixed-mechanical-practice-question" && activeSession && <MixedMechanicalQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedAnswer} />}{screen === "mixed-mechanical-practice-debrief" && <MixedMechanicalPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartAssessment={openMixedMechanicalAssessmentIntro} />}{screen === "mixed-mechanical-assessment-intro" && <MixedMechanicalAssessmentIntroScreen onStart={startMixedMechanicalAssessment} />}{screen === "mixed-mechanical-assessment-question" && activeSession && <MixedMechanicalAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleMixedMechanicalAssessmentAnswer} />}{screen === "mixed-mechanical-assessment-debrief" && <MixedMechanicalAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("mixed_mechanical_assessment", "incorrect", "mixed-mechanical-assessment-debrief")} onReviewAll={() => openAnswerReview("mixed_mechanical_assessment", "all", "mixed-mechanical-assessment-debrief")} />}{screen === "gear-fundamentals" && <GearFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeGearModule} />}{screen === "guided-gear-practice-intro" && <GuidedGearPracticeIntroScreen onStart={startGuidedGearPractice} />}{screen === "guided-gear-practice-question" && activeSession && <GuidedGearQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedGearAnswer} />}{screen === "guided-gear-practice-debrief" && <GuidedGearPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGearIndependentPractice={openGearIndependentPracticeIntro} />}{screen === "gear-independent-practice-intro" && <GearIndependentPracticeIntroScreen onStart={startGearIndependentPractice} />}{screen === "gear-independent-practice-question" && activeSession && <GearIndependentPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearIndependentPracticeAnswer} />}{screen === "gear-independent-practice-debrief" && <GearIndependentPracticeDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("gear_independent_practice", "incorrect", "gear-independent-practice-debrief")} onReviewAll={() => openAnswerReview("gear_independent_practice", "all", "gear-independent-practice-debrief")} />}{screen === "gear-assessment-intro" && <GearAssessmentIntroScreen onStart={startGearAssessment} />}{screen === "gear-assessment-question" && activeSession && <GearAssessmentQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGearAssessmentAnswer} />}{screen === "gear-assessment-debrief" && <GearAssessmentDebriefScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("gear_assessment", "incorrect", "gear-assessment-debrief")} onReviewAll={() => openAnswerReview("gear_assessment", "all", "gear-assessment-debrief")} onStartPulleys={openPulleyFundamentals} />}{screen === "gear-fundamentals-complete" && <GearFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedGearPractice={openGuidedGearPracticeIntro} />}{screen === "pulley-fundamentals" && <PulleyFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completePulleyModule} />}{screen === "pulley-fundamentals-complete" && <PulleyFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedPulleyPractice={openGuidedPulleyPracticeIntro} />}{screen === "guided-pulley-practice-intro" && <PulleyPracticeIntroScreen stage="guided" onStart={startGuidedPulleyPractice} />}{screen === "guided-pulley-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedPulleyAnswer} questions={guidedPulleyPracticeQuestions} stage="guided" />}{screen === "guided-pulley-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyIndependentPracticeIntro} />}{screen === "pulley-independent-practice-intro" && <PulleyPracticeIntroScreen stage="independent" onStart={startPulleyIndependentPractice} />}{screen === "pulley-independent-practice-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyIndependentPracticeAnswer} questions={pulleyIndependentPracticeQuestions} stage="independent" />}{screen === "pulley-independent-practice-debrief" && <PulleyDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openPulleyAssessmentIntro} onReviewIncorrect={() => openAnswerReview("pulley_independent_practice", "incorrect", "pulley-independent-practice-debrief")} onReviewAll={() => openAnswerReview("pulley_independent_practice", "all", "pulley-independent-practice-debrief")} />}{screen === "pulley-assessment-intro" && <PulleyPracticeIntroScreen stage="assessment" onStart={startPulleyAssessment} />}{screen === "pulley-assessment-question" && activeSession && <PulleyPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handlePulleyAssessmentAnswer} questions={pulleyAssessmentQuestions} stage="assessment" />}{screen === "pulley-assessment-debrief" && <PulleyDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverFundamentals} onReviewIncorrect={() => openAnswerReview("pulley_assessment", "incorrect", "pulley-assessment-debrief")} onReviewAll={() => openAnswerReview("pulley_assessment", "all", "pulley-assessment-debrief")} />}{screen === "lever-fundamentals" && <LeverFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeLeverModule} />}{screen === "lever-fundamentals-complete" && <LeverFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuidedLeverPractice={openGuidedLeverPracticeIntro} />}{screen === "guided-lever-practice-intro" && <LeverPracticeIntroScreen stage="guided" onStart={startGuidedLeverPractice} />}{screen === "guided-lever-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedLeverAnswer} questions={guidedLeverPracticeQuestions} stage="guided" />}{screen === "guided-lever-practice-debrief" && <LeverDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverIndependentPracticeIntro} />}{screen === "lever-independent-practice-intro" && <LeverPracticeIntroScreen stage="independent" onStart={startLeverIndependentPractice} />}{screen === "lever-independent-practice-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverIndependentPracticeAnswer} questions={leverIndependentPracticeQuestions} stage="independent" />}{screen === "lever-independent-practice-debrief" && <LeverDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openLeverAssessmentIntro} onReviewIncorrect={() => openAnswerReview("lever_independent_practice", "incorrect", "lever-independent-practice-debrief")} onReviewAll={() => openAnswerReview("lever_independent_practice", "all", "lever-independent-practice-debrief")} />}{screen === "lever-assessment-intro" && <LeverPracticeIntroScreen stage="assessment" onStart={startLeverAssessment} />}{screen === "lever-assessment-question" && activeSession && <LeverPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleLeverAssessmentAnswer} questions={leverAssessmentQuestions} stage="assessment" />}{screen === "lever-assessment-debrief" && <LeverDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("lever_assessment", "incorrect", "lever-assessment-debrief")} onReviewAll={() => openAnswerReview("lever_assessment", "all", "lever-assessment-debrief")} />}{screen === "numerical-fundamentals" && <NumericalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeNumericalModule} />}{screen === "numerical-fundamentals-complete" && <NumericalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedNumericalPracticeIntro} />}{screen === "guided-numerical-practice-intro" && <NumericalPracticeIntroScreen stage="guided" onStart={startGuidedNumericalPractice} />}{screen === "guided-numerical-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedNumericalAnswer} questions={guidedNumericalPracticeQuestions} stage="guided" />}{screen === "guided-numerical-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalIndependentPracticeIntro} />}{screen === "numerical-independent-practice-intro" && <NumericalPracticeIntroScreen stage="independent" onStart={startNumericalIndependentPractice} />}{screen === "numerical-independent-practice-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalIndependentAnswer} questions={numericalIndependentPracticeQuestions} stage="independent" />}{screen === "numerical-independent-practice-debrief" && <NumericalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openNumericalAssessmentIntro} onReviewIncorrect={() => openAnswerReview("numerical_independent_practice", "incorrect", "numerical-independent-practice-debrief")} onReviewAll={() => openAnswerReview("numerical_independent_practice", "all", "numerical-independent-practice-debrief")} />}{screen === "numerical-assessment-intro" && <NumericalPracticeIntroScreen stage="assessment" onStart={startNumericalAssessment} />}{screen === "numerical-assessment-question" && activeSession && <NumericalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleNumericalAssessmentAnswer} questions={numericalAssessmentQuestions} stage="assessment" />}{screen === "numerical-assessment-debrief" && <NumericalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("numerical_assessment", "incorrect", "numerical-assessment-debrief")} onReviewAll={() => openAnswerReview("numerical_assessment", "all", "numerical-assessment-debrief")} />}{screen === "abstract-logical-fundamentals" && <AbstractLogicalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeAbstractLogicalModule} />}{screen === "abstract-logical-fundamentals-complete" && <AbstractLogicalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedAbstractLogicalPracticeIntro} />}{screen === "guided-abstract-logical-practice-intro" && <AbstractLogicalPracticeIntroScreen stage="guided" onStart={startGuidedAbstractLogicalPractice} />}{screen === "guided-abstract-logical-practice-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedAbstractLogicalAnswer} questions={guidedAbstractLogicalPracticeQuestions} stage="guided" />}{screen === "guided-abstract-logical-practice-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openAbstractLogicalIndependentPracticeIntro} />}{screen === "abstract-logical-independent-practice-intro" && <AbstractLogicalPracticeIntroScreen stage="independent" onStart={startAbstractLogicalIndependentPractice} />}{screen === "abstract-logical-independent-practice-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAbstractLogicalIndependentAnswer} questions={abstractLogicalIndependentPracticeQuestions} stage="independent" />}{screen === "abstract-logical-independent-practice-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openAbstractLogicalAssessmentIntro} onReviewIncorrect={() => openAnswerReview("abstract_logical_independent_practice", "incorrect", "abstract-logical-independent-practice-debrief")} onReviewAll={() => openAnswerReview("abstract_logical_independent_practice", "all", "abstract-logical-independent-practice-debrief")} />}{screen === "abstract-logical-assessment-intro" && <AbstractLogicalPracticeIntroScreen stage="assessment" onStart={startAbstractLogicalAssessment} />}{screen === "abstract-logical-assessment-question" && activeSession && <AbstractLogicalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleAbstractLogicalAssessmentAnswer} questions={abstractLogicalAssessmentQuestions} stage="assessment" />}{screen === "abstract-logical-assessment-debrief" && <AbstractLogicalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("abstract_logical_assessment", "incorrect", "abstract-logical-assessment-debrief")} onReviewAll={() => openAnswerReview("abstract_logical_assessment", "all", "abstract-logical-assessment-debrief")} />}{screen === "verbal-fundamentals" && <VerbalFundamentalsScreen journey={journey} onSaveJourney={updateJourney} onComplete={completeVerbalModule} />}{screen === "verbal-fundamentals-complete" && <VerbalFundamentalsCompleteScreen journey={journey} onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onStartGuided={openGuidedVerbalPracticeIntro} />}{screen === "guided-verbal-practice-intro" && <VerbalPracticeIntroScreen stage="guided" onStart={startGuidedVerbalPractice} />}{screen === "guided-verbal-practice-question" && activeSession && <VerbalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleGuidedVerbalAnswer} questions={guidedVerbalPracticeQuestions} stage="guided" />}{screen === "guided-verbal-practice-debrief" && <VerbalDebriefScreen journey={journey} stage="guided" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openVerbalIndependentPracticeIntro} />}{screen === "verbal-independent-practice-intro" && <VerbalPracticeIntroScreen stage="independent" onStart={startVerbalIndependentPractice} />}{screen === "verbal-independent-practice-question" && activeSession && <VerbalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleVerbalIndependentAnswer} questions={verbalIndependentPracticeQuestions} stage="independent" />}{screen === "verbal-independent-practice-debrief" && <VerbalDebriefScreen journey={journey} stage="independent" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onNext={openVerbalAssessmentIntro} onReviewIncorrect={() => openAnswerReview("verbal_independent_practice", "incorrect", "verbal-independent-practice-debrief")} onReviewAll={() => openAnswerReview("verbal_independent_practice", "all", "verbal-independent-practice-debrief")} />}{screen === "verbal-assessment-intro" && <VerbalPracticeIntroScreen stage="assessment" onStart={startVerbalAssessment} />}{screen === "verbal-assessment-question" && activeSession && <VerbalPracticeQuestionScreen journey={journey} sessionId={activeSession.sessionId} questionIndex={activeQuestionIndex} onAnswer={handleVerbalAssessmentAnswer} questions={verbalAssessmentQuestions} stage="assessment" />}{screen === "verbal-assessment-debrief" && <VerbalDebriefScreen journey={journey} stage="assessment" onWhy={() => setShowWhy(true)} onDashboard={() => setScreen("dashboard")} onReviewIncorrect={() => openAnswerReview("verbal_assessment", "incorrect", "verbal-assessment-debrief")} onReviewAll={() => openAnswerReview("verbal_assessment", "all", "verbal-assessment-debrief")} />}{screen === "answer-review" && reviewContext && <AnswerReviewScreen journey={journey} context={reviewContext} onModeChange={changeAnswerReviewMode} onBack={closeAnswerReview} />}</>;
 }
