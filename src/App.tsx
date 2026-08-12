@@ -486,7 +486,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Abstract & Logical Reasoning v1.0.1";
+const BUILD_LABEL = "Verbal Comprehension & Reasoning v1.0.0";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -1255,9 +1255,12 @@ const guidedVerbalPracticeQuestions: MvpQuestion[] = [
   makeVerbalQuestion("VER-G-008", "assumptions_conclusions", "must_follow", { title: "Selection rule", text: "Every candidate who reaches Stage 3 has completed the written assessment. Priya has reached Stage 3." }, "Which conclusion must follow?", ["Priya completed the written assessment", "Priya passed every part of the selection process", "Priya received the highest written score", "Priya has already been offered a position"], "A", "The rule states that everyone who reaches Stage 3 has completed the written assessment.", "Choose only the conclusion guaranteed by the statements."),
   makeVerbalQuestion("VER-G-009", "explicit_information", "stated_exception", { title: "Library access", text: "The training library is open from 07:00 to 19:00 on weekdays. On Fridays it closes at 17:00. Weekend access is available only to staff with prior approval." }, "When does the training library close on Friday?", ["17:00", "19:00", "07:00", "It is closed all day"], "A", "Friday is the stated exception to the usual weekday closing time.", "Look for exceptions that modify a general rule."),
   makeVerbalQuestion("VER-G-010", "instructions_sequence", "multi_condition", { title: "Assessment submission", text: "Complete the answer sheet in black ink. If you change an answer, erase it fully before marking the new choice. At the end, place the answer sheet inside the booklet but do not seal the booklet." }, "What should a candidate do at the end of the assessment?", ["Place the answer sheet inside the booklet without sealing it", "Seal the booklet with the answer sheet inside", "Hand in the answer sheet separately", "Rewrite all changed answers in blue ink"], "A", "The final instruction is to place the sheet inside the booklet and not seal it.", "Keep the exact instruction in view and avoid adding a familiar procedure that is not stated."),
+  makeVerbalQuestion("VER-G-011", "inference_context", "supported_inference", { title: "Equipment trial", text: "Two helmet designs were tested in the same exercise. Both met the safety requirement, but Design B was adjusted less often by participants and received fewer comments about discomfort." }, "Which conclusion is best supported?", ["Design B was generally more comfortable or easier to fit during this trial", "Design A was unsafe", "Every participant preferred Design B", "Design B will always perform better in emergencies"], "A", "The lower adjustment rate and fewer discomfort comments support a limited inference about comfort or fit in this trial.", "Choose the modest conclusion supported by the evidence; do not turn a trial result into an absolute claim."),
+  makeVerbalQuestion("VER-G-012", "assumptions_conclusions", "scope_limit", { title: "Practice survey", text: "At one training centre, 36 of 50 candidates said they preferred shorter practice sessions." }, "Which conclusion is best supported?", ["Most candidates surveyed at that centre preferred shorter sessions", "Most candidates everywhere prefer shorter sessions", "Shorter sessions always improve scores", "All candidates at the centre preferred shorter sessions"], "A", "Thirty-six of fifty is a majority, but the evidence applies only to the surveyed candidates at that centre.", "Keep the conclusion within the population and certainty described by the evidence."),
+
 ];
 
-const verbalIndependentPracticeQuestions: MvpQuestion[] = [
+const verbalIndependentPracticeQuestionBank: MvpQuestion[] = [
   makeVerbalQuestion("VER-IP-001", "explicit_information", "stated_detail", { title: "Workshop notice", text: "Protective gloves are stored in Cabinet 4. Eye protection is kept in the wall rack. Used batteries must be placed in the marked recycling container near the rear exit." }, "Where should used batteries be placed?", ["In the marked recycling container near the rear exit", "In Cabinet 4", "In the wall rack", "Beside the front entrance"], "A", "The final sentence gives the required location.", undefined),
   makeVerbalQuestion("VER-IP-002", "explicit_information", "main_point", { title: "Schedule message", text: "The afternoon assessment will begin at the usual time, but Room 6 is unavailable. All candidates should report to Room 9 instead. Staff will place signs in the corridor." }, "What is the main message?", ["The assessment location has changed", "The assessment has been cancelled", "The assessment time has changed", "Candidates should wait in the corridor"], "A", "The key update is the change from Room 6 to Room 9.", undefined),
   makeVerbalQuestion("VER-IP-003", "explicit_information", "stated_reason", { title: "Maintenance note", text: "Pump 2 was removed from service after an unusual vibration was detected during the morning check. A spare unit was installed so operations could continue." }, "Why was Pump 2 removed from service?", ["An unusual vibration was detected", "The spare unit failed", "Operations had already stopped", "The morning check was cancelled"], "A", "The passage directly states the reason.", undefined),
@@ -1287,6 +1290,22 @@ const verbalIndependentPracticeQuestions: MvpQuestion[] = [
   makeVerbalQuestion("VER-IP-024", "assumptions_conclusions", "contradiction", { title: "Statements", text: "No vehicles in Bay 2 are available for use. Vehicle R4 is in Bay 2." }, "Which statement is inconsistent with the information?", ["Vehicle R4 is available for immediate use", "Vehicle R4 is in Bay 2", "Bay 2 contains at least one vehicle", "R4 is not available for use"], "A", "If no vehicle in Bay 2 is available and R4 is there, R4 cannot be available.", undefined),
   makeVerbalQuestion("VER-IP-025", "assumptions_conclusions", "best_conclusion", { title: "Performance note", text: "Candidates who paused to check the units made fewer calculation errors in this practice set. The note does not record how long they took overall." }, "Which conclusion is best supported?", ["Checking units was associated with fewer calculation errors in this set", "Checking units always improves every test score", "Candidates who checked units finished faster", "Time pressure had no effect"], "A", "The passage supports only an association with fewer calculation errors in this set.", undefined),
 ].map((question) => ({ ...question, sessionType: "verbal_independent_practice" as const }));
+
+// Active v1 set: exactly 12 questions, balanced 3 per verbal category.
+// The full 25-question bank remains above for alternate/repeat sets.
+const VERBAL_INDEPENDENT_CORE_IDS = [
+  "VER-IP-001", "VER-IP-002", "VER-IP-006",
+  "VER-IP-007", "VER-IP-008", "VER-IP-012",
+  "VER-IP-013", "VER-IP-015", "VER-IP-016",
+  "VER-IP-020", "VER-IP-021", "VER-IP-025",
+] as const;
+
+const verbalIndependentPracticeQuestions: MvpQuestion[] =
+  VERBAL_INDEPENDENT_CORE_IDS.map((questionId) => {
+    const question = verbalIndependentPracticeQuestionBank.find((item) => item.questionId === questionId);
+    if (!question) throw new Error(`Missing Verbal Independent core question: ${questionId}`);
+    return question;
+  });
 
 const verbalAssessmentQuestions: MvpQuestion[] = [
   makeVerbalQuestion("VER-A-001", "explicit_information", "stated_detail", { title: "Assessment notice", text: "Candidates must bring photo identification and arrive by 07:45. Lockers are available for phones and bags. The written assessment begins at 08:15." }, "What time must candidates arrive by?", ["07:45", "08:15", "07:15", "08:45"], "A", "The passage explicitly states an arrival time of 07:45.", undefined, "verbal_assessment"),
@@ -1807,7 +1826,9 @@ function createGuidedVerbalPracticeSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "guided_verbal_practice", pathwayId: "fire_service", startedAt: now(), questionIds: guidedVerbalPracticeQuestions.map((q) => q.questionId) };
 }
 function createVerbalIndependentPracticeSession(): AssessmentSession {
-  return { sessionId: id("session"), sessionType: "verbal_independent_practice", pathwayId: "fire_service", startedAt: now(), questionIds: verbalIndependentPracticeQuestions.map((q) => q.questionId) };
+  const questionIds = verbalIndependentPracticeQuestions.map((question) => question.questionId);
+  if (questionIds.length !== 12) throw new Error(`Independent Verbal Practice must contain 12 questions; found ${questionIds.length}.`);
+  return { sessionId: id("session"), sessionType: "verbal_independent_practice", pathwayId: "fire_service", startedAt: now(), questionIds };
 }
 function createVerbalAssessmentSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "verbal_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: verbalAssessmentQuestions.map((q) => q.questionId) };
@@ -7270,31 +7291,158 @@ function VerbalFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStart
 
 function VerbalPracticeIntroScreen({ stage, onStart }: { stage: VerbalStage; onStart: () => void }) {
   const config = stage === "guided"
-    ? { eyebrow: "Guided practice", title: "Guided Verbal Practice", body: "Ten short passages and instruction sets with immediate feedback and a concise reading focus.", items: ["10 questions", "Immediate feedback", "Reading-focus cues"], button: "Start guided practice" }
+    ? { eyebrow: "Guided practice", title: "Guided Verbal Practice", body: "Twelve balanced questions across explicit information, inference and context, instructions, and evidence-based conclusions. Immediate feedback keeps the reading method visible.", items: ["12 questions", "Immediate feedback", "3 per category"], button: "Start guided practice" }
     : stage === "independent"
-      ? { eyebrow: "Less-supported practice", title: "Independent Verbal Practice", body: "Twenty-five questions with broader variation. Feedback follows each answer, but the reading method is no longer signposted.", items: ["12 questions", "Immediate feedback", "Less support"], button: "Start independent practice" }
+      ? { eyebrow: "Less-supported practice", title: "Independent Verbal Practice", body: "Twelve balanced questions across the four verbal skills. Feedback follows each answer, but the reading focus is no longer signposted.", items: ["12 questions", "Immediate feedback", "3 per category"], button: "Start independent practice" }
       : { eyebrow: "Assessment-style check", title: "Verbal Comprehension Check", body: "Twelve mixed questions with no immediate answer feedback. The Mentor will identify either a clear area to strengthen or a progression step.", items: ["12 questions", "No immediate feedback", "Untimed in v1"], button: "Start Verbal Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
 }
 
+function VerbalReasoningReminder() {
+  return (
+    <div className="mb-5 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 px-4 py-3 sm:px-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5ED3F3]">Reasoning reminder</p>
+      <p className="mt-1 text-sm leading-relaxed text-[#C8D2DD]">
+        Task <span className="text-[#6E7A88]">→</span> evidence <span className="text-[#6E7A88]">→</span> limits or conditions <span className="text-[#6E7A88]">→</span> answer.
+      </p>
+    </div>
+  );
+}
+
 function VerbalPassagePanel({ passage }: { passage?: VerbalPassage }) {
   if (!passage) return null;
-  return <div className="mb-7 rounded-3xl border border-white/10 bg-[#111418] p-6 sm:p-8"><div className="flex items-center justify-between gap-4"><div><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{passage.label ?? "Passage"}</div>{passage.title && <h2 className="mt-2 text-xl font-semibold text-[#DCE3EA]">{passage.title}</h2>}</div></div><div className="mt-5 whitespace-pre-line text-[1.05rem] leading-8 text-[#C8D2DD]">{passage.text}</div></div>;
+  return (
+    <div className="mb-6 rounded-2xl border border-white/10 bg-[#111418] p-5 sm:mb-7 sm:rounded-3xl sm:p-8">
+      <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{passage.label ?? "Passage"}</div>
+      {passage.title && <h2 className="mt-2 text-lg font-semibold text-[#DCE3EA] sm:text-xl">{passage.title}</h2>}
+      <div className="mt-4 whitespace-pre-line text-base leading-7 text-[#C8D2DD] sm:mt-5 sm:text-[1.05rem] sm:leading-8">{passage.text}</div>
+    </div>
+  );
 }
 
 function VerbalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: VerbalStage }) {
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
-  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); setShowFeedback(false); }, [questionIndex]);
-  const question = questions[questionIndex]; if (!question) return null;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStartedAt(Date.now());
+    setSelectedOptionId(null);
+    setShowFeedback(false);
+  }, [questionIndex]);
+
+  const question = questions[questionIndex];
+  if (!question) return null;
+
   const progress = ((questionIndex + 1) / questions.length) * 100;
-  const answered = journey.responses.filter((r) => r.sessionId === sessionId).length;
+  const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
+  const immediate = stage !== "assessment";
   const selectedCorrect = selectedOptionId === question.correctOptionId;
-  function select(optionId: string) { if (stage !== "assessment" && showFeedback) return; setSelectedOptionId(optionId); if (stage !== "assessment") setShowFeedback(true); }
-  function next() { if (!selectedOptionId) return; const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false); onAnswer(response, questionIndex === questions.length - 1); }
   const title = stage === "guided" ? "Guided Verbal Practice" : stage === "independent" ? "Independent Verbal Practice" : "Verbal Comprehension Check";
-  return <Shell right={title}><section className={`mx-auto max-w-5xl px-8 pt-12 ${stage === "assessment" ? "pb-12" : "pb-44 lg:pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Read for evidence</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card>{stage === "guided" && question.feedbackCue && <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">Reading focus: </span>{question.feedbackCue}</div>}<VerbalPassagePanel passage={question.verbalPassage}/><p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{stage === "assessment" ? <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === questions.length - 1 ? "Finish check" : "Next question"}</PrimaryButton></div> : showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl lg:static lg:mt-7 lg:rounded-2xl lg:border lg:p-5 lg:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div></div>}</Card></section></Shell>;
+  const visibleOptions = immediate && showFeedback
+    ? question.options.filter((option) => option.optionId === selectedOptionId)
+    : question.options;
+
+  function select(optionId: string) {
+    if (immediate && showFeedback) return;
+    setSelectedOptionId(optionId);
+    if (immediate) setShowFeedback(true);
+  }
+
+  function next() {
+    if (!selectedOptionId) return;
+    onAnswer(
+      createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false),
+      questionIndex === questions.length - 1
+    );
+  }
+
+  return (
+    <Shell right={title}>
+      <section className="mx-auto max-w-5xl px-5 pb-20 pt-8 sm:px-8 sm:pb-12 sm:pt-10">
+        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5">
+          <div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} />
+        </div>
+
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p>
+            <h1 className="mt-3 text-3xl font-semibold">Read for evidence</h1>
+          </div>
+          <div className="text-right text-sm text-[#8D98A6]">
+            Question {questionIndex + 1} of {questions.length}
+            <br />
+            <span className="text-xs">{answered} saved</span>
+          </div>
+        </div>
+
+        {immediate && <VerbalReasoningReminder />}
+
+        <Card className="p-5 sm:p-8">
+          {stage === "guided" && question.feedbackCue && (
+            <div className="mb-5 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">
+              <span className="text-[#6E7A88]">Reading focus: </span>{question.feedbackCue}
+            </div>
+          )}
+
+          <VerbalPassagePanel passage={question.verbalPassage} />
+          <p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p>
+
+          <div className="mt-6 grid gap-3">
+            {visibleOptions.map((option) => {
+              const selected = selectedOptionId === option.optionId;
+              return (
+                <button
+                  key={option.optionId}
+                  type="button"
+                  onClick={() => select(option.optionId)}
+                  disabled={immediate && showFeedback}
+                  className={`rounded-2xl border bg-[#111418] p-4 text-left transition sm:p-5 ${
+                    selected ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"
+                  } ${immediate && showFeedback ? "cursor-default" : ""}`}
+                >
+                  <span className="mr-3 text-[#5ED3F3]">{option.label}</span>
+                  <span className="text-[#DCE3EA]">{option.text}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {immediate && showFeedback && (
+            <div className={`mt-5 rounded-2xl border p-5 ${
+              selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"
+            }`}>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p>
+                  <p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>
+                  {!selectedCorrect && question.feedbackCue && (
+                    <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]">
+                      <span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}
+                    </p>
+                  )}
+                </div>
+                <div className="shrink-0">
+                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
+                    {questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}
+                  </PrimaryButton>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!immediate && (
+            <div className="mt-8 flex justify-end">
+              <PrimaryButton disabled={!selectedOptionId} onClick={next}>
+                {questionIndex === questions.length - 1 ? "Finish check" : "Next question"}
+              </PrimaryButton>
+            </div>
+          )}
+        </Card>
+      </section>
+    </Shell>
+  );
 }
 
 function VerbalDebriefScreen({ journey, stage, onWhy, onDashboard, onNext, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; stage: VerbalStage; onWhy: () => void; onDashboard: () => void; onNext?: () => void; onReviewIncorrect?: () => void; onReviewAll?: () => void }) {
