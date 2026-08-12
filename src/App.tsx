@@ -486,7 +486,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Abstract & Logical Reasoning v1.0.0";
+const BUILD_LABEL = "Abstract & Logical Reasoning v1.0.1";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -1165,12 +1165,12 @@ const abstractLogicalIndependentPracticeQuestionBank: MvpQuestion[] = [
   makeAbstractLogicalQuestion("ABS-IP-008", "matrices_rules", "combination_rule", "What belongs in the missing cell?", ["○◆", "○○", "◆◆", "○"], "A", "The third cell combines the first and second cells. ○ and ◆ become ○◆.", undefined, {"kind": "matrix", "rows": [["▲", "■", "▲■"], ["○", "◆", "?"]]}),
   makeAbstractLogicalQuestion("ABS-IP-009", "matrices_rules", "alternating_rule", "What belongs in the missing cell?", ["○", "▲", "■", "◆"], "A", "Each row alternates the two symbols: ▲ ○ ▲ and ○ ▲ ○.", undefined, {"kind": "matrix", "rows": [["▲", "○", "▲"], ["○", "▲", "?"]]}),
   makeAbstractLogicalQuestion("ABS-IP-010", "matrices_rules", "column_progression", "What belongs in the missing cell?", ["●●●", "●●", "●●●●", "○○○"], "A", "Each column follows 1, 2, 3 symbols from top to bottom. The final cell needs three dots.", undefined, {"kind": "matrix", "rows": [["▲", "●"], ["▲▲", "●●"], ["▲▲▲", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-IP-011", "matrices_rules", "subtraction_rule", "What belongs in the missing cell?", ["▲", "▲▲", "▲▲▲", "○"], "A", "In each row the third cell shows what remains when the second count is removed from the first: 3−2=1 and 4−3=1.", undefined, {"kind": "matrix", "rows": [["▲▲▲", "▲▲", "▲"], ["▲▲▲▲", "▲▲▲", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-IP-012", "classification_relationships", "odd_one_out", "Which item is the odd one out?", ["○", "△", "□", "◇"], "A", "The circle is the only figure without corners.", undefined, {"kind": "set", "rows": [["△", "□", "◇", "○"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-011", "matrices_rules", "addition_rule", "What belongs in the missing cell?", ["●●●●●", "●●●●", "●●●", "●●●●●●"], "A", "In each row, the third cell contains the total number of symbols in the first two cells. Two plus one gives three; two plus three gives five.", undefined, {"kind": "matrix", "caption": "In each row, combine the counts in the first two cells.", "rows": [["●●", "●", "●●●"], ["●●", "●●●", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-012", "classification_relationships", "shared_property", "Which option belongs with the group shown?", ["□", "○", "△", "⬟"], "A", "Every shape already in the group has four sides. The square is the only option with four sides.", undefined, {"kind": "set", "caption": "Choose the option that shares the defining property of the group.", "rows": [["▭", "◇", "▱", "?"]]}),
   makeAbstractLogicalQuestion("ABS-IP-013", "classification_relationships", "odd_one_out", "Which pair is the odd one out?", ["▲ → ▲", "▲ → △", "■ → □", "● → ○"], "A", "Three pairs change a filled shape to an outline shape. ▲ → ▲ does not change.", undefined, undefined),
-  makeAbstractLogicalQuestion("ABS-IP-014", "classification_relationships", "analogy", "↑ becomes →. Using the same rule, what should ← become?", ["↑", "↓", "→", "←"], "A", "The rule is a 90° clockwise rotation. ← becomes ↑.", undefined, {"kind": "sequence", "rows": [["↑", "→", "→", "   ", "←", "→", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-IP-015", "classification_relationships", "analogy", "▲▲ becomes ▲▲▲▲. Using the same rule, what should ●●● become?", ["●●●●●●", "●●●●", "●●", "●●●●●"], "A", "The quantity doubles. Three dots become six dots.", undefined, {"kind": "sequence", "rows": [["▲▲", "→", "▲▲▲▲", "   ", "●●●", "→", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-IP-016", "classification_relationships", "shared_property", "Which option belongs with the group shown?", ["□", "○", "△", "◇"], "A", "The group contains four-sided shapes, so the square belongs with it.", undefined, {"kind": "set", "rows": [["▭", "◇", "▱", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-014", "classification_relationships", "analogy", "The example rotates an arrow 90° clockwise. Apply the same rule to the second arrow.", ["↑", "↓", "→", "←"], "A", "A 90° clockwise rotation changes ← into ↑.", undefined, {"kind": "matrix", "caption": "Example on the first row. Apply the same transformation on the second row.", "rows": [["↑", "becomes", "→"], ["←", "becomes", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-015", "classification_relationships", "analogy", "The example doubles the number of symbols. Apply the same rule to three dots.", ["●●●●●●", "●●●●", "●●", "●●●●●"], "A", "The quantity doubles. Three dots become six dots.", undefined, {"kind": "matrix", "caption": "Example on the first row. Apply the same transformation on the second row.", "rows": [["▲▲", "becomes", "▲▲▲▲"], ["●●●", "becomes", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-IP-016", "classification_relationships", "shared_property", "Which option belongs with the group shown?", ["□", "○", "△", "⬟"], "A", "The group contains four-sided shapes. The square is the only option with four sides.", undefined, {"kind": "set", "caption": "Choose the option that shares the defining property of the group.", "rows": [["▭", "◇", "▱", "?"]]}),
   makeAbstractLogicalQuestion("ABS-IP-017", "deductive_reasoning", "syllogism", "All valves are components. No components are living things. What must follow?", ["No valves are living things", "All living things are valves", "Some components are valves", "No components are valves"], "A", "If all valves are components and no components are living things, then no valves are living things.", undefined, undefined),
   makeAbstractLogicalQuestion("ABS-IP-018", "deductive_reasoning", "some_not_all", "Some technicians are drivers. Which statement must be true?", ["At least one technician is a driver", "All technicians are drivers", "No drivers are technicians", "Most technicians are drivers"], "A", "'Some' guarantees at least one, but not all or most.", undefined, undefined),
   makeAbstractLogicalQuestion("ABS-IP-019", "deductive_reasoning", "ordering", "Dana arrives before Eli. Farah arrives after Eli. Who must arrive first?", ["Dana", "Eli", "Farah", "Cannot be known"], "A", "Dana is before Eli, and Farah is after Eli, so Dana must be first.", undefined, undefined),
@@ -1187,22 +1187,25 @@ const abstractLogicalIndependentPracticeQuestionBank: MvpQuestion[] = [
 const ABSTRACT_LOGICAL_INDEPENDENT_CORE_IDS = [
   "ABS-IP-001", "ABS-IP-003", "ABS-IP-004",
   "ABS-IP-007", "ABS-IP-008", "ABS-IP-010",
-  "ABS-IP-012", "ABS-IP-014", "ABS-IP-016",
+  "ABS-IP-013", "ABS-IP-014", "ABS-IP-016",
   "ABS-IP-017", "ABS-IP-019", "ABS-IP-021",
-];
+] as const;
+
 const abstractLogicalIndependentPracticeQuestions: MvpQuestion[] =
-  ABSTRACT_LOGICAL_INDEPENDENT_CORE_IDS
-    .map((questionId) => abstractLogicalIndependentPracticeQuestionBank.find((question) => question.questionId === questionId))
-    .filter((question): question is MvpQuestion => Boolean(question));
+  ABSTRACT_LOGICAL_INDEPENDENT_CORE_IDS.map((questionId) => {
+    const question = abstractLogicalIndependentPracticeQuestionBank.find((item) => item.questionId === questionId);
+    if (!question) throw new Error(`Missing Abstract & Logical core question: ${questionId}`);
+    return question;
+  });
 
 const abstractLogicalAssessmentQuestions: MvpQuestion[] = [
   makeAbstractLogicalQuestion("ABS-A-001", "pattern_sequences", "rotation", "Which symbol comes next?", ["→", "↓", "←", "↑"], "A", "The arrow rotates 90° clockwise each step.", undefined, {"kind": "sequence", "rows": [["→", "↓", "←", "↑", "?"]]}),
   makeAbstractLogicalQuestion("ABS-A-002", "matrices_rules", "combination_rule", "What belongs in the missing cell?", ["■○", "■■", "○○", "■"], "A", "The third cell combines the first two cells in each row.", undefined, {"kind": "matrix", "rows": [["▲", "◆", "▲◆"], ["■", "○", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-A-003", "classification_relationships", "odd_one_out", "Which item is the odd one out?", ["○", "△", "□", "⬟"], "A", "The circle is the only item without straight sides and corners.", undefined, {"kind": "set", "rows": [["△", "□", "⬟", "○"]]}),
+  makeAbstractLogicalQuestion("ABS-A-003", "classification_relationships", "relationship_exception", "Which pair follows a different transformation from the other three?", ["▲ becomes △", "■ becomes □", "● becomes ○", "◆ becomes ◆"], "D", "In the first three pairs, a filled shape becomes the outline version of the same shape. In the fourth pair, the shape remains filled.", undefined, undefined),
   makeAbstractLogicalQuestion("ABS-A-004", "deductive_reasoning", "syllogism", "All breathing apparatus units are equipment. No equipment is a person. What must follow?", ["No breathing apparatus unit is a person", "All people are equipment", "Some equipment is a person", "All equipment is breathing apparatus"], "A", "Every breathing apparatus unit is equipment, and no equipment is a person.", undefined, undefined),
   makeAbstractLogicalQuestion("ABS-A-005", "pattern_sequences", "count_progression", "What comes next?", ["●●●●●", "●●●●", "●●●●●●", "●"], "A", "The count increases by one each step.", undefined, {"kind": "sequence", "rows": [["●", "●●", "●●●", "●●●●", "?"]]}),
   makeAbstractLogicalQuestion("ABS-A-006", "matrices_rules", "row_progression", "What belongs in the missing cell?", ["◇◇◇", "◇◇", "◇◇◇◇", "◆◆◆"], "A", "Each row progresses from one to two to three of the same symbol.", undefined, {"kind": "matrix", "rows": [["▲", "▲▲", "▲▲▲"], ["◇", "◇◇", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-A-007", "classification_relationships", "analogy", "● becomes ○. Using the same rule, what should ◆ become?", ["◇", "■", "▲", "◆"], "A", "The rule changes filled to outline; ◆ becomes ◇.", undefined, {"kind": "sequence", "rows": [["●", "→", "○", "   ", "◆", "→", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-007", "classification_relationships", "analogy", "The example changes a filled shape to the outline version of the same shape. Apply the same rule to ◆.", ["◇", "■", "▲", "◆"], "A", "The rule changes filled to outline, so ◆ becomes ◇.", undefined, {"kind": "matrix", "caption": "Example on the first row. Apply the same transformation on the second row.", "rows": [["●", "becomes", "○"], ["◆", "becomes", "?"]]}),
   makeAbstractLogicalQuestion("ABS-A-008", "deductive_reasoning", "ordering", "Rina is before Sam. Tariq is after Sam. Who must be last?", ["Tariq", "Sam", "Rina", "Cannot be known"], "A", "The order must be Rina, Sam, Tariq.", undefined, undefined),
   makeAbstractLogicalQuestion("ABS-A-009", "pattern_sequences", "two_rule_sequence", "What comes next?", ["○○○○○○", "▲▲▲▲▲▲", "○○○○○", "▲▲▲▲▲"], "A", "Shape alternates and count increases by one, so the sixth term is six circles.", undefined, {"kind": "sequence", "rows": [["▲", "○○", "▲▲▲", "○○○○", "▲▲▲▲▲", "?"]]}),
   makeAbstractLogicalQuestion("ABS-A-010", "matrices_rules", "column_progression", "What belongs in the missing cell?", ["■■■", "■■", "■■■■", "□□□"], "A", "Each column increases from one to two to three symbols.", undefined, {"kind": "matrix", "rows": [["○", "■"], ["○○", "■■"], ["○○○", "?"]]}),
@@ -1793,7 +1796,9 @@ function createGuidedAbstractLogicalPracticeSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "guided_abstract_logical_practice", pathwayId: "fire_service", startedAt: now(), questionIds: guidedAbstractLogicalPracticeQuestions.map((q) => q.questionId) };
 }
 function createAbstractLogicalIndependentPracticeSession(): AssessmentSession {
-  return { sessionId: id("session"), sessionType: "abstract_logical_independent_practice", pathwayId: "fire_service", startedAt: now(), questionIds: abstractLogicalIndependentPracticeQuestions.map((q) => q.questionId) };
+  const questionIds = abstractLogicalIndependentPracticeQuestions.map((question) => question.questionId);
+  if (questionIds.length !== 12) throw new Error(`Abstract & Logical Independent Practice must contain 12 questions; found ${questionIds.length}.`);
+  return { sessionId: id("session"), sessionType: "abstract_logical_independent_practice", pathwayId: "fire_service", startedAt: now(), questionIds };
 }
 function createAbstractLogicalAssessmentSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "abstract_logical_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: abstractLogicalAssessmentQuestions.map((q) => q.questionId) };
@@ -7153,14 +7158,46 @@ type AbstractLogicalStage = "guided" | "independent" | "assessment";
 function AbstractLogicalVisualPanel({ visual }: { visual: AbstractVisual }) {
   const maxColumns = Math.max(...visual.rows.map((row) => row.length));
   const isMatrix = visual.kind === "matrix";
-  return <div className="mb-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">{visual.caption && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{visual.caption}</div>}<div className="mx-auto grid max-w-3xl gap-3" style={{ gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))` }}>{visual.rows.flatMap((row, rowIndex) => Array.from({ length: maxColumns }, (_, colIndex) => { const cell = row[colIndex] ?? ""; const isMissing = cell === "?"; const isSpacer = cell.trim() === ""; return <div key={`${rowIndex}-${colIndex}`} className={`${isMatrix ? "aspect-square min-h-[4.5rem]" : "min-h-20"} flex items-center justify-center rounded-2xl border text-center font-semibold ${isSpacer ? "border-transparent bg-transparent" : isMissing ? "border-[#5ED3F3]/45 bg-[#5ED3F3]/10 text-[#D9F8FF]" : "border-white/10 bg-[#171C23] text-[#F4F6F8]"}`}><span className="whitespace-pre text-[1.65rem] leading-none sm:text-3xl">{cell}</span></div>; }))}</div></div>;
+  return (
+    <div className="mb-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-4 sm:p-7">
+      {visual.caption && <div className="mb-4 text-xs uppercase leading-relaxed tracking-[0.14em] text-[#6E7A88]">{visual.caption}</div>}
+      <div className="mx-auto grid max-w-3xl gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))` }}>
+        {visual.rows.flatMap((row, rowIndex) =>
+          Array.from({ length: maxColumns }, (_, colIndex) => {
+            const cell = row[colIndex] ?? "";
+            const isMissing = cell === "?";
+            const isSpacer = cell.trim() === "";
+            const isTransformWord = cell.toLowerCase() === "becomes";
+            return (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className={`${isMatrix ? "min-h-[4.5rem]" : "min-h-20"} flex items-center justify-center rounded-2xl border px-2 text-center font-semibold ${
+                  isSpacer
+                    ? "border-transparent bg-transparent"
+                    : isTransformWord
+                      ? "border-transparent bg-transparent text-[#6E7A88]"
+                      : isMissing
+                        ? "border-[#5ED3F3]/45 bg-[#5ED3F3]/10 text-[#D9F8FF]"
+                        : "border-white/10 bg-[#171C23] text-[#F4F6F8]"
+                }`}
+              >
+                <span className={`${isTransformWord ? "text-xs uppercase tracking-[0.08em] sm:text-sm" : "whitespace-pre text-[1.65rem] leading-none sm:text-3xl"}`}>
+                  {cell}
+                </span>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
 }
 
 function AbstractLogicalPracticeIntroScreen({ stage, onStart }: { stage: AbstractLogicalStage; onStart: () => void }) {
   const config = stage === "guided"
     ? { eyebrow: "Guided learning", title: "Guided Abstract & Logical Practice", body: "Twelve balanced questions across patterns, matrices, classification and deduction. Use the same rule-finding routine, with immediate feedback and a short cue about what to notice.", items: ["12 questions", "Immediate feedback", "Rule-finding cues"], button: "Start guided practice" }
     : stage === "independent"
-      ? { eyebrow: "Less-supported practice", title: "Independent Abstract & Logical Practice", body: "A larger question set with broader variation. Feedback comes after each answer, but the method is no longer signposted.", items: ["12 questions", "Immediate feedback", "Less support"], button: "Start independent practice" }
+      ? { eyebrow: "Less-supported practice", title: "Independent Abstract & Logical Practice", body: "Twelve balanced questions across patterns, matrices, classification and deduction. Feedback comes after each answer, but the method is no longer signposted.", items: ["12 questions", "Immediate feedback", "3 per category"], button: "Start independent practice" }
       : { eyebrow: "Assessment-style check", title: "Abstract & Logical Check", body: "Twelve mixed questions with no immediate answer feedback. The Mentor will identify either a clear area to strengthen or a progression step.", items: ["12 questions", "No immediate feedback", "Untimed in v1"], button: "Start Abstract & Logical Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
 }
