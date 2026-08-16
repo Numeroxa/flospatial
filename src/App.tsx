@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { employerProfiles, gearDirectionFluencyProfile, providerProfiles } from "./assessmentProfiles";
+import { GEAR_DIRECTION_CALIBRATION_BANK_VERSION, GEAR_DIRECTION_PARALLEL_FORM_IDS, gearDirectionCalibrationBlueprintByQuestionId, gearDirectionCalibrationBlueprints } from "./calibrationCatalog";
 
 type AppScreen =
   | "landing"
@@ -177,6 +178,11 @@ type MvpQuestion = {
   archetype?: string;
   modality?: "text" | "static_visual" | "video" | "audio" | "game" | "map" | "writing";
   targetFluentTimeSec?: number;
+  targetFluentTimeRangeSec?: { minSec: number; maxSec: number };
+  reasoningSteps?: number;
+  calibrationFamilyId?: string;
+  calibrationFormId?: string;
+  calibrationStatus?: "author_estimate" | "pilot" | "empirical";
   rapidRecognition?: boolean;
   providerStyleTags?: string[];
   employerTags?: string[];
@@ -200,6 +206,8 @@ type AssessmentSession = {
   profileVersion?: string;
   fluencyProfileId?: string;
   fluencyBlockIndex?: number;
+  calibrationBankVersion?: string;
+  calibrationFormId?: string;
 };
 
 type AssessmentResponse = {
@@ -506,7 +514,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Aptesta Gear Fluency + Internal Analytics v0.3";
+const BUILD_LABEL = "Aptesta Gear Fluency + Calibration v0.4";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -755,10 +763,35 @@ const gearIndependentPracticeQuestions: MvpQuestion[] = gearIndependentPracticeQ
 
 function makeGearFluencyQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): MvpQuestion {
   const prepared = buildQuestionOptions(questionId, options, correctLabel);
-  return { questionId, sessionType: "gear_fluency", pathwayId: "fire_service", domain: "mechanical", subcompetency: "gears", concept, difficulty: "applied", archetype: gearDirectionFluencyProfile.archetype, modality: "static_visual", targetFluentTimeSec: gearDirectionFluencyProfile.targetFluentTimeSecAuthor, rapidRecognition: gearDirectionFluencyProfile.rapidRecognition, providerStyleTags: ["generic_fire_service"], employerTags: ["AU_NZ_MVP"], stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
+  const blueprint = gearDirectionCalibrationBlueprintByQuestionId[questionId];
+  if (!blueprint) throw new Error(`Missing calibration blueprint for ${questionId}`);
+  return {
+    questionId,
+    sessionType: "gear_fluency",
+    pathwayId: "fire_service",
+    domain: "mechanical",
+    subcompetency: "gears",
+    concept,
+    difficulty: blueprint.difficultyBand === "foundation" ? "developing" : "applied",
+    archetype: blueprint.archetype,
+    modality: "static_visual",
+    targetFluentTimeSec: gearDirectionFluencyProfile.targetFluentTimeSecAuthor,
+    targetFluentTimeRangeSec: blueprint.targetFluentTimeRangeSec,
+    reasoningSteps: blueprint.reasoningSteps,
+    calibrationFamilyId: blueprint.familyId,
+    calibrationFormId: blueprint.formId,
+    calibrationStatus: blueprint.calibrationStatus,
+    rapidRecognition: blueprint.rapidRecognition,
+    providerStyleTags: blueprint.providerStyleTags,
+    employerTags: blueprint.employerTags,
+    stem,
+    options: prepared.options,
+    correctOptionId: prepared.correctOptionId,
+    explanation,
+  };
 }
 
-const gearFluencyQuestions: MvpQuestion[] = [
+const gearFluencyFormAQuestions: MvpQuestion[] = [
   makeGearFluencyQuestion("GEAR-FL-001", "direct_mesh_direction", "Gear A turns anticlockwise. Which way does Gear B turn?", ["Clockwise", "Anticlockwise", "It does not turn", "It depends on gear size"], "A", "One direct mesh reverses direction, so Gear B turns clockwise."),
   makeGearFluencyQuestion("GEAR-FL-002", "three_gear_direction", "Gear A turns clockwise. Which way does Gear C turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends on tooth count"], "A", "Two contacts mean two reversals, so Gear C turns the same way as Gear A."),
   makeGearFluencyQuestion("GEAR-FL-003", "four_gear_direction", "Gear A turns anticlockwise through a train of four gears. Which way does Gear D turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "Direction cannot be known"], "A", "Three contacts give an odd number of reversals, so Gear D turns opposite to Gear A."),
@@ -768,6 +801,43 @@ const gearFluencyQuestions: MvpQuestion[] = [
   makeGearFluencyQuestion("GEAR-FL-007", "idler_effect", "Gear B is an idler between Gear A and Gear C. Gear A turns anticlockwise. Which way does Gear C turn?", ["Anticlockwise", "Clockwise", "It does not turn", "It depends on the idler size"], "A", "Two meshes give two reversals, so the final gear turns in the same direction as the driver."),
   makeGearFluencyQuestion("GEAR-FL-008", "four_gear_direction", "Gear B turns clockwise in a four-gear train A-B-C-D. Which way does Gear D turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends on which gear is largest"], "A", "From B to D there are two contacts, so Gear D turns in the same direction as Gear B."),
 ];
+
+const gearFluencyFormBQuestions: MvpQuestion[] = [
+  makeGearFluencyQuestion("GEAR-FL-B01", "direct_mesh_direction", "Gear A turns clockwise. Which way does Gear B turn?", ["Anticlockwise", "Clockwise", "It does not turn", "It depends on gear size"], "A", "One direct mesh reverses direction, so Gear B turns anticlockwise."),
+  makeGearFluencyQuestion("GEAR-FL-B02", "three_gear_direction", "Gear A turns anticlockwise through three gears. Which way does Gear C turn?", ["Anticlockwise", "Clockwise", "It cannot turn", "It depends on tooth count"], "A", "Two contacts create two reversals, so Gear C turns in the same direction as Gear A."),
+  makeGearFluencyQuestion("GEAR-FL-B03", "four_gear_direction", "Gear A turns clockwise through four gears. Which way does Gear D turn?", ["Anticlockwise", "Clockwise", "It cannot turn", "Direction cannot be known"], "A", "Three contacts produce an odd number of reversals, so Gear D turns anticlockwise."),
+  makeGearFluencyQuestion("GEAR-FL-B04", "five_gear_direction", "Gear A turns anticlockwise through five gears. Which way does Gear E turn?", ["Anticlockwise", "Clockwise", "It cannot turn", "It depends on gear size"], "A", "Four contacts produce an even number of reversals, so Gear E turns anticlockwise."),
+  makeGearFluencyQuestion("GEAR-FL-B05", "six_gear_direction", "Gear A turns clockwise through six gears. Which way does Gear F turn?", ["Anticlockwise", "Clockwise", "It cannot turn", "Direction cannot be known"], "A", "Five contacts produce an odd number of reversals, so Gear F turns anticlockwise."),
+  makeGearFluencyQuestion("GEAR-FL-B06", "middle_driver_direction", "Gear B is the driver in a three-gear train A-B-C and turns clockwise. Which way does Gear A turn?", ["Anticlockwise", "Clockwise", "It does not turn", "Direction cannot be known"], "A", "Gear A directly meshes with the clockwise driver, so it turns anticlockwise."),
+  makeGearFluencyQuestion("GEAR-FL-B07", "idler_effect", "Gear B sits between Gear A and Gear C. Gear A turns clockwise. Which way does Gear C turn?", ["Clockwise", "Anticlockwise", "It does not turn", "It depends on Gear B's size"], "A", "There are two contacts, so Gear C turns in the same direction as Gear A."),
+  makeGearFluencyQuestion("GEAR-FL-B08", "four_gear_direction", "Gear C turns anticlockwise in a four-gear train A-B-C-D. Which way does Gear A turn?", ["Anticlockwise", "Clockwise", "It cannot turn", "It depends on gear size"], "A", "From C back to A there are two contacts, so Gear A turns in the same direction as Gear C."),
+];
+
+const gearFluencyFormCQuestions: MvpQuestion[] = [
+  makeGearFluencyQuestion("GEAR-FL-C01", "direct_mesh_direction", "Gear A turns anticlockwise and directly drives Gear B. Which way does Gear B turn?", ["Clockwise", "Anticlockwise", "It does not turn", "Direction cannot be known"], "A", "A direct gear contact reverses direction, so Gear B turns clockwise."),
+  makeGearFluencyQuestion("GEAR-FL-C02", "three_gear_direction", "Gear A turns clockwise in a three-gear train A-B-C. Which way does Gear C turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends on gear size"], "A", "Two contacts give two reversals, so Gear C turns clockwise."),
+  makeGearFluencyQuestion("GEAR-FL-C03", "four_gear_direction", "Gear A turns anticlockwise in a four-gear train. Which way does the fourth gear turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "Direction cannot be known"], "A", "Three contacts give three reversals, so the fourth gear turns clockwise."),
+  makeGearFluencyQuestion("GEAR-FL-C04", "five_gear_direction", "Gear A turns clockwise in a five-gear train. Which way does the final gear turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends on tooth count"], "A", "Four contacts are an even number of reversals, so the final gear turns clockwise."),
+  makeGearFluencyQuestion("GEAR-FL-C05", "six_gear_direction", "Gear A turns anticlockwise in a six-gear train. Which way does the final gear turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "Direction cannot be known"], "A", "Five contacts are an odd number of reversals, so the final gear turns clockwise."),
+  makeGearFluencyQuestion("GEAR-FL-C06", "middle_driver_direction", "Gear D drives a four-gear train A-B-C-D and turns clockwise. Which way does Gear B turn?", ["Clockwise", "Anticlockwise", "It does not turn", "Direction cannot be known"], "A", "From D to B there are two contacts, so Gear B turns in the same direction as Gear D."),
+  makeGearFluencyQuestion("GEAR-FL-C07", "idler_effect", "Gear A turns anticlockwise and drives Gear C through one idler, Gear B. Which way does Gear C turn?", ["Anticlockwise", "Clockwise", "It does not turn", "It depends on the idler size"], "A", "Two contacts produce two reversals, so Gear C turns in the same direction as Gear A."),
+  makeGearFluencyQuestion("GEAR-FL-C08", "five_gear_direction", "Gear B turns anticlockwise in a five-gear train A-B-C-D-E. Which way does Gear E turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends on gear size"], "A", "From B to E there are three contacts, so Gear E turns opposite to Gear B: clockwise."),
+];
+
+const gearFluencyQuestionsByForm: Record<string, MvpQuestion[]> = {
+  "GD-FORM-A": gearFluencyFormAQuestions,
+  "GD-FORM-B": gearFluencyFormBQuestions,
+  "GD-FORM-C": gearFluencyFormCQuestions,
+};
+const gearFluencyQuestionBank: MvpQuestion[] = [...gearFluencyFormAQuestions, ...gearFluencyFormBQuestions, ...gearFluencyFormCQuestions];
+const gearFluencyQuestionById = new Map(gearFluencyQuestionBank.map((question) => [question.questionId, question]));
+// Legacy alias retained because pre-v0.4 sessions always used Form A.
+const gearFluencyQuestions: MvpQuestion[] = gearFluencyFormAQuestions;
+function getGearFluencyQuestionsForSession(session?: AssessmentSession): MvpQuestion[] {
+  if (!session) return gearFluencyFormAQuestions;
+  const fromIds = session.questionIds.map((questionId) => gearFluencyQuestionById.get(questionId)).filter(Boolean) as MvpQuestion[];
+  return fromIds.length ? fromIds : gearFluencyQuestionsByForm[session.calibrationFormId ?? "GD-FORM-A"] ?? gearFluencyFormAQuestions;
+}
 
 const GEAR_FLUENCY_INITIAL_TARGET_MS = gearDirectionFluencyProfile.targetFluentTimeSecAuthor * 1000;
 
@@ -1850,15 +1920,19 @@ function createGearIndependentPracticeSession(): AssessmentSession {
 }
 function createGearFluencySession(existingSessions: AssessmentSession[] = []): AssessmentSession {
   const priorBlocks = existingSessions.filter((session) => session.sessionType === "gear_fluency").length;
+  const formId = GEAR_DIRECTION_PARALLEL_FORM_IDS[priorBlocks % GEAR_DIRECTION_PARALLEL_FORM_IDS.length];
+  const questions = gearFluencyQuestionsByForm[formId] ?? gearFluencyFormAQuestions;
   return {
     sessionId: id("session"),
     sessionType: "gear_fluency",
     pathwayId: "fire_service",
     startedAt: now(),
-    questionIds: gearFluencyQuestions.map((q) => q.questionId),
-    profileVersion: "APTESTA_GEAR_DIRECTION_FLUENCY_2026_08_V0_3",
+    questionIds: questions.map((q) => q.questionId),
+    profileVersion: "APTESTA_GEAR_DIRECTION_FLUENCY_2026_08_V0_4",
     fluencyProfileId: gearDirectionFluencyProfile.fluencyProfileId,
     fluencyBlockIndex: priorBlocks + 1,
+    calibrationBankVersion: GEAR_DIRECTION_CALIBRATION_BANK_VERSION,
+    calibrationFormId: formId,
   };
 }
 function createGearAssessmentSession(): AssessmentSession {
@@ -6177,10 +6251,12 @@ function GearFluencyQuestionScreen({ journey, sessionId, questionIndex, onAnswer
     };
   }, [questionIndex]);
 
-  const question = gearFluencyQuestions[questionIndex];
+  const session = journey.sessions.find((item) => item.sessionId === sessionId);
+  const blockQuestions = getGearFluencyQuestionsForSession(session);
+  const question = blockQuestions[questionIndex];
   if (!question) return null;
   const selectedCorrect = selectedOptionId === question.correctOptionId;
-  const progress = ((questionIndex + 1) / gearFluencyQuestions.length) * 100;
+  const progress = ((questionIndex + 1) / blockQuestions.length) * 100;
   const visibleOptions = showFeedback ? question.options.filter((option) => option.optionId === selectedOptionId) : question.options;
 
   function select(optionId: string) {
@@ -6205,18 +6281,19 @@ function GearFluencyQuestionScreen({ journey, sessionId, questionIndex, onAnswer
   function next() {
     const response = pendingResponseRef.current;
     if (!response) return;
-    onAnswer(response, questionIndex === gearFluencyQuestions.length - 1);
+    onAnswer(response, questionIndex === blockQuestions.length - 1);
   }
 
   const displayMs = selectionTimeMs ?? elapsedMs;
   const paceLabel = displayMs <= GEAR_FLUENCY_INITIAL_TARGET_MS ? "Within the gentle target" : "No problem — keep the method accurate";
-  return <Shell right="Gear fluency"><section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-12 sm:pt-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Gear Direction Fluency</p><h1 className="mt-3 text-3xl font-semibold">Recognise the pattern</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {gearFluencyQuestions.length}<br/><span className="text-xs">{formatSeconds(displayMs)} · {paceLabel}</span></div></div><div className="mb-5 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 px-4 py-3 sm:px-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5ED3F3]">Fluency cue</p><p className="mt-1 text-sm leading-relaxed text-[#C8D2DD]">Count contacts → even = same direction · odd = opposite direction.</p></div><Card><GearQuestionDiagram question={question} mode="practice" /><p className="mt-6 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-6 grid gap-3">{visibleOptions.map((option) => <button key={option.optionId} type="button" onClick={() => select(option.optionId)} disabled={showFeedback} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"} ${showFeedback ? "cursor-default" : ""}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p><p className="mt-3 text-sm text-[#8D98A6]">You selected your answer in {formatSeconds(selectionTimeMs ?? 0)}. Feedback-reading time is no longer included in the fluency measurement.</p></div><div className="shrink-0"><PrimaryButton className="w-full sm:w-auto" onClick={next}>{questionIndex === gearFluencyQuestions.length - 1 ? "Complete fluency set" : "Next question"}</PrimaryButton></div></div></div>}</Card></section></Shell>;
+  return <Shell right="Gear fluency"><section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-12 sm:pt-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Gear Direction Fluency</p><h1 className="mt-3 text-3xl font-semibold">Recognise the pattern</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {blockQuestions.length}<br/><span className="text-xs">{formatSeconds(displayMs)} · {paceLabel}</span></div></div><div className="mb-5 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 px-4 py-3 sm:px-5"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5ED3F3]">Fluency cue</p><p className="mt-1 text-sm leading-relaxed text-[#C8D2DD]">Count contacts → even = same direction · odd = opposite direction.</p></div><Card><GearQuestionDiagram question={question} mode="practice" /><p className="mt-6 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-6 grid gap-3">{visibleOptions.map((option) => <button key={option.optionId} type="button" onClick={() => select(option.optionId)} disabled={showFeedback} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"} ${showFeedback ? "cursor-default" : ""}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p><p className="mt-3 text-sm text-[#8D98A6]">You selected your answer in {formatSeconds(selectionTimeMs ?? 0)}. Feedback-reading time is no longer included in the fluency measurement.</p></div><div className="shrink-0"><PrimaryButton className="w-full sm:w-auto" onClick={next}>{questionIndex === blockQuestions.length - 1 ? "Complete fluency set" : "Next question"}</PrimaryButton></div></div></div>}</Card></section></Shell>;
 }
 
 type GearFluencyBlockAnalytics = {
   session: AssessmentSession;
   responses: AssessmentResponse[];
   timingValid: boolean;
+  parallelFormValid: boolean;
   accuracy: number;
   medianMs: number | null;
   iqrMs: number | null;
@@ -6231,6 +6308,7 @@ function getGearFluencyBlockAnalytics(journey: MvpGuestJourney): GearFluencyBloc
   return completed.map((session) => {
     const responses = journey.responses.filter((response) => response.sessionId === session.sessionId);
     const timingValid = responses.length >= gearDirectionFluencyProfile.minimumComparableResponses && responses.every(hasCalibrationTiming);
+    const parallelFormValid = timingValid && session.calibrationBankVersion === GEAR_DIRECTION_CALIBRATION_BANK_VERSION && Boolean(session.calibrationFormId);
     const correct = responses.filter((response) => response.correct).length;
     const times = timingValid ? responses.map((response) => response.responseTimeMs) : [];
     const range = times.length ? percentileRange(times) : null;
@@ -6238,6 +6316,7 @@ function getGearFluencyBlockAnalytics(journey: MvpGuestJourney): GearFluencyBloc
       session,
       responses,
       timingValid,
+      parallelFormValid,
       accuracy: responses.length ? correct / responses.length : 0,
       medianMs: times.length ? median(times) : null,
       iqrMs: range?.iqr ?? null,
@@ -6248,10 +6327,113 @@ function getGearFluencyBlockAnalytics(journey: MvpGuestJourney): GearFluencyBloc
   });
 }
 
+type GearDirectionItemCalibrationAnalytics = {
+  questionId: string;
+  formId: string;
+  reasoningSteps: number;
+  difficultyBand: string;
+  authorRange: { minSec: number; maxSec: number };
+  observations: number;
+  accuracy: number | null;
+  medianMs: number | null;
+  iqrMs: number | null;
+  status: "awaiting_data" | "pilot" | "candidate_empirical";
+};
+
+function getGearDirectionItemCalibrationAnalytics(journey: MvpGuestJourney): GearDirectionItemCalibrationAnalytics[] {
+  const eligibleSessionIds = new Set(
+    journey.sessions
+      .filter((session) => session.sessionType === "gear_fluency" && session.completedAt && session.calibrationBankVersion === GEAR_DIRECTION_CALIBRATION_BANK_VERSION)
+      .map((session) => session.sessionId),
+  );
+  return gearDirectionCalibrationBlueprints.map((blueprint) => {
+    const responses = journey.responses.filter((response) => eligibleSessionIds.has(response.sessionId) && response.questionId === blueprint.questionId && hasCalibrationTiming(response));
+    const times = responses.map((response) => response.responseTimeMs);
+    const range = times.length ? percentileRange(times) : null;
+    const correct = responses.filter((response) => response.correct).length;
+    return {
+      questionId: blueprint.questionId,
+      formId: blueprint.formId,
+      reasoningSteps: blueprint.reasoningSteps,
+      difficultyBand: blueprint.difficultyBand,
+      authorRange: blueprint.targetFluentTimeRangeSec,
+      observations: responses.length,
+      accuracy: responses.length ? correct / responses.length : null,
+      medianMs: times.length ? median(times) : null,
+      iqrMs: range?.iqr ?? null,
+      // Deliberately conservative: 10 observations is enough to flag a candidate
+      // empirical range for review, not enough to call the item fully calibrated.
+      status: responses.length >= 10 ? "candidate_empirical" : responses.length >= 3 ? "pilot" : "awaiting_data",
+    };
+  });
+}
+
+function getGearDirectionArchetypeCalibrationAnalytics(journey: MvpGuestJourney) {
+  const eligibleSessions = journey.sessions.filter((session) => session.sessionType === "gear_fluency" && session.completedAt && session.calibrationBankVersion === GEAR_DIRECTION_CALIBRATION_BANK_VERSION);
+  const eligibleSessionIds = new Set(eligibleSessions.map((session) => session.sessionId));
+  const responses = journey.responses.filter((response) => eligibleSessionIds.has(response.sessionId) && hasCalibrationTiming(response));
+  const times = responses.map((response) => response.responseTimeMs);
+  const range = times.length ? percentileRange(times) : null;
+  const correct = responses.filter((response) => response.correct).length;
+  return {
+    blocks: eligibleSessions.length,
+    formsSeen: Array.from(new Set(eligibleSessions.map((session) => session.calibrationFormId).filter(Boolean) as string[])),
+    observations: responses.length,
+    accuracy: responses.length ? correct / responses.length : null,
+    medianMs: times.length ? median(times) : null,
+    iqrMs: range?.iqr ?? null,
+  };
+}
+
+function csvCell(value: string | number | boolean | null | undefined) {
+  const text = value === null || value === undefined ? "" : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function downloadGearDirectionCalibrationCsv(journey: MvpGuestJourney) {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+  const sessions = journey.sessions.filter((session) => session.sessionType === "gear_fluency" && session.completedAt && session.calibrationBankVersion === GEAR_DIRECTION_CALIBRATION_BANK_VERSION);
+  const rows: (string | number | boolean | null | undefined)[][] = [[
+    "export_version", "journey_id", "session_id", "block_index", "form_id", "bank_version", "question_id", "family_id", "reasoning_steps", "difficulty_band", "correct", "response_time_ms", "device_class", "answered_at", "telemetry_version",
+  ]];
+  sessions.forEach((session) => {
+    journey.responses.filter((response) => response.sessionId === session.sessionId && hasCalibrationTiming(response)).forEach((response) => {
+      const blueprint = gearDirectionCalibrationBlueprintByQuestionId[response.questionId];
+      rows.push([
+        "APTESTA_CAL_EXPORT_V0_4",
+        journey.guestJourneyId,
+        session.sessionId,
+        session.fluencyBlockIndex,
+        session.calibrationFormId,
+        session.calibrationBankVersion,
+        response.questionId,
+        blueprint?.familyId,
+        blueprint?.reasoningSteps,
+        blueprint?.difficultyBand,
+        response.correct,
+        response.responseTimeMs,
+        response.deviceClass,
+        response.answeredAt,
+        response.telemetryVersion,
+      ]);
+    });
+  });
+  const csv = rows.map((row) => row.map(csvCell).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `aptesta-gear-calibration-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 function GearFluencyDebriefScreen({ journey, onGearCheck, onDashboard }: { journey: MvpGuestJourney; onGearCheck: () => void; onDashboard: () => void }) {
   const blocks = getGearFluencyBlockAnalytics(journey);
   const current = blocks[blocks.length - 1];
-  const validPriorBlocks = blocks.slice(0, -1).filter((block) => block.timingValid);
+  const validPriorBlocks = blocks.slice(0, -1).filter((block) => block.parallelFormValid);
   const previous = validPriorBlocks[validPriorBlocks.length - 1];
   const responses = current?.responses ?? [];
   const correct = responses.filter((response) => response.correct).length;
@@ -6263,7 +6445,7 @@ function GearFluencyDebriefScreen({ journey, onGearCheck, onDashboard }: { journ
   const previousMedian = previous?.medianMs ?? null;
   const medianDelta = previousMedian !== null && current?.medianMs !== null && current?.medianMs !== undefined ? current.medianMs - previousMedian : null;
   const accuracyDelta = previousAccuracy !== null ? accuracy - previousAccuracy : null;
-  const safeAcceleration = current?.timingValid === true && previous?.timingValid === true && medianDelta !== null && medianDelta < 0 && accuracyDelta !== null && accuracyDelta >= -0.001;
+  const safeAcceleration = current?.parallelFormValid === true && previous?.parallelFormValid === true && medianDelta !== null && medianDelta < 0 && accuracyDelta !== null && accuracyDelta >= -0.001;
   const legacyBlocks = blocks.filter((block) => !block.timingValid).length;
   const status = current?.timingValid && accuracy >= 0.875 && med <= GEAR_FLUENCY_INITIAL_TARGET_MS ? "Fluency is emerging" : accuracy >= 0.875 ? "Understanding is strong — fluency can improve" : "Keep accuracy ahead of speed";
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-6 py-12 sm:px-8 sm:py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Fluency debrief</p><h1 className="mt-5 text-4xl font-semibold">{status}</h1><p className="mt-5 text-lg leading-relaxed text-[#9AA3B2]">This prototype does not score you for being fast. It looks for quicker recognition while accuracy stays secure.</p><div className="mt-8 grid gap-4 sm:grid-cols-4"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(accuracy * 100)}%</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median response</div><div className="mt-3 text-3xl font-semibold">{current?.timingValid ? formatSeconds(med) : "—"}</div><div className="mt-2 text-sm text-[#9AA3B2]">Answer-selection latency</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Variability</div><div className="mt-3 text-3xl font-semibold">{current?.timingValid ? formatSeconds(iqr) : "—"}</div><div className="mt-2 text-sm text-[#9AA3B2]">Middle 50% response-time spread</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accurate + within guide</div><div className="mt-3 text-3xl font-semibold">{current?.timingValid ? `${withinTarget}/${responses.length}` : "—"}</div><div className="mt-2 text-sm text-[#9AA3B2]">{gearDirectionFluencyProfile.targetFluentTimeSecAuthor}-second prototype guide</div></div></div>{previousMedian !== null && previousAccuracy !== null && <div className="mt-6 rounded-2xl border border-white/10 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Compared with your previous comparable block</div><div className="mt-4 grid gap-4 sm:grid-cols-2"><div><div className="text-sm text-[#8D98A6]">Median response</div><div className="mt-1 text-xl font-semibold">{medianDelta !== null && medianDelta < 0 ? `${formatSeconds(Math.abs(medianDelta))} quicker` : medianDelta !== null && medianDelta > 0 ? `${formatSeconds(medianDelta)} slower` : "No material change"}</div></div><div><div className="text-sm text-[#8D98A6]">Accuracy</div><div className="mt-1 text-xl font-semibold">{accuracyDelta !== null && Math.abs(accuracyDelta) < 0.001 ? "Stable" : accuracyDelta !== null && accuracyDelta > 0 ? `${Math.round(accuracyDelta * 100)} points higher` : `${Math.round(Math.abs(accuracyDelta ?? 0) * 100)} points lower`}</div></div></div><p className="mt-4 text-sm leading-relaxed text-[#AAB4C0]">{safeAcceleration ? "This is the pattern Aptesta wants: faster recognition without sacrificing accuracy." : "The aim is safe acceleration. A faster block only counts as progress when accuracy is maintained."}</p></div>}{legacyBlocks > 0 && <div className="mt-6 rounded-2xl border border-[#FFB86B]/20 bg-[#211813]/60 p-5 text-sm leading-relaxed text-[#DCC6B2]"><b>{legacyBlocks} earlier prototype block{legacyBlocks === 1 ? "" : "s"} excluded from timing comparison.</b> v0.2 measured until the Next button was pressed, so feedback-reading time was mixed into response time. Accuracy remains usable; those timings do not.</div>}<div className="mt-8 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">What Aptesta is looking for</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">The useful pattern is <b>stable accuracy with a falling median answer-selection time</b>. Variability matters too: a shrinking response-time spread suggests the method is becoming more automatic. A very fast wrong answer is not fluency.</p></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onDashboard}>View dashboard</SecondaryButton><PrimaryButton onClick={onGearCheck}>Continue to Gear Check</PrimaryButton></div></Card></section></Shell>;
@@ -6271,15 +6453,136 @@ function GearFluencyDebriefScreen({ journey, onGearCheck, onDashboard }: { journ
 
 function InternalFluencyAnalyticsScreen({ journey, onBack, onRunBlock }: { journey: MvpGuestJourney; onBack: () => void; onRunBlock: () => void }) {
   const blocks = getGearFluencyBlockAnalytics(journey);
-  const validBlocks = blocks.filter((block) => block.timingValid);
-  const latestValid = validBlocks[validBlocks.length - 1];
-  const previousValid = validBlocks[validBlocks.length - 2];
-  const safeAcceleration = Boolean(latestValid && previousValid && latestValid.medianMs !== null && previousValid.medianMs !== null && latestValid.medianMs < previousValid.medianMs && latestValid.accuracy >= previousValid.accuracy - 0.001);
+  const timingValidBlocks = blocks.filter((block) => block.timingValid);
+  const parallelBlocks = blocks.filter((block) => block.parallelFormValid);
+  const latestValid = timingValidBlocks[timingValidBlocks.length - 1];
+  const latestParallel = parallelBlocks[parallelBlocks.length - 1];
+  const previousParallel = parallelBlocks[parallelBlocks.length - 2];
+  const safeAcceleration = Boolean(
+    latestParallel && previousParallel &&
+    latestParallel.medianMs !== null && previousParallel.medianMs !== null &&
+    latestParallel.medianMs < previousParallel.medianMs &&
+    latestParallel.accuracy >= previousParallel.accuracy - 0.001,
+  );
   const rapidBoundaryMs = GEAR_FLUENCY_INITIAL_TARGET_MS * gearDirectionFluencyProfile.rapidErrorBoundaryFractionOfTarget;
   const linkedEmployers = employerProfiles.filter((profile) => gearDirectionFluencyProfile.employerProfileIds.includes(profile.employerProfileId));
   const linkedProviderIds = new Set(linkedEmployers.map((profile) => profile.providerProfileId).filter(Boolean));
   const linkedProviders = providerProfiles.filter((profile) => linkedProviderIds.has(profile.providerProfileId));
-  return <Shell right="Internal tester view"><section className="mx-auto max-w-6xl px-6 py-10 sm:px-8 sm:py-12"><div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Internal calibration</p><h1 className="mt-3 text-4xl font-semibold">Gear Direction Fluency analytics</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">Tester-only diagnostics. These values are not learner scores and the author-set timing thresholds are provisional until real calibration data exist.</p></div><Badge>{gearDirectionFluencyProfile.fluencyProfileId}</Badge></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Completed blocks</div><div className="mt-3 text-3xl font-semibold">{blocks.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{validBlocks.length} calibration-valid</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Latest valid accuracy</div><div className="mt-3 text-3xl font-semibold">{latestValid ? `${Math.round(latestValid.accuracy * 100)}%` : "—"}</div><div className="mt-2 text-sm text-[#9AA3B2]">Gate: {Math.round(gearDirectionFluencyProfile.accuracyGate * 100)}%</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Latest median RT</div><div className="mt-3 text-3xl font-semibold">{latestValid?.medianMs !== null && latestValid?.medianMs !== undefined ? formatSeconds(latestValid.medianMs) : "—"}</div><div className="mt-2 text-sm text-[#9AA3B2]">Selection latency only</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Safe acceleration</div><div className="mt-3 text-3xl font-semibold">{validBlocks.length < 2 ? "Need 2 blocks" : safeAcceleration ? "Yes" : "Not yet"}</div><div className="mt-2 text-sm text-[#9AA3B2]">Faster + accuracy protected</div></Card></div><Card className="mt-8"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Block history</div><h2 className="mt-2 text-2xl font-semibold">Comparable-block telemetry</h2></div><div className="flex flex-col gap-2 sm:items-end"><div className="text-xs text-[#8D98A6]">Provisional rapid-error zone: ≤ {formatSeconds(rapidBoundaryMs)}</div><div className="text-xs text-[#8D98A6]">Author fluent guide: {gearDirectionFluencyProfile.targetFluentTimeSecAuthor} s</div></div></div><div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="text-[#6E7A88]"><tr className="border-b border-white/10"><th className="px-3 py-3 font-medium">Block</th><th className="px-3 py-3 font-medium">Timing quality</th><th className="px-3 py-3 font-medium">Accuracy</th><th className="px-3 py-3 font-medium">Median</th><th className="px-3 py-3 font-medium">IQR</th><th className="px-3 py-3 font-medium">Rapid errors</th><th className="px-3 py-3 font-medium">Device</th></tr></thead><tbody>{blocks.length ? blocks.map((block) => <tr key={block.session.sessionId} className="border-b border-white/5 text-[#C8D2DD]"><td className="px-3 py-3">{block.session.fluencyBlockIndex ?? "—"}</td><td className="px-3 py-3">{block.timingValid ? <span className="text-[#7FE0B8]">Calibration-valid</span> : <span className="text-[#E6B98A]">Legacy / exclude RT</span>}</td><td className="px-3 py-3">{Math.round(block.accuracy * 100)}%</td><td className="px-3 py-3">{block.medianMs !== null ? formatSeconds(block.medianMs) : "—"}</td><td className="px-3 py-3">{block.iqrMs !== null ? formatSeconds(block.iqrMs) : "—"}</td><td className="px-3 py-3">{block.timingValid ? block.rapidErrors : "—"}</td><td className="px-3 py-3">{block.deviceClasses.join(", ") || "unknown"}</td></tr>) : <tr><td colSpan={7} className="px-3 py-8 text-center text-[#8D98A6]">No completed fluency blocks yet.</td></tr>}</tbody></table></div></Card>{latestValid && <Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Latest valid block</div><h2 className="mt-2 text-2xl font-semibold">Item-level diagnostic</h2><div className="mt-6 grid gap-3">{latestValid.responses.map((response) => { const question = gearFluencyQuestions.find((item) => item.questionId === response.questionId); const rapidError = !response.correct && response.responseTimeMs <= rapidBoundaryMs; return <div key={response.responseId} className="grid gap-2 rounded-2xl border border-white/5 bg-[#111418] p-4 sm:grid-cols-[1fr_auto_auto]"><div><div className="font-medium text-[#DCE3EA]">{response.questionId}</div><div className="mt-1 text-xs text-[#7D8794]">{question?.concept ?? "unknown"} · {question?.archetype ?? "unknown archetype"}</div></div><div className="text-sm text-[#AAB4C0]">{formatSeconds(response.responseTimeMs)}</div><div className={`text-sm font-medium ${response.correct ? "text-[#7FE0B8]" : rapidError ? "text-[#FF9A9A]" : "text-[#E6B98A]"}`}>{response.correct ? "Correct" : rapidError ? "Rapid error" : "Incorrect"}</div></div>; })}</div></Card>}<Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Profile provenance</div><h2 className="mt-2 text-2xl font-semibold">Provider / employer separation is live</h2><p className="mt-3 leading-relaxed text-[#9AA3B2]">The fluency profile now reads its timing rules from the canonical assessment-profile module rather than hard-coded learner UI values.</p><div className="mt-5 grid gap-4 md:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Linked employers</div><div className="mt-3 space-y-2 text-sm text-[#C8D2DD]">{linkedEmployers.map((profile) => <div key={profile.employerProfileId}>{profile.employerName} · {profile.recruitmentCycle}</div>)}</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Linked providers</div><div className="mt-3 space-y-2 text-sm text-[#C8D2DD]">{linkedProviders.map((profile) => <div key={profile.providerProfileId}>{profile.providerName} · {profile.testFamily}</div>)}</div></div></div></Card><div className="mt-8 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onBack}>Back to dashboard</SecondaryButton><PrimaryButton onClick={onRunBlock}>Run another fluency block</PrimaryButton></div></section></Shell>;
+  const itemCalibration = getGearDirectionItemCalibrationAnalytics(journey);
+  const archetypeCalibration = getGearDirectionArchetypeCalibrationAnalytics(journey);
+  const observedItems = itemCalibration.filter((item) => item.observations > 0).length;
+  const pilotItems = itemCalibration.filter((item) => item.status === "pilot").length;
+  const candidateEmpiricalItems = itemCalibration.filter((item) => item.status === "candidate_empirical").length;
+  const preParallelTimingBlocks = blocks.filter((block) => block.timingValid && !block.parallelFormValid).length;
+
+  return (
+    <Shell right="Internal tester view">
+      <section className="mx-auto max-w-6xl px-6 py-10 sm:px-8 sm:py-12">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Internal calibration</p>
+            <h1 className="mt-3 text-4xl font-semibold">Gear Direction calibration analytics</h1>
+            <p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">
+              v0.4 rotates equivalent parallel forms so improvement is less likely to be simple memory for the same eight questions. Author timing ranges remain provisional until sufficient multi-tester data exist.
+            </p>
+          </div>
+          <Badge>{GEAR_DIRECTION_CALIBRATION_BANK_VERSION}</Badge>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="p-5">
+            <div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Parallel-form blocks</div>
+            <div className="mt-3 text-3xl font-semibold">{parallelBlocks.length}</div>
+            <div className="mt-2 text-sm text-[#9AA3B2]">{archetypeCalibration.formsSeen.length}/{GEAR_DIRECTION_PARALLEL_FORM_IDS.length} forms observed</div>
+          </Card>
+          <Card className="p-5">
+            <div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Bank coverage</div>
+            <div className="mt-3 text-3xl font-semibold">{observedItems}/{gearDirectionCalibrationBlueprints.length}</div>
+            <div className="mt-2 text-sm text-[#9AA3B2]">Items with valid observations</div>
+          </Card>
+          <Card className="p-5">
+            <div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Archetype median</div>
+            <div className="mt-3 text-3xl font-semibold">{archetypeCalibration.medianMs !== null ? formatSeconds(archetypeCalibration.medianMs) : "—"}</div>
+            <div className="mt-2 text-sm text-[#9AA3B2]">{archetypeCalibration.observations} current-bank responses</div>
+          </Card>
+          <Card className="p-5">
+            <div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Safe acceleration</div>
+            <div className="mt-3 text-3xl font-semibold">{parallelBlocks.length < 2 ? "Need 2 forms" : safeAcceleration ? "Yes" : "Not yet"}</div>
+            <div className="mt-2 text-sm text-[#9AA3B2]">Across different current-bank blocks</div>
+          </Card>
+        </div>
+
+        <Card className="mt-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Calibration bank</div>
+              <h2 className="mt-2 text-2xl font-semibold">Parallel-form design</h2>
+            </div>
+            <div className="text-right text-xs leading-relaxed text-[#8D98A6]">
+              3 forms × 8 items<br />24 metadata-rich items
+            </div>
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {GEAR_DIRECTION_PARALLEL_FORM_IDS.map((formId) => {
+              const formBlocks = parallelBlocks.filter((block) => block.session.calibrationFormId === formId).length;
+              const formItems = gearDirectionCalibrationBlueprints.filter((item) => item.formId === formId).length;
+              return <div key={formId} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#DCE3EA]">{formId}</div><div className="mt-2 text-sm text-[#9AA3B2]">{formItems} items · {formBlocks} completed block{formBlocks === 1 ? "" : "s"}</div></div>;
+            })}
+          </div>
+          <div className="mt-5 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5 text-sm leading-relaxed text-[#C8D2DD]">
+            The forms share the same contact-parity archetype and a matched reasoning-step distribution, but use different prompts, driver positions and layouts. That reduces item-memory contamination when blocks are compared.
+          </div>
+        </Card>
+
+        <Card className="mt-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Block history</div><h2 className="mt-2 text-2xl font-semibold">Comparable-block telemetry</h2></div>
+            <div className="flex flex-col gap-2 sm:items-end"><div className="text-xs text-[#8D98A6]">Provisional rapid-error zone: ≤ {formatSeconds(rapidBoundaryMs)}</div><div className="text-xs text-[#8D98A6]">Learner guide: {gearDirectionFluencyProfile.targetFluentTimeSecAuthor} s</div></div>
+          </div>
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full min-w-[900px] text-left text-sm">
+              <thead className="text-[#6E7A88]"><tr className="border-b border-white/10"><th className="px-3 py-3 font-medium">Block</th><th className="px-3 py-3 font-medium">Form</th><th className="px-3 py-3 font-medium">Calibration quality</th><th className="px-3 py-3 font-medium">Accuracy</th><th className="px-3 py-3 font-medium">Median</th><th className="px-3 py-3 font-medium">IQR</th><th className="px-3 py-3 font-medium">Rapid errors</th><th className="px-3 py-3 font-medium">Device</th></tr></thead>
+              <tbody>
+                {blocks.length ? blocks.map((block) => <tr key={block.session.sessionId} className="border-b border-white/5 text-[#C8D2DD]"><td className="px-3 py-3">{block.session.fluencyBlockIndex ?? "—"}</td><td className="px-3 py-3">{block.session.calibrationFormId ?? (block.timingValid ? "Pre-v0.4 Form A" : "—")}</td><td className="px-3 py-3">{block.parallelFormValid ? <span className="text-[#7FE0B8]">Parallel-form valid</span> : block.timingValid ? <span className="text-[#E6D38A]">Timing valid / pre-parallel</span> : <span className="text-[#E6B98A]">Legacy / exclude RT</span>}</td><td className="px-3 py-3">{Math.round(block.accuracy * 100)}%</td><td className="px-3 py-3">{block.medianMs !== null ? formatSeconds(block.medianMs) : "—"}</td><td className="px-3 py-3">{block.iqrMs !== null ? formatSeconds(block.iqrMs) : "—"}</td><td className="px-3 py-3">{block.timingValid ? block.rapidErrors : "—"}</td><td className="px-3 py-3">{block.deviceClasses.join(", ") || "unknown"}</td></tr>) : <tr><td colSpan={8} className="px-3 py-8 text-center text-[#8D98A6]">No completed fluency blocks yet.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+          {preParallelTimingBlocks > 0 && <p className="mt-4 text-xs leading-relaxed text-[#8D98A6]">{preParallelTimingBlocks} v0.3 timing-valid block{preParallelTimingBlocks === 1 ? " is" : "s are"} retained for descriptive history but excluded from clean v0.4 parallel-form acceleration comparisons.</p>}
+        </Card>
+
+        <Card className="mt-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Item calibration</div><h2 className="mt-2 text-2xl font-semibold">From author estimate toward empirical range</h2></div>
+            <div className="text-right text-xs leading-relaxed text-[#8D98A6]">{pilotItems} pilot · {candidateEmpiricalItems} candidate empirical</div>
+          </div>
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full min-w-[920px] text-left text-sm">
+              <thead className="text-[#6E7A88]"><tr className="border-b border-white/10"><th className="px-3 py-3 font-medium">Item</th><th className="px-3 py-3 font-medium">Form</th><th className="px-3 py-3 font-medium">Steps</th><th className="px-3 py-3 font-medium">Author range</th><th className="px-3 py-3 font-medium">n</th><th className="px-3 py-3 font-medium">Accuracy</th><th className="px-3 py-3 font-medium">Median</th><th className="px-3 py-3 font-medium">Status</th></tr></thead>
+              <tbody>{itemCalibration.map((item) => <tr key={item.questionId} className="border-b border-white/5 text-[#C8D2DD]"><td className="px-3 py-3 font-medium">{item.questionId}</td><td className="px-3 py-3">{item.formId}</td><td className="px-3 py-3">{item.reasoningSteps}</td><td className="px-3 py-3">{item.authorRange.minSec}–{item.authorRange.maxSec} s</td><td className="px-3 py-3">{item.observations}</td><td className="px-3 py-3">{item.accuracy !== null ? `${Math.round(item.accuracy * 100)}%` : "—"}</td><td className="px-3 py-3">{item.medianMs !== null ? formatSeconds(item.medianMs) : "—"}</td><td className="px-3 py-3">{item.status === "candidate_empirical" ? <span className="text-[#7FE0B8]">Candidate empirical</span> : item.status === "pilot" ? <span className="text-[#E6D38A]">Pilot</span> : <span className="text-[#8D98A6]">Awaiting data</span>}</td></tr>)}</tbody>
+            </table>
+          </div>
+          <div className="mt-5 rounded-2xl border border-[#FFB86B]/20 bg-[#211813]/60 p-5 text-sm leading-relaxed text-[#DCC6B2]">
+            <b>Guardrail:</b> n ≥ 10 only flags a candidate empirical range for review. It does not validate a cut-off. Proper calibration still requires data across multiple knowledgeable testers / beta learners and device contexts.
+          </div>
+        </Card>
+
+        {latestValid && <Card className="mt-8">
+          <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Latest timing-valid block</div>
+          <h2 className="mt-2 text-2xl font-semibold">Item-level diagnostic</h2>
+          <div className="mt-6 grid gap-3">{latestValid.responses.map((response) => { const question = gearFluencyQuestionById.get(response.questionId); const blueprint = gearDirectionCalibrationBlueprintByQuestionId[response.questionId]; const rapidError = !response.correct && response.responseTimeMs <= rapidBoundaryMs; return <div key={response.responseId} className="grid gap-2 rounded-2xl border border-white/5 bg-[#111418] p-4 sm:grid-cols-[1fr_auto_auto]"><div><div className="font-medium text-[#DCE3EA]">{response.questionId}</div><div className="mt-1 text-xs text-[#7D8794]">{question?.concept ?? "unknown"} · {blueprint ? `${blueprint.reasoningSteps} reasoning step${blueprint.reasoningSteps === 1 ? "" : "s"}` : "pre-v0.4 item"}</div></div><div className="text-sm text-[#AAB4C0]">{formatSeconds(response.responseTimeMs)}</div><div className={`text-sm font-medium ${response.correct ? "text-[#7FE0B8]" : rapidError ? "text-[#FF9A9A]" : "text-[#E6B98A]"}`}>{response.correct ? "Correct" : rapidError ? "Rapid error" : "Incorrect"}</div></div>; })}</div>
+        </Card>}
+
+        <Card className="mt-8">
+          <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Profile provenance</div>
+          <h2 className="mt-2 text-2xl font-semibold">Provider / employer separation remains intact</h2>
+          <p className="mt-3 leading-relaxed text-[#9AA3B2]">Calibration metadata is attached to the stable skill archetype. Employer/provider profiles remain a separate layer for test-specific timing, rules and relevance.</p>
+          <div className="mt-5 grid gap-4 md:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Linked employers</div><div className="mt-3 space-y-2 text-sm text-[#C8D2DD]">{linkedEmployers.map((profile) => <div key={profile.employerProfileId}>{profile.employerName} · {profile.recruitmentCycle}</div>)}</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Linked providers</div><div className="mt-3 space-y-2 text-sm text-[#C8D2DD]">{linkedProviders.map((profile) => <div key={profile.providerProfileId}>{profile.providerName} · {profile.testFamily}</div>)}</div></div></div>
+        </Card>
+
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onBack}>Back to dashboard</SecondaryButton><SecondaryButton onClick={() => downloadGearDirectionCalibrationCsv(journey)}>Export calibration CSV</SecondaryButton><PrimaryButton onClick={onRunBlock}>Run next parallel form</PrimaryButton></div>
+      </section>
+    </Shell>
+  );
 }
 
 type GearDiagramMode = "guided" | "practice" | "assessment";
@@ -6340,6 +6643,22 @@ function getGearDiagramSpec(questionId: string): GearDiagramSpec {
     "GEAR-FL-006": { teeth: [20, 20, 20], yOffsets: [20, -20, 20], driverIndex: 2, driverDirection: "anticlockwise" },
     "GEAR-FL-007": { teeth: [20, 24, 20], yOffsets: [-18, 22, -18], driverIndex: 0, driverDirection: "anticlockwise" },
     "GEAR-FL-008": { teeth: [20, 20, 20, 20], yOffsets: [24, -20, 20, -24], driverIndex: 1, driverDirection: "clockwise" },
+    "GEAR-FL-B01": { teeth: [20, 20], yOffsets: [-18, 18], driverIndex: 0, driverDirection: "clockwise" },
+    "GEAR-FL-B02": { teeth: [20, 20, 20], yOffsets: [20, -20, 20], driverIndex: 0, driverDirection: "anticlockwise" },
+    "GEAR-FL-B03": { teeth: [20, 20, 20, 20], yOffsets: [-22, 22, -22, 22], driverIndex: 0, driverDirection: "clockwise" },
+    "GEAR-FL-B04": { teeth: [20, 20, 20, 20, 20], yOffsets: [-18, 18, -18, 18, -18], driverIndex: 0, driverDirection: "anticlockwise" },
+    "GEAR-FL-B05": { teeth: [20, 20, 20, 20, 20, 20], yOffsets: [16, -16, 16, -16, 16, -16], driverIndex: 0, driverDirection: "clockwise" },
+    "GEAR-FL-B06": { teeth: [20, 20, 20], yOffsets: [-20, 20, -20], driverIndex: 1, driverDirection: "clockwise" },
+    "GEAR-FL-B07": { teeth: [20, 24, 20], yOffsets: [18, -22, 18], driverIndex: 0, driverDirection: "clockwise" },
+    "GEAR-FL-B08": { teeth: [20, 20, 20, 20], yOffsets: [-24, 20, -20, 24], driverIndex: 2, driverDirection: "anticlockwise" },
+    "GEAR-FL-C01": { teeth: [20, 20], yOffsets: [20, -20], driverIndex: 0, driverDirection: "anticlockwise" },
+    "GEAR-FL-C02": { teeth: [20, 20, 20], yOffsets: [-18, 22, -18], driverIndex: 0, driverDirection: "clockwise" },
+    "GEAR-FL-C03": { teeth: [20, 20, 20, 20], yOffsets: [26, -18, 18, -26], driverIndex: 0, driverDirection: "anticlockwise" },
+    "GEAR-FL-C04": { teeth: [20, 20, 20, 20, 20], yOffsets: [-20, 18, -18, 18, -20], driverIndex: 0, driverDirection: "clockwise" },
+    "GEAR-FL-C05": { teeth: [20, 20, 20, 20, 20, 20], yOffsets: [14, -18, 18, -18, 18, -14], driverIndex: 0, driverDirection: "anticlockwise" },
+    "GEAR-FL-C06": { teeth: [20, 20, 20, 20], yOffsets: [-22, 22, -22, 22], driverIndex: 3, driverDirection: "clockwise" },
+    "GEAR-FL-C07": { teeth: [20, 24, 20], yOffsets: [22, -18, 22], driverIndex: 0, driverDirection: "anticlockwise" },
+    "GEAR-FL-C08": { teeth: [20, 20, 20, 20, 20], yOffsets: [20, -20, 20, -20, 20], driverIndex: 1, driverDirection: "anticlockwise" },
 
     "GEAR-AS-001": { teeth: [20, 20], yOffsets: [34, -34], driverIndex: 0, driverDirection: "anticlockwise" },
     "GEAR-AS-002": { teeth: [20, 20, 20], yOffsets: [-28, 28, -28], driverIndex: 0, driverDirection: "clockwise" },
