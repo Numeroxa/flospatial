@@ -172,6 +172,12 @@ type MvpQuestion = {
   subcompetency: Subcompetency;
   concept: string;
   difficulty: "foundational" | "developing" | "applied";
+  archetype?: string;
+  modality?: "text" | "static_visual" | "video" | "audio" | "game" | "map" | "writing";
+  targetFluentTimeSec?: number;
+  rapidRecognition?: boolean;
+  providerStyleTags?: string[];
+  employerTags?: string[];
   stem: string;
   options: QuestionOption[];
   correctOptionId: string;
@@ -189,6 +195,9 @@ type AssessmentSession = {
   startedAt: string;
   completedAt?: string;
   questionIds: string[];
+  profileVersion?: string;
+  fluencyProfileId?: string;
+  fluencyBlockIndex?: number;
 };
 
 type AssessmentResponse = {
@@ -491,7 +500,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Aptesta Gear Fluency Prototype v0.1";
+const BUILD_LABEL = "Aptesta Gear Fluency Prototype v0.2";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -503,6 +512,21 @@ function median(values: number[]) {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function percentileRange(values: number[]) {
+  if (!values.length) return { q1: 0, q3: 0, iqr: 0 };
+  const sorted = [...values].sort((a, b) => a - b);
+  const q = (p: number) => {
+    const index = (sorted.length - 1) * p;
+    const lo = Math.floor(index);
+    const hi = Math.ceil(index);
+    if (lo === hi) return sorted[lo];
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (index - lo);
+  };
+  const q1 = q(0.25);
+  const q3 = q(0.75);
+  return { q1, q3, iqr: q3 - q1 };
 }
 function formatSeconds(ms: number) { return `${(ms / 1000).toFixed(ms >= 10000 ? 0 : 1)} s`; }
 
@@ -716,7 +740,7 @@ const gearIndependentPracticeQuestions: MvpQuestion[] = gearIndependentPracticeQ
 
 function makeGearFluencyQuestion(questionId: string, concept: string, stem: string, options: string[], correctLabel: OptionLabel, explanation: string): MvpQuestion {
   const prepared = buildQuestionOptions(questionId, options, correctLabel);
-  return { questionId, sessionType: "gear_fluency", pathwayId: "fire_service", domain: "mechanical", subcompetency: "gears", concept, difficulty: "applied", stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
+  return { questionId, sessionType: "gear_fluency", pathwayId: "fire_service", domain: "mechanical", subcompetency: "gears", concept, difficulty: "applied", archetype: concept, modality: "static_visual", targetFluentTimeSec: 35, rapidRecognition: true, providerStyleTags: ["generic_fire_service"], employerTags: ["AU_NZ_MVP"], stem, options: prepared.options, correctOptionId: prepared.correctOptionId, explanation };
 }
 
 const gearFluencyQuestions: MvpQuestion[] = [
@@ -1809,8 +1833,18 @@ function createGuidedGearPracticeSession(): AssessmentSession {
 function createGearIndependentPracticeSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "gear_independent_practice", pathwayId: "fire_service", startedAt: now(), questionIds: gearIndependentPracticeQuestions.map((q) => q.questionId) };
 }
-function createGearFluencySession(): AssessmentSession {
-  return { sessionId: id("session"), sessionType: "gear_fluency", pathwayId: "fire_service", startedAt: now(), questionIds: gearFluencyQuestions.map((q) => q.questionId) };
+function createGearFluencySession(existingSessions: AssessmentSession[] = []): AssessmentSession {
+  const priorBlocks = existingSessions.filter((session) => session.sessionType === "gear_fluency").length;
+  return {
+    sessionId: id("session"),
+    sessionType: "gear_fluency",
+    pathwayId: "fire_service",
+    startedAt: now(),
+    questionIds: gearFluencyQuestions.map((q) => q.questionId),
+    profileVersion: "APTESTA_GEAR_DIRECTION_FLUENCY_2026_08",
+    fluencyProfileId: "gear_direction_v0_2",
+    fluencyBlockIndex: priorBlocks + 1,
+  };
 }
 function createGearAssessmentSession(): AssessmentSession {
   return { sessionId: id("session"), sessionType: "gear_assessment", pathwayId: "fire_service", startedAt: now(), questionIds: gearAssessmentQuestions.map((q) => q.questionId) };
@@ -6101,15 +6135,24 @@ function GearFluencyQuestionScreen({ journey, sessionId, questionIndex, onAnswer
 }
 
 function GearFluencyDebriefScreen({ journey, onGearCheck, onDashboard }: { journey: MvpGuestJourney; onGearCheck: () => void; onDashboard: () => void }) {
-  const session = getLatestSessionOfType(journey, "gear_fluency");
+  const sessions = journey.sessions.filter((session) => session.sessionType === "gear_fluency" && session.completedAt);
+  const session = sessions.length ? sessions[sessions.length - 1] : getLatestSessionOfType(journey, "gear_fluency");
+  const previousSession = sessions.length > 1 ? sessions[sessions.length - 2] : undefined;
   const responses = session ? journey.responses.filter((response) => response.sessionId === session.sessionId) : [];
+  const previousResponses = previousSession ? journey.responses.filter((response) => response.sessionId === previousSession.sessionId) : [];
   const correct = responses.filter((response) => response.correct).length;
   const accuracy = responses.length ? correct / responses.length : 0;
   const times = responses.map((response) => response.responseTimeMs);
   const med = median(times);
+  const { iqr } = percentileRange(times);
   const withinTarget = responses.filter((response) => response.correct && response.responseTimeMs <= GEAR_FLUENCY_INITIAL_TARGET_MS).length;
+  const previousAccuracy = previousResponses.length ? previousResponses.filter((response) => response.correct).length / previousResponses.length : null;
+  const previousMedian = previousResponses.length ? median(previousResponses.map((response) => response.responseTimeMs)) : null;
+  const medianDelta = previousMedian !== null ? med - previousMedian : null;
+  const accuracyDelta = previousAccuracy !== null ? accuracy - previousAccuracy : null;
+  const safeAcceleration = previousMedian !== null && previousAccuracy !== null && med < previousMedian && accuracy >= previousAccuracy - 0.001;
   const status = accuracy >= 0.875 && med <= GEAR_FLUENCY_INITIAL_TARGET_MS ? "Fluency is emerging" : accuracy >= 0.875 ? "Understanding is strong — fluency can improve" : "Keep accuracy ahead of speed";
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-6 py-12 sm:px-8 sm:py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Fluency debrief</p><h1 className="mt-5 text-4xl font-semibold">{status}</h1><p className="mt-5 text-lg leading-relaxed text-[#9AA3B2]">This first prototype does not score you for being fast. It looks for quicker recognition while accuracy stays secure.</p><div className="mt-8 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(accuracy * 100)}%</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median response</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(med)}</div><div className="mt-2 text-sm text-[#9AA3B2]">Comparable direction items</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accurate + within guide</div><div className="mt-3 text-3xl font-semibold">{withinTarget}/{responses.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">35-second prototype guide</div></div></div><div className="mt-8 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">What Aptesta is looking for</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">The useful pattern is <b>stable accuracy with a falling median response time</b>. A very fast wrong answer is not fluency. In later versions, Aptesta will compare several comparable blocks before tightening the target.</p></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onDashboard}>View dashboard</SecondaryButton><PrimaryButton onClick={onGearCheck}>Continue to Gear Check</PrimaryButton></div></Card></section></Shell>;
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-6 py-12 sm:px-8 sm:py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Fluency debrief</p><h1 className="mt-5 text-4xl font-semibold">{status}</h1><p className="mt-5 text-lg leading-relaxed text-[#9AA3B2]">This prototype does not score you for being fast. It looks for quicker recognition while accuracy stays secure.</p><div className="mt-8 grid gap-4 sm:grid-cols-4"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(accuracy * 100)}%</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median response</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(med)}</div><div className="mt-2 text-sm text-[#9AA3B2]">Comparable direction items</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Variability</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(iqr)}</div><div className="mt-2 text-sm text-[#9AA3B2]">Middle 50% response-time spread</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accurate + within guide</div><div className="mt-3 text-3xl font-semibold">{withinTarget}/{responses.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">35-second prototype guide</div></div></div>{previousMedian !== null && previousAccuracy !== null && <div className="mt-6 rounded-2xl border border-white/10 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Compared with your previous fluency block</div><div className="mt-4 grid gap-4 sm:grid-cols-2"><div><div className="text-sm text-[#8D98A6]">Median response</div><div className="mt-1 text-xl font-semibold">{medianDelta !== null && medianDelta < 0 ? `${formatSeconds(Math.abs(medianDelta))} quicker` : medianDelta !== null && medianDelta > 0 ? `${formatSeconds(medianDelta)} slower` : "No material change"}</div></div><div><div className="text-sm text-[#8D98A6]">Accuracy</div><div className="mt-1 text-xl font-semibold">{accuracyDelta !== null && Math.abs(accuracyDelta) < 0.001 ? "Stable" : accuracyDelta !== null && accuracyDelta > 0 ? `${Math.round(accuracyDelta * 100)} points higher` : `${Math.round(Math.abs(accuracyDelta ?? 0) * 100)} points lower`}</div></div></div><p className="mt-4 text-sm leading-relaxed text-[#AAB4C0]">{safeAcceleration ? "This is the pattern Aptesta wants: faster recognition without sacrificing accuracy." : "The aim is safe acceleration. A faster block only counts as progress when accuracy is maintained."}</p></div>}<div className="mt-8 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">What Aptesta is looking for</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">The useful pattern is <b>stable accuracy with a falling median response time</b>. Variability matters too: a shrinking response-time spread suggests the method is becoming more automatic. A very fast wrong answer is not fluency.</p></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onDashboard}>View dashboard</SecondaryButton><PrimaryButton onClick={onGearCheck}>Continue to Gear Check</PrimaryButton></div></Card></section></Shell>;
 }
 
 type GearDiagramMode = "guided" | "practice" | "assessment";
@@ -7863,7 +7906,7 @@ export default function VivalsaPrototype() {
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
   function openGearFluencyIntro() { setShowWhy(false); setScreen("gear-fluency-intro"); }
-  function startGearFluency() { const session = createGearFluencySession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("gear-fluency-question"); }
+  function startGearFluency() { const session = createGearFluencySession(journey.sessions); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("gear-fluency-question"); }
   function handleGearFluencyAnswer(response: AssessmentResponse, final: boolean) {
     const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
     if (final && activeSessionId) { updateJourney({ ...withResponse, sessions: withResponse.sessions.map((session) => session.sessionId === activeSessionId ? { ...session, completedAt: now() } : session), updatedAt: now() }); setScreen("gear-fluency-debrief"); return; }
