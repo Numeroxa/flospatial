@@ -6521,19 +6521,101 @@ function GearFluencyDebriefScreen({ journey, onGearCheck, onDashboard }: { journ
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-6 py-12 sm:px-8 sm:py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Fluency debrief</p><h1 className="mt-5 text-4xl font-semibold">{status}</h1><p className="mt-5 text-lg leading-relaxed text-[#9AA3B2]">This prototype does not score you for being fast. It looks for quicker recognition while accuracy stays secure.</p><div className="mt-8 grid gap-4 sm:grid-cols-4"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{Math.round(accuracy * 100)}%</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median response</div><div className="mt-3 text-3xl font-semibold">{current?.timingValid ? formatSeconds(med) : "—"}</div><div className="mt-2 text-sm text-[#9AA3B2]">Answer-selection latency</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Variability</div><div className="mt-3 text-3xl font-semibold">{current?.timingValid ? formatSeconds(iqr) : "—"}</div><div className="mt-2 text-sm text-[#9AA3B2]">Middle 50% response-time spread</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accurate + within guide</div><div className="mt-3 text-3xl font-semibold">{current?.timingValid ? `${withinTarget}/${responses.length}` : "—"}</div><div className="mt-2 text-sm text-[#9AA3B2]">{gearDirectionFluencyProfile.targetFluentTimeSecAuthor}-second prototype guide</div></div></div>{previousMedian !== null && previousAccuracy !== null && <div className="mt-6 rounded-2xl border border-white/10 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Compared with your previous comparable block</div><div className="mt-4 grid gap-4 sm:grid-cols-2"><div><div className="text-sm text-[#8D98A6]">Median response</div><div className="mt-1 text-xl font-semibold">{medianDelta !== null && medianDelta < 0 ? `${formatSeconds(Math.abs(medianDelta))} quicker` : medianDelta !== null && medianDelta > 0 ? `${formatSeconds(medianDelta)} slower` : "No material change"}</div></div><div><div className="text-sm text-[#8D98A6]">Accuracy</div><div className="mt-1 text-xl font-semibold">{accuracyDelta !== null && Math.abs(accuracyDelta) < 0.001 ? "Stable" : accuracyDelta !== null && accuracyDelta > 0 ? `${Math.round(accuracyDelta * 100)} points higher` : `${Math.round(Math.abs(accuracyDelta ?? 0) * 100)} points lower`}</div></div></div><p className="mt-4 text-sm leading-relaxed text-[#AAB4C0]">{safeAcceleration ? "This is the pattern Aptesta wants: faster recognition without sacrificing accuracy." : "The aim is safe acceleration. A faster block only counts as progress when accuracy is maintained."}</p></div>}{legacyBlocks > 0 && <div className="mt-6 rounded-2xl border border-[#FFB86B]/20 bg-[#211813]/60 p-5 text-sm leading-relaxed text-[#DCC6B2]"><b>{legacyBlocks} earlier prototype block{legacyBlocks === 1 ? "" : "s"} excluded from timing comparison.</b> v0.2 measured until the Next button was pressed, so feedback-reading time was mixed into response time. Accuracy remains usable; those timings do not.</div>}<div className="mt-8 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">What Aptesta is looking for</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">The useful pattern is <b>stable accuracy with a falling median answer-selection time</b>. Variability matters too: a shrinking response-time spread suggests the method is becoming more automatic. A very fast wrong answer is not fluency.</p></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onDashboard}>View dashboard</SecondaryButton><PrimaryButton onClick={onGearCheck}>Continue to Gear Check</PrimaryButton></div></Card></section></Shell>;
 }
 
+function MechanicalGearGlyph({
+  cx,
+  cy,
+  teeth,
+  pitchRadius,
+  stroke,
+  hub = true,
+}: {
+  cx: number;
+  cy: number;
+  teeth: number;
+  pitchRadius: number;
+  stroke: string;
+  hub?: boolean;
+}) {
+  const toothDepth = 6;
+  // Because pitch radius scales with tooth count, tooth pitch is nearly constant;
+  // a fixed tooth width therefore remains visually consistent across the set.
+  const toothWidth = 4.6;
+  return <g>
+    {Array.from({ length: teeth }).map((_, index) => {
+      const angleDeg = (360 * index) / teeth;
+      return <rect
+        key={index}
+        x={cx - toothWidth / 2}
+        y={cy - pitchRadius - toothDepth}
+        width={toothWidth}
+        height={toothDepth + 3}
+        rx="1"
+        fill={stroke}
+        transform={`rotate(${angleDeg} ${cx} ${cy})`}
+      />;
+    })}
+    <circle cx={cx} cy={cy} r={pitchRadius} fill="#171C23" stroke={stroke} strokeWidth="3.5" />
+    {hub && <circle cx={cx} cy={cy} r="7" fill="#D9F8FF" />}
+  </g>;
+}
+
 function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrationPilotItem }) {
   const diagram: MechanicalCalibrationDiagram = item.diagram;
   const directionGlyph = (direction: "clockwise" | "anticlockwise") => direction === "clockwise" ? "↻" : "↺";
+  const gearModulePx = 1.55; // Equal module: pitch radius is directly proportional to tooth count.
+
   if (diagram.kind === "gear_pair") {
-    const rA = 42;
-    const rB = Math.max(30, Math.min(68, 42 * diagram.drivenTeeth / diagram.driverTeeth));
-    const xA = 190;
-    const xB = xA + rA + rB - 3;
-    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Gear A has ${diagram.driverTeeth} teeth and turns at ${diagram.driverRpm} rpm. Gear B has ${diagram.drivenTeeth} teeth.`}><svg viewBox="0 0 620 260" className="h-auto w-full"><circle cx={xA} cy="132" r={rA} fill="#171C23" stroke="#5ED3F3" strokeWidth="4"/><circle cx={xB} cy="132" r={rB} fill="#171C23" stroke="#9AA3B2" strokeWidth="4"/><circle cx={xA} cy="132" r="7" fill="#D9F8FF"/><circle cx={xB} cy="132" r="7" fill="#D9F8FF"/><text x={xA} y="64" textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="600">A · {diagram.driverTeeth} teeth</text><text x={xA} y="88" textAnchor="middle" fill="#5ED3F3" fontSize="18">{diagram.driverRpm} rpm {directionGlyph(diagram.driverDirection)}</text><text x={xB} y={Math.max(28, 122-rB)} textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="600">B · {diagram.drivenTeeth} teeth</text></svg></div>;
+    const rA = diagram.driverTeeth * gearModulePx;
+    const rB = diagram.drivenTeeth * gearModulePx;
+    const centreDistance = rA + rB;
+    const xA = 310 - centreDistance / 2;
+    const xB = 310 + centreDistance / 2;
+    const cy = 154;
+    const labelAY = Math.max(28, cy - rA - 30);
+    const labelBY = Math.max(28, cy - rB - 30);
+    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Gear A has ${diagram.driverTeeth} teeth and turns at ${diagram.driverRpm} rpm. Gear B has ${diagram.drivenTeeth} teeth. Gear diameters are proportional to tooth count.`}>
+      <svg viewBox="0 0 620 300" className="h-auto w-full">
+        <MechanicalGearGlyph cx={xA} cy={cy} teeth={diagram.driverTeeth} pitchRadius={rA} stroke="#5ED3F3" />
+        <MechanicalGearGlyph cx={xB} cy={cy} teeth={diagram.drivenTeeth} pitchRadius={rB} stroke="#9AA3B2" />
+        <text x={xA} y={labelAY} textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="600">A · {diagram.driverTeeth}T</text>
+        <text x={xA} y={labelAY + 24} textAnchor="middle" fill="#5ED3F3" fontSize="18">{diagram.driverRpm} rpm {directionGlyph(diagram.driverDirection)}</text>
+        <text x={xB} y={labelBY} textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="600">B · {diagram.drivenTeeth}T</text>
+      </svg>
+    </div>;
   }
+
   if (diagram.kind === "compound_gears") {
-    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Compound gear train. A ${diagram.aTeeth} teeth drives B ${diagram.bTeeth} teeth. B shares a shaft with C ${diagram.cTeeth} teeth. C drives D ${diagram.dTeeth} teeth.`}><svg viewBox="0 0 760 340" className="h-auto w-full"><line x1="350" y1="100" x2="350" y2="230" stroke="#6E7A88" strokeWidth="8" strokeLinecap="round"/><circle cx="240" cy="100" r="42" fill="#171C23" stroke="#5ED3F3" strokeWidth="4"/><circle cx="350" cy="100" r="68" fill="#171C23" stroke="#9AA3B2" strokeWidth="4"/><circle cx="350" cy="230" r="31" fill="#171C23" stroke="#D9F8FF" strokeWidth="4"/><circle cx="436" cy="230" r="55" fill="#171C23" stroke="#9AA3B2" strokeWidth="4"/><circle cx="240" cy="100" r="7" fill="#D9F8FF"/><circle cx="350" cy="100" r="7" fill="#D9F8FF"/><circle cx="350" cy="230" r="7" fill="#D9F8FF"/><circle cx="436" cy="230" r="7" fill="#D9F8FF"/><text x="240" y="34" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">A · {diagram.aTeeth}T</text><text x="240" y="58" textAnchor="middle" fill="#5ED3F3" fontSize="17">{diagram.driverRpm} rpm {directionGlyph(diagram.driverDirection)}</text><text x="350" y="24" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">B · {diagram.bTeeth}T</text><text x="350" y="292" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">C · {diagram.cTeeth}T</text><text x="436" y="310" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">D · {diagram.dTeeth}T</text><text x="565" y="166" textAnchor="middle" fill="#8D98A6" fontSize="16">B and C share one shaft</text></svg></div>;
+    const rA = diagram.aTeeth * gearModulePx;
+    const rB = diagram.bTeeth * gearModulePx;
+    const rC = diagram.cTeeth * gearModulePx;
+    const rD = diagram.dTeeth * gearModulePx;
+    const shaftX = 360;
+    const upperY = 122;
+    const lowerY = 274;
+    const xA = shaftX - (rA + rB);
+    const xD = shaftX + (rC + rD);
+    const labelAY = Math.max(24, upperY - rA - 28);
+    const labelBY = Math.max(24, upperY - rB - 28);
+    const labelCY = lowerY + rC + 34;
+    const labelDY = lowerY + rD + 34;
+    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Compound gear train. A ${diagram.aTeeth} teeth drives B ${diagram.bTeeth} teeth. B shares a shaft with C ${diagram.cTeeth} teeth. C drives D ${diagram.dTeeth} teeth. Gear diameters are proportional to tooth count.`}>
+      <svg viewBox="0 0 760 390" className="h-auto w-full">
+        <line x1={shaftX} y1={upperY + 12} x2={shaftX} y2={lowerY - 12} stroke="#6E7A88" strokeWidth="8" strokeLinecap="round" />
+        <MechanicalGearGlyph cx={xA} cy={upperY} teeth={diagram.aTeeth} pitchRadius={rA} stroke="#5ED3F3" />
+        <MechanicalGearGlyph cx={shaftX} cy={upperY} teeth={diagram.bTeeth} pitchRadius={rB} stroke="#9AA3B2" />
+        <MechanicalGearGlyph cx={shaftX} cy={lowerY} teeth={diagram.cTeeth} pitchRadius={rC} stroke="#D9F8FF" />
+        <MechanicalGearGlyph cx={xD} cy={lowerY} teeth={diagram.dTeeth} pitchRadius={rD} stroke="#9AA3B2" />
+        <text x={xA} y={labelAY} textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">A · {diagram.aTeeth}T</text>
+        <text x={xA} y={labelAY + 23} textAnchor="middle" fill="#5ED3F3" fontSize="17">{diagram.driverRpm} rpm {directionGlyph(diagram.driverDirection)}</text>
+        <text x={shaftX} y={labelBY} textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">B · {diagram.bTeeth}T</text>
+        <text x={shaftX} y={labelCY} textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">C · {diagram.cTeeth}T</text>
+        <text x={xD} y={labelDY} textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">D · {diagram.dTeeth}T</text>
+        <text x="585" y="194" textAnchor="middle" fill="#8D98A6" fontSize="15">B and C share one shaft</text>
+        <text x="585" y="216" textAnchor="middle" fill="#6E7A88" fontSize="13">schematic two-stage view · same rpm</text>
+      </svg>
+    </div>;
   }
+
   const rA = Math.max(32, Math.min(55, diagram.driverDiameter / 2));
   const rB = Math.max(32, Math.min(55, diagram.drivenDiameter / 2));
   const leftX = 205;
@@ -6599,7 +6681,7 @@ function InternalMechanicalCalibrationPilotScreen({ onBack }: { onBack: () => vo
 
   if (phase === "intro") {
     const previousRuns = loadMechanicalCalibrationPilotRuns();
-    return <Shell right="Internal mechanical calibration"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only pilot · v0.6</p><h1 className="mt-4 text-4xl font-semibold">Mechanical calibration authoring</h1><p className="mt-5 max-w-3xl leading-relaxed text-[#9AA3B2]">Eight newly authored questions exercise the first four non-direction Mechanical blueprint families: gear speed ratio, compound gear speed, open-belt direction and crossed-belt direction. Selection time is captured silently for calibration; the author ranges are still provisional.</p><div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[["Gear ratio","2 items"],["Compound gears","2 items"],["Open belt","2 items"],["Crossed belt","2 items"]].map(([label,count]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="font-semibold text-[#D9F8FF]">{label}</div><div className="mt-1 text-sm text-[#8D98A6]">{count}</div></div>)}</div><div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5 text-sm leading-relaxed text-[#C8D2DD]">This is an internal item-quality/calibration pilot, not a learner speed test. Please answer normally rather than deliberately rushing.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton>{previousRuns.length > 0 && <SecondaryButton onClick={downloadMechanicalCalibrationPilotCsv}>Export {previousRuns.length} prior run{previousRuns.length === 1 ? "" : "s"}</SecondaryButton>}<PrimaryButton onClick={startRun}>Start 8-item pilot</PrimaryButton></div></Card></section></Shell>;
+    return <Shell right="Internal mechanical calibration"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only pilot · v0.6.1</p><h1 className="mt-4 text-4xl font-semibold">Mechanical calibration authoring</h1><p className="mt-5 max-w-3xl leading-relaxed text-[#9AA3B2]">Eight newly authored questions exercise the first four non-direction Mechanical blueprint families: gear speed ratio, compound gear speed, open-belt direction and crossed-belt direction. Selection time is captured silently for calibration; the author ranges are still provisional.</p><div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[["Gear ratio","2 items"],["Compound gears","2 items"],["Open belt","2 items"],["Crossed belt","2 items"]].map(([label,count]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="font-semibold text-[#D9F8FF]">{label}</div><div className="mt-1 text-sm text-[#8D98A6]">{count}</div></div>)}</div><div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5 text-sm leading-relaxed text-[#C8D2DD]">This is an internal item-quality/calibration pilot, not a learner speed test. Please answer normally rather than deliberately rushing.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton>{previousRuns.length > 0 && <SecondaryButton onClick={downloadMechanicalCalibrationPilotCsv}>Export {previousRuns.length} prior run{previousRuns.length === 1 ? "" : "s"}</SecondaryButton>}<PrimaryButton onClick={startRun}>Start 8-item pilot</PrimaryButton></div></Card></section></Shell>;
   }
 
   if (phase === "question") {
