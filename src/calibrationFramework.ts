@@ -21,7 +21,7 @@ export type GeneralCalibrationBlueprint = {
   linkedLiveFamilyId?: string;
 };
 
-export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_08_V0_9";
+export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_08_V0_10";
 
 function b(
   domain: CalibrationDomain,
@@ -81,22 +81,22 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("mechanical", 20, "Integrated machine", "integrated_machine_motion", "Gear drives pulley/lever or linkage; ask final motion.", "Diagram MCQ", 50, 60, "stretch", "Test method selection under realistic complexity.", "no", "qa_review", "in_review", "integrated_machine_motion_v1"),
 
   // Numerical — 20
-  b("numerical", 1, "Mental arithmetic", "mental_arithmetic_two_step", "Two-step arithmetic with friendly numbers.", "MCQ", 35, 45, "foundation", "Criteria-style speed baseline.", "candidate", "qa_review", "in_review", "mental_arithmetic_two_step_v1"),
-  b("numerical", 2, "Estimate", "numeric_estimation", "Choose closest estimate for multiplication/division.", "MCQ", 30, 40, "foundation", "Rapid plausibility check.", "yes", "qa_review", "in_review", "numeric_estimation_v1"),
-  b("numerical", 3, "Percentage of quantity", "percentage_of_quantity", "Calculate 15% or 12.5% of practical value.", "MCQ", 40, 50, "foundation", "Retain current strength.", "no", "qa_review", "in_review", "percentage_of_quantity_v1"),
-  b("numerical", 4, "Percentage change", "percentage_change", "Original/final values; ask percentage increase/decrease.", "MCQ", 45, 60, "applied", "Test denominator choice.", "no", "qa_review", "in_review", "percentage_change_v1"),
-  b("numerical", 5, "Ratio sharing", "ratio_sharing", "Divide total in 2:3:5 ratio.", "MCQ", 45, 60, "applied", "Retain current strength.", "no", "qa_review", "in_review", "ratio_sharing_v1"),
-  b("numerical", 6, "Direct rate", "direct_rate", "Distance/time or flow/time.", "MCQ", 40, 50, "foundation", "Retain current strength.", "no", "qa_review", "in_review", "direct_rate_v1"),
-  b("numerical", 7, "Inverse work rate", "inverse_work_rate", "Workers/pumps and fixed job duration.", "MCQ", 50, 65, "applied", "Retain newly taught inverse-rate method.", "no", "qa_review", "in_review", "inverse_work_rate_v1"),
-  b("numerical", 8, "Average", "missing_value_average", "Find missing value from average.", "MCQ", 45, 55, "applied", "Criteria-style math/logic.", "no", "qa_review", "in_review", "missing_value_average_v1"),
-  b("numerical", 9, "Money", "discount_tax_unit_price", "Discount then GST or unit-price comparison.", "MCQ", 50, 65, "applied", "FRV adult-context numeracy."),
-  b("numerical", 10, "Measurement conversion", "measurement_conversion", "mm/cm/m or L/mL; two-step conversion.", "MCQ", 40, 50, "foundation", "Expand measurement coverage.", "candidate"),
-  b("numerical", 11, "Area", "composite_area", "Floor/rectangle with excluded section; ask usable area.", "MCQ", 50, 65, "applied", "Fill FRV measurement/geometry gap."),
-  b("numerical", 12, "Volume", "rectangular_volume", "Rectangular tank/container capacity.", "MCQ or numeric entry", 50, 65, "applied", "Fill FRV volume gap."),
-  b("numerical", 13, "Scale plan", "plan_scale_distance", "Use a plan scale to find real distance.", "Plan + MCQ", 55, 70, "applied", "Fill maps/plans gap."),
-  b("numerical", 14, "Map/grid", "map_grid_distance", "Read route distance or coordinates from simple map.", "Map + MCQ", 50, 65, "applied", "FRV contextual data presentation."),
-  b("numerical", 15, "Bar chart", "bar_chart_comparison", "Compare categories and calculate difference/percentage.", "Chart + MCQ", 50, 65, "applied", "Broaden data interpretation."),
-  b("numerical", 16, "Line graph", "line_graph_rate", "Find trend, rate or interpolated value.", "Graph + MCQ", 50, 65, "applied", "Broaden graphical literacy."),
+  b("numerical", 1, "Mental arithmetic", "mental_arithmetic_two_step", "Two-step arithmetic with friendly numbers.", "MCQ", 35, 45, "foundation", "Criteria-style speed baseline.", "candidate", "pilot_live", "cleared", "mental_arithmetic_two_step_v1"),
+  b("numerical", 2, "Estimate", "numeric_estimation", "Choose closest estimate for multiplication/division.", "MCQ", 30, 40, "foundation", "Rapid plausibility check.", "yes", "pilot_live", "cleared", "numeric_estimation_v1"),
+  b("numerical", 3, "Percentage of quantity", "percentage_of_quantity", "Calculate 15% or 12.5% of practical value.", "MCQ", 40, 50, "foundation", "Retain current strength.", "no", "pilot_live", "cleared", "percentage_of_quantity_v1"),
+  b("numerical", 4, "Percentage change", "percentage_change", "Original/final values; ask percentage increase/decrease.", "MCQ", 45, 60, "applied", "Test denominator choice.", "no", "pilot_live", "cleared", "percentage_change_v1"),
+  b("numerical", 5, "Ratio sharing", "ratio_sharing", "Divide total in 2:3:5 ratio.", "MCQ", 45, 60, "applied", "Retain current strength.", "no", "pilot_live", "cleared", "ratio_sharing_v1"),
+  b("numerical", 6, "Direct rate", "direct_rate", "Distance/time or flow/time.", "MCQ", 40, 50, "foundation", "Retain current strength.", "no", "pilot_live", "cleared", "direct_rate_v1"),
+  b("numerical", 7, "Inverse work rate", "inverse_work_rate", "Workers/pumps and fixed job duration.", "MCQ", 50, 65, "applied", "Retain newly taught inverse-rate method.", "no", "pilot_live", "cleared", "inverse_work_rate_v1"),
+  b("numerical", 8, "Average", "missing_value_average", "Find missing value from average.", "MCQ", 45, 55, "applied", "Criteria-style math/logic.", "no", "pilot_live", "cleared", "missing_value_average_v1"),
+  b("numerical", 9, "Money", "discount_tax_unit_price", "Discount then GST or unit-price comparison.", "MCQ", 50, 65, "applied", "FRV adult-context numeracy.", "no", "qa_review", "in_review", "discount_tax_unit_price_v1"),
+  b("numerical", 10, "Measurement conversion", "measurement_conversion", "mm/cm/m or L/mL; two-step conversion.", "MCQ", 40, 50, "foundation", "Expand measurement coverage.", "candidate", "qa_review", "in_review", "measurement_conversion_v1"),
+  b("numerical", 11, "Area", "composite_area", "Floor/rectangle with excluded section; ask usable area.", "MCQ", 50, 65, "applied", "Fill FRV measurement/geometry gap.", "no", "qa_review", "in_review", "composite_area_v1"),
+  b("numerical", 12, "Volume", "rectangular_volume", "Rectangular tank/container capacity.", "MCQ or numeric entry", 50, 65, "applied", "Fill FRV volume gap.", "no", "qa_review", "in_review", "rectangular_volume_v1"),
+  b("numerical", 13, "Scale plan", "plan_scale_distance", "Use a plan scale to find real distance.", "Plan + MCQ", 55, 70, "applied", "Fill maps/plans gap.", "no", "qa_review", "in_review", "plan_scale_distance_v1"),
+  b("numerical", 14, "Map/grid", "map_grid_distance", "Read route distance or coordinates from simple map.", "Map + MCQ", 50, 65, "applied", "FRV contextual data presentation.", "no", "qa_review", "in_review", "map_grid_distance_v1"),
+  b("numerical", 15, "Bar chart", "bar_chart_comparison", "Compare categories and calculate difference/percentage.", "Chart + MCQ", 50, 65, "applied", "Broaden data interpretation.", "no", "qa_review", "in_review", "bar_chart_comparison_v1"),
+  b("numerical", 16, "Line graph", "line_graph_rate", "Find trend, rate or interpolated value.", "Graph + MCQ", 50, 65, "applied", "Broaden graphical literacy.", "no", "qa_review", "in_review", "line_graph_rate_v1"),
   b("numerical", 17, "Two-way table", "two_way_table", "Read conditional total or compare groups.", "Table + MCQ", 50, 65, "applied", "Data selection discipline."),
   b("numerical", 18, "Basic probability", "simple_probability", "Simple event probability from counts.", "MCQ", 45, 60, "applied", "Fill statistics/probability gap."),
   b("numerical", 19, "Numeric entry", "numeric_entry_area_rate", "Area/rate item requiring typed numeric response.", "Numeric entry", 50, 65, "applied", "Match FRV non-MCQ formats."),

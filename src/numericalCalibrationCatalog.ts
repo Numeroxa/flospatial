@@ -1,5 +1,13 @@
 export type NumericalCalibrationOptionId = "A" | "B" | "C" | "D";
 
+export type NumericalCalibrationDiagram =
+  | { kind: "composite_area"; outerWidthM: number; outerHeightM: number; cutoutWidthM: number; cutoutHeightM: number }
+  | { kind: "rectangular_tank"; lengthM: number; widthM: number; heightM: number }
+  | { kind: "plan_scale"; planDistanceCm: number; scaleDenominator: number }
+  | { kind: "map_grid_route"; blocksEast: number; blocksNorth: number; metresPerBlock: number }
+  | { kind: "bar_chart"; categories: { label: string; value: number }[] }
+  | { kind: "line_graph"; points: { minute: number; value: number }[]; yLabel: string };
+
 export type NumericalCalibrationPilotItem = {
   questionId: string;
   blueprintId: `NUMERICAL-${string}`;
@@ -13,11 +21,12 @@ export type NumericalCalibrationPilotItem = {
   correctOptionId: NumericalCalibrationOptionId;
   explanation: string;
   misconceptionTags: Record<NumericalCalibrationOptionId, string>;
+  diagram?: NumericalCalibrationDiagram;
 };
 
-export const NUMERICAL_CALIBRATION_PILOT_VERSION = "APTESTA_NUMERICAL_CAL_V0_9_2026_08";
+export const NUMERICAL_CALIBRATION_PILOT_VERSION = "APTESTA_NUMERICAL_CAL_V0_10_2026_08";
 
-export const numericalCalibrationPilotItems: NumericalCalibrationPilotItem[] = [
+export const numericalCalibrationCoreItems: NumericalCalibrationPilotItem[] = [
   {
     questionId: "NUM-CAL-01",
     blueprintId: "NUMERICAL-01",
@@ -171,3 +180,168 @@ export const numericalCalibrationPilotItems: NumericalCalibrationPilotItem[] = [
     misconceptionTags: { A: "used_average_as_missing_value", B: "correct", C: "addition_error", D: "subtraction_error" },
   },
 ];
+
+export const numericalCalibrationAppliedDataItems: NumericalCalibrationPilotItem[] = [
+  {
+    questionId: "NUM-CAL-09",
+    blueprintId: "NUMERICAL-09",
+    familyId: "discount_tax_unit_price_v1",
+    archetype: "discount_tax_unit_price",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "A tool is marked at $240. It is discounted by 15%, then 10% GST is added to the discounted price. What is the final price?",
+    options: [
+      { optionId: "A", text: "$204.00" },
+      { optionId: "B", text: "$224.40" },
+      { optionId: "C", text: "$228.00" },
+      { optionId: "D", text: "$249.60" },
+    ],
+    correctOptionId: "B",
+    explanation: "After the 15% discount: $240 × 0.85 = $204. Adding 10% GST gives $204 × 1.10 = $224.40.",
+    misconceptionTags: { A: "stopped_after_discount", B: "correct", C: "subtracted_discount_then_added_ten_percent_of_original", D: "added_gst_before_discount" },
+  },
+  {
+    questionId: "NUM-CAL-10",
+    blueprintId: "NUMERICAL-10",
+    familyId: "measurement_conversion_v1",
+    archetype: "measurement_conversion",
+    difficulty: "foundation",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 40, maxSec: 50 },
+    stem: "A hose is 2.4 m long and an extension adds 65 cm. What is the total length in centimetres?",
+    options: [
+      { optionId: "A", text: "89 cm" },
+      { optionId: "B", text: "240 cm" },
+      { optionId: "C", text: "305 cm" },
+      { optionId: "D", text: "6,500 cm" },
+    ],
+    correctOptionId: "C",
+    explanation: "2.4 m = 240 cm. Then 240 + 65 = 305 cm.",
+    misconceptionTags: { A: "added_without_unit_conversion", B: "ignored_extension", C: "correct", D: "conversion_factor_error" },
+  },
+  {
+    questionId: "NUM-CAL-11",
+    blueprintId: "NUMERICAL-11",
+    familyId: "composite_area_v1",
+    archetype: "composite_area",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "A rectangular floor is 8 m by 6 m. A 2 m by 3 m service bay in one corner is excluded. What usable floor area remains?",
+    diagram: { kind: "composite_area", outerWidthM: 8, outerHeightM: 6, cutoutWidthM: 2, cutoutHeightM: 3 },
+    options: [
+      { optionId: "A", text: "42 m²" },
+      { optionId: "B", text: "48 m²" },
+      { optionId: "C", text: "36 m²" },
+      { optionId: "D", text: "30 m²" },
+    ],
+    correctOptionId: "A",
+    explanation: "Whole area = 8 × 6 = 48 m². Excluded bay = 2 × 3 = 6 m². Usable area = 48 − 6 = 42 m².",
+    misconceptionTags: { A: "correct", B: "ignored_excluded_area", C: "subtracted_wrong_dimension", D: "used_perimeter_like_operation" },
+  },
+  {
+    questionId: "NUM-CAL-12",
+    blueprintId: "NUMERICAL-12",
+    familyId: "rectangular_volume_v1",
+    archetype: "rectangular_volume",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "A rectangular tank measures 1.2 m × 0.8 m × 0.5 m internally. Approximately how many litres does it hold when full?",
+    diagram: { kind: "rectangular_tank", lengthM: 1.2, widthM: 0.8, heightM: 0.5 },
+    options: [
+      { optionId: "A", text: "48 L" },
+      { optionId: "B", text: "480 L" },
+      { optionId: "C", text: "4,800 L" },
+      { optionId: "D", text: "960 L" },
+    ],
+    correctOptionId: "B",
+    explanation: "Volume = 1.2 × 0.8 × 0.5 = 0.48 m³. Since 1 m³ = 1,000 L, the tank holds 480 L.",
+    misconceptionTags: { A: "litre_conversion_divide_by_ten", B: "correct", C: "litre_conversion_times_ten", D: "failed_to_multiply_height" },
+  },
+  {
+    questionId: "NUM-CAL-13",
+    blueprintId: "NUMERICAL-13",
+    familyId: "plan_scale_distance_v1",
+    archetype: "plan_scale_distance",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 55, maxSec: 70 },
+    stem: "On a plan drawn at 1 : 500, a corridor measures 7.2 cm. What is the real corridor length?",
+    diagram: { kind: "plan_scale", planDistanceCm: 7.2, scaleDenominator: 500 },
+    options: [
+      { optionId: "A", text: "3.6 m" },
+      { optionId: "B", text: "36 m" },
+      { optionId: "C", text: "360 m" },
+      { optionId: "D", text: "7.2 m" },
+    ],
+    correctOptionId: "B",
+    explanation: "7.2 cm × 500 = 3,600 cm = 36 m.",
+    misconceptionTags: { A: "conversion_factor_too_small", B: "correct", C: "centimetres_to_metres_error", D: "ignored_scale" },
+  },
+  {
+    questionId: "NUM-CAL-14",
+    blueprintId: "NUMERICAL-14",
+    familyId: "map_grid_distance_v1",
+    archetype: "map_grid_distance",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "The marked route travels 3 grid blocks east and then 4 grid blocks north. Each grid block represents 250 m. What distance is travelled along the marked route?",
+    diagram: { kind: "map_grid_route", blocksEast: 3, blocksNorth: 4, metresPerBlock: 250 },
+    options: [
+      { optionId: "A", text: "1,000 m" },
+      { optionId: "B", text: "1,250 m" },
+      { optionId: "C", text: "1,750 m" },
+      { optionId: "D", text: "2,500 m" },
+    ],
+    correctOptionId: "C",
+    explanation: "The route covers 3 + 4 = 7 blocks. At 250 m per block, 7 × 250 = 1,750 m.",
+    misconceptionTags: { A: "used_four_blocks_only", B: "used_straight_line_three_four_five", C: "correct", D: "multiplied_ten_blocks" },
+  },
+  {
+    questionId: "NUM-CAL-15",
+    blueprintId: "NUMERICAL-15",
+    familyId: "bar_chart_comparison_v1",
+    archetype: "bar_chart_comparison",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "The chart shows completed inspections for three teams. Team B completed what percentage more inspections than Team C?",
+    diagram: { kind: "bar_chart", categories: [{ label: "A", value: 40 }, { label: "B", value: 60 }, { label: "C", value: 48 }] },
+    options: [
+      { optionId: "A", text: "12%" },
+      { optionId: "B", text: "20%" },
+      { optionId: "C", text: "25%" },
+      { optionId: "D", text: "80%" },
+    ],
+    correctOptionId: "C",
+    explanation: "Team B exceeds Team C by 12. Relative to Team C, 12 ÷ 48 = 0.25 = 25%.",
+    misconceptionTags: { A: "used_absolute_difference_as_percent", B: "divided_by_team_b", C: "correct", D: "used_c_as_percent_of_b" },
+  },
+  {
+    questionId: "NUM-CAL-16",
+    blueprintId: "NUMERICAL-16",
+    familyId: "line_graph_rate_v1",
+    archetype: "line_graph_rate",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "Between 10 and 20 minutes, what is the average rate of increase shown on the graph?",
+    diagram: { kind: "line_graph", points: [{ minute: 0, value: 100 }, { minute: 10, value: 140 }, { minute: 20, value: 180 }], yLabel: "Volume (L)" },
+    options: [
+      { optionId: "A", text: "2 L/min" },
+      { optionId: "B", text: "4 L/min" },
+      { optionId: "C", text: "8 L/min" },
+      { optionId: "D", text: "40 L/min" },
+    ],
+    correctOptionId: "B",
+    explanation: "The value rises from 140 L to 180 L: an increase of 40 L over 10 minutes. 40 ÷ 10 = 4 L/min.",
+    misconceptionTags: { A: "halved_rate", B: "correct", C: "divided_by_five", D: "used_change_without_dividing_by_time" },
+  },
+];
+
+// Kept for compatibility with v0.9 code paths and existing exports.
+export const numericalCalibrationPilotItems = numericalCalibrationCoreItems;
+export const numericalCalibrationAllItems = [...numericalCalibrationCoreItems, ...numericalCalibrationAppliedDataItems];
