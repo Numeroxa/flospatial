@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { employerProfiles, gearDirectionFluencyProfile, providerProfiles } from "./assessmentProfiles";
 import { GEAR_DIRECTION_CALIBRATION_BANK_VERSION, GEAR_DIRECTION_PARALLEL_FORM_IDS, gearDirectionCalibrationBlueprintByQuestionId, gearDirectionCalibrationBlueprints } from "./calibrationCatalog";
 import { GENERAL_CALIBRATION_BLUEPRINT_VERSION, calibrationQaGate, generalCalibrationBlueprints, generalCalibrationDomains, getGeneralCalibrationSummary } from "./calibrationFramework";
-import { MECHANICAL_CALIBRATION_PILOT_VERSION, mechanicalCalibrationPilotItems, type MechanicalCalibrationDiagram, type MechanicalCalibrationPilotItem } from "./mechanicalCalibrationCatalog";
+import { MECHANICAL_CALIBRATION_PILOT_VERSION, mechanicalCalibrationPilotItems, mechanicalCalibrationRotationItems, mechanicalCalibrationForceSystemsItems, type MechanicalCalibrationDiagram, type MechanicalCalibrationPilotItem } from "./mechanicalCalibrationCatalog";
 
 type AppScreen =
   | "landing"
@@ -572,12 +572,15 @@ type MechanicalCalibrationPilotRun = {
 };
 
 const MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY = "aptesta.mechanicalCalibrationPilot.v0_6";
+const MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY_V07 = "aptesta.mechanicalCalibrationPilot.v0_7";
 
 function loadMechanicalCalibrationPilotRuns(): MechanicalCalibrationPilotRun[] {
   if (typeof window === "undefined") return [];
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY) || "[]");
-    return Array.isArray(parsed) ? parsed : [];
+    const legacy = JSON.parse(window.localStorage.getItem(MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY) || "[]");
+    const current = JSON.parse(window.localStorage.getItem(MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY_V07) || "[]");
+    const combined = [...(Array.isArray(legacy) ? legacy : []), ...(Array.isArray(current) ? current : [])] as MechanicalCalibrationPilotRun[];
+    return Array.from(new Map(combined.map((run) => [run.runId, run])).values());
   } catch {
     return [];
   }
@@ -585,8 +588,13 @@ function loadMechanicalCalibrationPilotRuns(): MechanicalCalibrationPilotRun[] {
 
 function saveMechanicalCalibrationPilotRun(run: MechanicalCalibrationPilotRun) {
   if (typeof window === "undefined") return;
-  const existing = loadMechanicalCalibrationPilotRuns();
-  window.localStorage.setItem(MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY, JSON.stringify([...existing, run]));
+  try {
+    const current = JSON.parse(window.localStorage.getItem(MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY_V07) || "[]");
+    const existing = Array.isArray(current) ? current : [];
+    window.localStorage.setItem(MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY_V07, JSON.stringify([...existing, run]));
+  } catch {
+    window.localStorage.setItem(MECHANICAL_CALIBRATION_PILOT_STORAGE_KEY_V07, JSON.stringify([run]));
+  }
 }
 
 function downloadMechanicalCalibrationPilotCsv() {
@@ -598,7 +606,7 @@ function downloadMechanicalCalibrationPilotCsv() {
   runs.forEach((run) => run.responses.forEach((response) => {
     const item = mechanicalCalibrationPilotItems.find((candidate) => candidate.questionId === response.questionId);
     rows.push([
-      "APTESTA_MECH_CAL_EXPORT_V0_6", run.pilotVersion, run.runId, response.questionId, item?.blueprintId, item?.familyId, item?.archetype, item?.difficulty, item?.reasoningSteps, item?.targetTimeRangeSec.minSec, item?.targetTimeRangeSec.maxSec, response.correct, Math.round(response.selectionTimeMs), response.deviceClass, response.misconceptionTag, response.answeredAt,
+      "APTESTA_MECH_CAL_EXPORT_V0_7", run.pilotVersion, run.runId, response.questionId, item?.blueprintId, item?.familyId, item?.archetype, item?.difficulty, item?.reasoningSteps, item?.targetTimeRangeSec.minSec, item?.targetTimeRangeSec.maxSec, response.correct, Math.round(response.selectionTimeMs), response.deviceClass, response.misconceptionTag, response.answeredAt,
     ]);
   }));
   const csv = rows.map((row) => row.map(csvCell).join(",")).join("\n");
@@ -6616,6 +6624,106 @@ function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrati
     </div>;
   }
 
+  if (diagram.kind === "pulley_system") {
+    const loadY = 242;
+    const topY = 52;
+    if (diagram.supportingStrands === 2) {
+      return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Moving pulley with two supporting rope strands and a ${diagram.loadN} newton load.`}>
+        <svg viewBox="0 0 740 330" className="h-auto w-full">
+          <line x1="180" y1={topY} x2="560" y2={topY} stroke="#6E7A88" strokeWidth="10" strokeLinecap="round"/>
+          <circle cx="370" cy="165" r="55" fill="#171C23" stroke="#9AA3B2" strokeWidth="5"/>
+          <circle cx="370" cy="165" r="7" fill="#D9F8FF"/>
+          <path d="M285 52 L285 165 Q285 245 370 245 Q455 245 455 165 L455 52" fill="none" stroke="#DDE3EA" strokeWidth="8" strokeLinecap="round"/>
+          <line x1="370" y1="220" x2="370" y2={loadY} stroke="#9AA3B2" strokeWidth="7"/>
+          <rect x="305" y={loadY} width="130" height="54" rx="10" fill="#171C23" stroke="#5ED3F3" strokeWidth="3"/>
+          <text x="370" y={loadY+34} textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
+          <text x="370" y="315" textAnchor="middle" fill="#8D98A6" fontSize="16">2 supporting rope strands</text>
+          {diagram.loadTravelM !== undefined && <text x="560" y="235" textAnchor="middle" fill="#5ED3F3" fontSize="17">Load rises {diagram.loadTravelM} m ↑</text>}
+        </svg>
+      </div>;
+    }
+    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Block-and-tackle schematic with four supporting rope strands and a ${diagram.loadN} newton load.`}>
+      <svg viewBox="0 0 740 330" className="h-auto w-full">
+        <line x1="170" y1={topY} x2="570" y2={topY} stroke="#6E7A88" strokeWidth="10" strokeLinecap="round"/>
+        <rect x="255" y="82" width="230" height="50" rx="22" fill="#171C23" stroke="#9AA3B2" strokeWidth="4"/>
+        <circle cx="315" cy="107" r="18" fill="#111418" stroke="#DDE3EA" strokeWidth="3"/><circle cx="425" cy="107" r="18" fill="#111418" stroke="#DDE3EA" strokeWidth="3"/>
+        {[280,340,400,460].map((x) => <line key={x} x1={x} y1="128" x2={x} y2="205" stroke="#DDE3EA" strokeWidth="7" strokeLinecap="round"/>)}
+        <rect x="250" y="195" width="240" height="58" rx="24" fill="#171C23" stroke="#5ED3F3" strokeWidth="4"/>
+        <circle cx="315" cy="224" r="18" fill="#111418" stroke="#DDE3EA" strokeWidth="3"/><circle cx="425" cy="224" r="18" fill="#111418" stroke="#DDE3EA" strokeWidth="3"/>
+        <line x1="370" y1="253" x2="370" y2="272" stroke="#9AA3B2" strokeWidth="7"/>
+        <rect x="305" y="270" width="130" height="45" rx="10" fill="#171C23" stroke="#5ED3F3" strokeWidth="3"/>
+        <text x="370" y="299" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Load {diagram.loadN} N</text>
+        <text x="600" y="170" textAnchor="middle" fill="#8D98A6" fontSize="16">4 supporting</text><text x="600" y="191" textAnchor="middle" fill="#8D98A6" fontSize="16">rope strands</text>
+        {diagram.loadTravelM !== undefined && <text x="600" y="235" textAnchor="middle" fill="#5ED3F3" fontSize="17">Load rises {diagram.loadTravelM} m ↑</text>}
+      </svg>
+    </div>;
+  }
+
+  if (diagram.kind === "lever_balance") {
+    const fulcrumX = 300;
+    const scale = 185;
+    const loadX = fulcrumX - diagram.loadArmM * scale;
+    const effortX = fulcrumX + diagram.effortArmM * scale;
+    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Lever with a ${diagram.loadN} newton load ${diagram.loadArmM} metres from the fulcrum and effort applied ${diagram.effortArmM} metres from the fulcrum.`}>
+      <svg viewBox="0 0 740 300" className="h-auto w-full">
+        <defs><marker id="leverArrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#5ED3F3"/></marker></defs>
+        <line x1="65" y1="150" x2="675" y2="150" stroke="#DDE3EA" strokeWidth="11" strokeLinecap="round"/>
+        <polygon points={`${fulcrumX-26},205 ${fulcrumX+26},205 ${fulcrumX},155`} fill="#6E7A88"/>
+        <line x1={loadX} y1="80" x2={loadX} y2="140" stroke="#FFB86B" strokeWidth="6" markerEnd="url(#leverArrow)"/>
+        <text x={loadX} y="65" textAnchor="middle" fill="#FFD6A8" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
+        <line x1={effortX} y1="80" x2={effortX} y2="140" stroke="#5ED3F3" strokeWidth="6" markerEnd="url(#leverArrow)"/>
+        <text x={effortX} y="65" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Effort ?</text>
+        <line x1={loadX} y1="238" x2={fulcrumX} y2="238" stroke="#8D98A6" strokeWidth="2"/><line x1={loadX} y1="230" x2={loadX} y2="246" stroke="#8D98A6" strokeWidth="2"/><line x1={fulcrumX} y1="230" x2={fulcrumX} y2="246" stroke="#8D98A6" strokeWidth="2"/>
+        <text x={(loadX+fulcrumX)/2} y="265" textAnchor="middle" fill="#AAB4C0" fontSize="17">{diagram.loadArmM} m</text>
+        <line x1={fulcrumX} y1="238" x2={effortX} y2="238" stroke="#8D98A6" strokeWidth="2"/><line x1={effortX} y1="230" x2={effortX} y2="246" stroke="#8D98A6" strokeWidth="2"/>
+        <text x={(fulcrumX+effortX)/2} y="265" textAnchor="middle" fill="#AAB4C0" fontSize="17">{diagram.effortArmM} m</text>
+        <text x={fulcrumX} y="225" textAnchor="middle" fill="#8D98A6" fontSize="14">fulcrum</text>
+      </svg>
+    </div>;
+  }
+
+  if (diagram.kind === "lever_shift") {
+    const afterFulcrum = diagram.shift === "toward_load" ? 485 : 595;
+    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Lever shown before and after moving the fulcrum ${diagram.shift === "toward_load" ? "toward the load" : "toward the effort"}. Load and effort positions stay fixed.`}>
+      <svg viewBox="0 0 740 300" className="h-auto w-full">
+        <text x="185" y="40" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Before</text>
+        <line x1="55" y1="125" x2="315" y2="125" stroke="#DDE3EA" strokeWidth="10" strokeLinecap="round"/>
+        <polygon points="165,180 205,180 185,130" fill="#6E7A88"/>
+        <text x="75" y="100" fill="#FFD6A8" fontSize="16">Load</text><text x="270" y="100" fill="#D9F8FF" fontSize="16">Effort</text>
+        <line x1="75" y1="82" x2="75" y2="116" stroke="#FFB86B" strokeWidth="5"/><line x1="285" y1="82" x2="285" y2="116" stroke="#5ED3F3" strokeWidth="5"/>
+        <text x="555" y="40" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">After</text>
+        <line x1="425" y1="125" x2="685" y2="125" stroke="#DDE3EA" strokeWidth="10" strokeLinecap="round"/>
+        <polygon points={`${afterFulcrum-20},180 ${afterFulcrum+20},180 ${afterFulcrum},130`} fill="#5ED3F3"/>
+        <text x="445" y="100" fill="#FFD6A8" fontSize="16">Load</text><text x="640" y="100" fill="#D9F8FF" fontSize="16">Effort</text>
+        <line x1="445" y1="82" x2="445" y2="116" stroke="#FFB86B" strokeWidth="5"/><line x1="655" y1="82" x2="655" y2="116" stroke="#5ED3F3" strokeWidth="5"/>
+        <text x="370" y="242" textAnchor="middle" fill="#8D98A6" fontSize="17">Load and effort positions stay fixed</text>
+        <text x="370" y="269" textAnchor="middle" fill="#5ED3F3" fontSize="17">Fulcrum moves {diagram.shift === "toward_load" ? "toward the load ←" : "toward the effort →"}</text>
+      </svg>
+    </div>;
+  }
+
+  if (diagram.kind === "hydraulic") {
+    const smallW = 70;
+    const largeW = Math.min(155, smallW * Math.sqrt(diagram.largeAreaCm2 / diagram.smallAreaCm2));
+    const smallX = 205;
+    const largeX = 535;
+    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Hydraulic system with ${diagram.smallAreaCm2} square centimetre input piston and ${diagram.largeAreaCm2} square centimetre output piston.`}>
+      <svg viewBox="0 0 740 330" className="h-auto w-full">
+        <rect x={smallX-smallW/2} y="115" width={smallW} height="150" rx="8" fill="#16242B" stroke="#5ED3F3" strokeWidth="4"/>
+        <rect x={largeX-largeW/2} y="115" width={largeW} height="150" rx="8" fill="#16242B" stroke="#9AA3B2" strokeWidth="4"/>
+        <rect x={smallX-smallW/2+3} y="205" width={smallW-6} height="57" fill="#163846" opacity="0.9"/>
+        <rect x={largeX-largeW/2+3} y="205" width={largeW-6} height="57" fill="#163846" opacity="0.9"/>
+        <path d={`M${smallX} 262 L${smallX} 286 L${largeX} 286 L${largeX} 262`} fill="none" stroke="#5ED3F3" strokeWidth="12" strokeLinejoin="round"/>
+        <line x1={smallX-smallW/2+4} y1="170" x2={smallX+smallW/2-4} y2="170" stroke="#D9F8FF" strokeWidth="10"/>
+        <line x1={largeX-largeW/2+4} y1="170" x2={largeX+largeW/2-4} y2="170" stroke="#D9F8FF" strokeWidth="10"/>
+        <text x={smallX} y="90" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Input · {diagram.smallAreaCm2} cm²</text>
+        <text x={largeX} y="90" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Output · {diagram.largeAreaCm2} cm²</text>
+        {diagram.inputForceN !== undefined ? <><line x1={smallX} y1="42" x2={smallX} y2="105" stroke="#FFB86B" strokeWidth="6"/><polygon points={`${smallX-9},98 ${smallX+9},98 ${smallX},112`} fill="#FFB86B"/><text x={smallX} y="28" textAnchor="middle" fill="#FFD6A8" fontSize="18">{diagram.inputForceN} N ↓</text><text x={largeX} y="35" textAnchor="middle" fill="#5ED3F3" fontSize="18">Output force ? ↑</text></> : <><line x1={smallX+55} y1="118" x2={smallX+55} y2="188" stroke="#FFB86B" strokeWidth="3"/><text x={smallX+86} y="148" fill="#FFD6A8" fontSize="17">↓ {diagram.inputMoveCm} cm</text><text x={largeX} y="35" textAnchor="middle" fill="#5ED3F3" fontSize="18">Output movement ? ↑</text></>}
+        <text x="370" y="318" textAnchor="middle" fill="#8D98A6" fontSize="15">Connected incompressible fluid · schematic piston widths reflect area ratio</text>
+      </svg>
+    </div>;
+  }
+
   const rA = Math.max(32, Math.min(55, diagram.driverDiameter / 2));
   const rB = Math.max(32, Math.min(55, diagram.drivenDiameter / 2));
   const leftX = 205;
@@ -6625,19 +6733,23 @@ function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrati
 }
 
 function InternalMechanicalCalibrationPilotScreen({ onBack }: { onBack: () => void }) {
+  type PilotSet = "rotation" | "force_systems";
   const [phase, setPhase] = useState<"intro" | "question" | "debrief">("intro");
+  const [pilotSet, setPilotSet] = useState<PilotSet>("force_systems");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<"A" | "B" | "C" | "D" | null>(null);
   const [responses, setResponses] = useState<MechanicalCalibrationPilotResponse[]>([]);
   const [runStartedAt, setRunStartedAt] = useState<string | null>(null);
   const questionStartedAtRef = useRef(0);
-  const item = mechanicalCalibrationPilotItems[questionIndex];
+  const activeItems = pilotSet === "rotation" ? mechanicalCalibrationRotationItems : mechanicalCalibrationForceSystemsItems;
+  const item = activeItems[questionIndex];
 
   useEffect(() => {
     if (phase === "question" && selectedOptionId === null) questionStartedAtRef.current = performance.now();
   }, [phase, questionIndex, selectedOptionId]);
 
-  function startRun() {
+  function startRun(nextSet: PilotSet = "force_systems") {
+    setPilotSet(nextSet);
     setQuestionIndex(0);
     setSelectedOptionId(null);
     setResponses([]);
@@ -6646,7 +6758,7 @@ function InternalMechanicalCalibrationPilotScreen({ onBack }: { onBack: () => vo
   }
 
   function select(optionId: "A" | "B" | "C" | "D") {
-    if (selectedOptionId) return;
+    if (selectedOptionId || !item) return;
     const selectionTimeMs = Math.max(0, performance.now() - questionStartedAtRef.current);
     const response: MechanicalCalibrationPilotResponse = {
       questionId: item.questionId,
@@ -6662,11 +6774,11 @@ function InternalMechanicalCalibrationPilotScreen({ onBack }: { onBack: () => vo
   }
 
   function next() {
-    if (!selectedOptionId) return;
-    if (questionIndex === mechanicalCalibrationPilotItems.length - 1) {
+    if (!selectedOptionId || !item) return;
+    if (questionIndex === activeItems.length - 1) {
       const run: MechanicalCalibrationPilotRun = {
-        runId: id("mech-cal"),
-        pilotVersion: MECHANICAL_CALIBRATION_PILOT_VERSION,
+        runId: id(`mech-cal-${pilotSet}`),
+        pilotVersion: `${MECHANICAL_CALIBRATION_PILOT_VERSION}:${pilotSet}`,
         startedAt: runStartedAt ?? now(),
         completedAt: now(),
         responses,
@@ -6681,35 +6793,37 @@ function InternalMechanicalCalibrationPilotScreen({ onBack }: { onBack: () => vo
 
   if (phase === "intro") {
     const previousRuns = loadMechanicalCalibrationPilotRuns();
-    return <Shell right="Internal mechanical calibration"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only pilot · v0.6.1</p><h1 className="mt-4 text-4xl font-semibold">Mechanical calibration authoring</h1><p className="mt-5 max-w-3xl leading-relaxed text-[#9AA3B2]">Eight newly authored questions exercise the first four non-direction Mechanical blueprint families: gear speed ratio, compound gear speed, open-belt direction and crossed-belt direction. Selection time is captured silently for calibration; the author ranges are still provisional.</p><div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[["Gear ratio","2 items"],["Compound gears","2 items"],["Open belt","2 items"],["Crossed belt","2 items"]].map(([label,count]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="font-semibold text-[#D9F8FF]">{label}</div><div className="mt-1 text-sm text-[#8D98A6]">{count}</div></div>)}</div><div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5 text-sm leading-relaxed text-[#C8D2DD]">This is an internal item-quality/calibration pilot, not a learner speed test. Please answer normally rather than deliberately rushing.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton>{previousRuns.length > 0 && <SecondaryButton onClick={downloadMechanicalCalibrationPilotCsv}>Export {previousRuns.length} prior run{previousRuns.length === 1 ? "" : "s"}</SecondaryButton>}<PrimaryButton onClick={startRun}>Start 8-item pilot</PrimaryButton></div></Card></section></Shell>;
+    return <Shell right="Internal mechanical calibration"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only mechanical lab · v0.7</p><h1 className="mt-4 text-4xl font-semibold">Mechanical calibration authoring</h1><p className="mt-5 max-w-3xl leading-relaxed text-[#9AA3B2]">The corrected rotating-system set remains available for re-checking. The new v0.7 QA set tests whether the same calibration framework works across pulleys, levers and hydraulics.</p><div className="mt-7 grid gap-4 sm:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Pilot-live re-check</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Rotating systems</div><div className="mt-2 text-sm leading-relaxed text-[#9AA3B2]">8 items · gear ratio, compound gears, open belts, crossed belts.</div><SecondaryButton className="mt-5" onClick={() => startRun("rotation")}>Re-run 8-item set</SecondaryButton></div><div className="rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">New QA set</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Force systems</div><div className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">12 items · pulley support, pulley distance, lever moments, fulcrum shift, hydraulic force and hydraulic movement.</div><PrimaryButton className="mt-5" onClick={() => startRun("force_systems")}>Start 12-item v0.7 QA set</PrimaryButton></div></div><div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5 text-sm leading-relaxed text-[#C8D2DD]">This remains an internal item-quality pilot, not a learner speed test. Author timing ranges are provisional. For this pass, diagram clarity and unambiguous interpretation matter more than your score.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton>{previousRuns.length > 0 && <SecondaryButton onClick={downloadMechanicalCalibrationPilotCsv}>Export {previousRuns.length} prior run{previousRuns.length === 1 ? "" : "s"}</SecondaryButton>}</div></Card></section></Shell>;
   }
+
+  if (!item) return null;
 
   if (phase === "question") {
     const selectedCorrect = selectedOptionId === item.correctOptionId;
     const currentResponse = responses.find((response) => response.questionId === item.questionId);
-    return <Shell right="Mechanical calibration pilot"><section className="mx-auto max-w-5xl px-6 py-8 sm:px-8 sm:py-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70" style={{ width: `${((questionIndex + 1) / mechanicalCalibrationPilotItems.length) * 100}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{item.blueprintId} · {item.archetype}</p><h1 className="mt-2 text-3xl font-semibold">Mechanical calibration item</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mechanicalCalibrationPilotItems.length}<br/><span className="text-xs">Author range {item.targetTimeRangeSec.minSec}–{item.targetTimeRangeSec.maxSec}s</span></div></div><Card><MechanicalCalibrationPilotDiagram item={item}/><p className="mt-6 text-xl leading-relaxed text-[#F4F6F8]">{item.stem}</p><div className="mt-6 grid gap-3">{item.options.map((option) => <button key={option.optionId} type="button" disabled={Boolean(selectedOptionId)} onClick={() => select(option.optionId)} className={`rounded-2xl border p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.optionId}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{selectedOptionId && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{item.explanation}</p><p className="mt-3 text-sm text-[#8D98A6]">Selection latency: {formatSeconds(currentResponse?.selectionTimeMs ?? 0)} · diagnostic tag: {currentResponse?.misconceptionTag ?? "—"}</p></div><PrimaryButton className="shrink-0" onClick={next}>{questionIndex === mechanicalCalibrationPilotItems.length - 1 ? "Complete pilot" : "Next item"}</PrimaryButton></div></div>}</Card></section></Shell>;
+    return <Shell right="Mechanical calibration pilot"><section className="mx-auto max-w-5xl px-6 py-8 sm:px-8 sm:py-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70" style={{ width: `${((questionIndex + 1) / activeItems.length) * 100}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{item.blueprintId} · {item.archetype}</p><h1 className="mt-2 text-3xl font-semibold">Mechanical calibration item</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {activeItems.length}<br/><span className="text-xs">Author range {item.targetTimeRangeSec.minSec}–{item.targetTimeRangeSec.maxSec}s</span></div></div><Card><MechanicalCalibrationPilotDiagram item={item}/><p className="mt-6 text-xl leading-relaxed text-[#F4F6F8]">{item.stem}</p><div className="mt-6 grid gap-3">{item.options.map((option) => <button key={option.optionId} type="button" disabled={Boolean(selectedOptionId)} onClick={() => select(option.optionId)} className={`rounded-2xl border p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.optionId}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{selectedOptionId && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{item.explanation}</p><p className="mt-3 text-sm text-[#8D98A6]">Selection latency: {formatSeconds(currentResponse?.selectionTimeMs ?? 0)} · diagnostic tag: {currentResponse?.misconceptionTag ?? "—"}</p></div><PrimaryButton className="shrink-0" onClick={next}>{questionIndex === activeItems.length - 1 ? "Complete pilot" : "Next item"}</PrimaryButton></div></div>}</Card></section></Shell>;
   }
 
   const correct = responses.filter((response) => response.correct).length;
   const times = responses.map((response) => response.selectionTimeMs);
   const spread = percentileRange(times);
-  const byFamily = Array.from(new Set(mechanicalCalibrationPilotItems.map((candidate) => candidate.familyId))).map((familyId) => {
-    const ids = new Set(mechanicalCalibrationPilotItems.filter((candidate) => candidate.familyId === familyId).map((candidate) => candidate.questionId));
+  const byFamily = Array.from(new Set(activeItems.map((candidate) => candidate.familyId))).map((familyId) => {
+    const ids = new Set(activeItems.filter((candidate) => candidate.familyId === familyId).map((candidate) => candidate.questionId));
     const familyResponses = responses.filter((response) => ids.has(response.questionId));
     return { familyId, correct: familyResponses.filter((response) => response.correct).length, total: familyResponses.length, medianMs: median(familyResponses.map((response) => response.selectionTimeMs)) };
   });
-  return <Shell right="Mechanical calibration debrief"><section className="mx-auto max-w-6xl px-6 py-10 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Internal calibration result</p><h1 className="mt-3 text-4xl font-semibold">Mechanical v0.6 pilot complete</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">These figures are diagnostic observations only. They do not validate the author timing ranges or establish learner standards.</p></div><Badge>{MECHANICAL_CALIBRATION_PILOT_VERSION}</Badge></div><div className="mt-8 grid gap-4 sm:grid-cols-3"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median selection time</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(median(times))}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">IQR</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(spread.iqr)}</div></Card></div><Card className="mt-8"><h2 className="text-2xl font-semibold">Family check</h2><div className="mt-5 grid gap-3 sm:grid-cols-2">{byFamily.map((family) => <div key={family.familyId} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="font-semibold text-[#D9F8FF]">{family.familyId}</div><div className="mt-2 text-sm text-[#AAB4C0]">Accuracy {family.correct}/{family.total} · median {formatSeconds(family.medianMs)}</div></div>)}</div></Card><Card className="mt-8"><h2 className="text-2xl font-semibold">Item observations</h2><div className="mt-5 overflow-x-auto"><table className="min-w-[760px] w-full text-left text-sm"><thead className="text-[#6E7A88]"><tr><th className="pb-3 pr-4">Item</th><th className="pb-3 pr-4">Result</th><th className="pb-3 pr-4">Selection</th><th className="pb-3">Diagnostic</th></tr></thead><tbody>{responses.map((response) => <tr key={response.questionId} className="border-t border-white/5"><td className="py-3 pr-4 text-[#DDE3EA]">{response.questionId}</td><td className="py-3 pr-4">{response.correct ? "Correct" : "Incorrect"}</td><td className="py-3 pr-4">{formatSeconds(response.selectionTimeMs)}</td><td className="py-3 text-[#9AA3B2]">{response.misconceptionTag}</td></tr>)}</tbody></table></div></Card><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton><SecondaryButton onClick={downloadMechanicalCalibrationPilotCsv}>Export calibration CSV</SecondaryButton><PrimaryButton onClick={startRun}>Run pilot again</PrimaryButton></div></section></Shell>;
+  return <Shell right="Mechanical calibration debrief"><section className="mx-auto max-w-6xl px-6 py-10 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Internal calibration result</p><h1 className="mt-3 text-4xl font-semibold">{pilotSet === "force_systems" ? "Mechanical v0.7 force-systems QA complete" : "Mechanical rotating-systems re-check complete"}</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">These figures are diagnostic observations only. They do not validate the author timing ranges or establish learner standards.</p></div><Badge>{MECHANICAL_CALIBRATION_PILOT_VERSION}</Badge></div><div className="mt-8 grid gap-4 sm:grid-cols-3"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median selection time</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(median(times))}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">IQR</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(spread.iqr)}</div></Card></div><Card className="mt-8"><h2 className="text-2xl font-semibold">Family check</h2><div className="mt-5 grid gap-3 sm:grid-cols-2">{byFamily.map((family) => <div key={family.familyId} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="font-semibold text-[#D9F8FF]">{family.familyId}</div><div className="mt-2 text-sm text-[#AAB4C0]">Accuracy {family.correct}/{family.total} · median {formatSeconds(family.medianMs)}</div></div>)}</div></Card><Card className="mt-8"><h2 className="text-2xl font-semibold">Item observations</h2><div className="mt-5 overflow-x-auto"><table className="min-w-[760px] w-full text-left text-sm"><thead className="text-[#6E7A88]"><tr><th className="pb-3 pr-4">Item</th><th className="pb-3 pr-4">Result</th><th className="pb-3 pr-4">Selection</th><th className="pb-3">Diagnostic</th></tr></thead><tbody>{responses.map((response) => <tr key={response.questionId} className="border-t border-white/5"><td className="py-3 pr-4 text-[#DDE3EA]">{response.questionId}</td><td className="py-3 pr-4">{response.correct ? "Correct" : "Incorrect"}</td><td className="py-3 pr-4">{formatSeconds(response.selectionTimeMs)}</td><td className="py-3 text-[#9AA3B2]">{response.misconceptionTag}</td></tr>)}</tbody></table></div></Card><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={() => setPhase("intro")}>Back to mechanical lab</SecondaryButton><SecondaryButton onClick={downloadMechanicalCalibrationPilotCsv}>Export calibration CSV</SecondaryButton><PrimaryButton onClick={() => startRun(pilotSet)}>Run this set again</PrimaryButton></div></section></Shell>;
 }
 
 function InternalCalibrationFrameworkScreen({ onBack, onOpenGearPilot, onOpenMechanicalPilot }: { onBack: () => void; onOpenGearPilot: () => void; onOpenMechanicalPilot: () => void }) {
   const summary = getGeneralCalibrationSummary();
   const liveItems = generalCalibrationBlueprints.filter((item) => item.implementationStatus === "pilot_live");
   return <Shell right="Internal calibration"><section className="mx-auto max-w-7xl px-6 py-10 sm:px-8 sm:py-12">
-    <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only framework</p><h1 className="mt-3 text-4xl font-semibold">General calibration blueprint</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">The 80-item blueprint is now machine-readable. A specification can exist here without implying that the question has been authored, QA-cleared or empirically calibrated.</p></div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onBack}>Back to dashboard</SecondaryButton><SecondaryButton onClick={onOpenGearPilot}>Open Gear Direction pilot</SecondaryButton><PrimaryButton onClick={onOpenMechanicalPilot}>Open mechanical v0.6 QA pilot</PrimaryButton></div></div>
+    <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only framework</p><h1 className="mt-3 text-4xl font-semibold">General calibration blueprint</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">The 80-item blueprint is now machine-readable. A specification can exist here without implying that the question has been authored, QA-cleared or empirically calibrated.</p></div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onBack}>Back to dashboard</SecondaryButton><SecondaryButton onClick={onOpenGearPilot}>Open Gear Direction pilot</SecondaryButton><PrimaryButton onClick={onOpenMechanicalPilot}>Open mechanical calibration lab</PrimaryButton></div></div>
 
     <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{summary.map((domain) => <div key={domain.id} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">{domain.label}</div><div className="mt-3 text-3xl font-semibold">{domain.total}</div><div className="mt-2 text-sm text-[#9AA3B2]">{domain.pilotLive} pilot live · {domain.blueprintOnly} blueprint-only</div></div>)}</div>
 
-    <div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current rule</div><p className="mt-3 text-lg leading-relaxed text-[#D9F8FF]">Blueprint status, implementation status, QA status and empirical calibration are separate things. Gear Direction remains pilot-live. Gear Speed Ratio, Compound Gears, Open Belt Direction and Crossed Belt Direction are authored and now in QA review.</p><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Framework: {GENERAL_CALIBRATION_BLUEPRINT_VERSION} · Live pilot families: {liveItems.length}</p></div>
+    <div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current rule</div><p className="mt-3 text-lg leading-relaxed text-[#D9F8FF]">Blueprint status, implementation status, QA status and empirical calibration are separate things. Gear Direction remains pilot-live. Gear Speed Ratio, Compound Gears, Open Belt Direction and Crossed Belt Direction are now pilot-live after device QA. Pulley, lever and hydraulic families are newly authored and remain in QA review.</p><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Framework: {GENERAL_CALIBRATION_BLUEPRINT_VERSION} · Live pilot families: {liveItems.length}</p></div>
 
     <div className="mt-8 rounded-2xl border border-white/5 bg-[#151A21] p-5"><details><summary className="cursor-pointer font-semibold text-[#D9F8FF]">Authoring & QA gate</summary><ol className="mt-5 space-y-3 text-sm leading-relaxed text-[#AAB4C0]">{calibrationQaGate.map((gate, index) => <li key={gate}><span className="mr-2 text-[#6E7A88]">{index + 1}.</span>{gate}</li>)}</ol></details></div>
 
