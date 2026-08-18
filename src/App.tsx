@@ -518,7 +518,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Aptesta Mechanical Calibration Authoring v0.6";
+const BUILD_LABEL = "Aptesta Mechanical Calibration v0.7.3";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -6630,69 +6630,96 @@ function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrati
     const movingStroke = "#5ED3F3";
     const pulleyFill = "#20313D";
     const hubFill = "#D9F8FF";
+    const sheaveRadius = 31;
+    const ropeRadius = 35; // Rope centreline sits just outside the sheave rim; straight runs meet arcs tangentially.
 
     if (diagram.supportingStrands === 2) {
-      return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Pulley system with one upper fixed pulley attached to a fixed support and one lower moving pulley attached to a ${diagram.loadN} newton load. The rope is anchored to the upper support, passes around the lower pulley and over the upper pulley, then ends at a free end pulled downward. Two rope strands support the moving load.`}>
+      const lowerCx = 300;
+      const lowerCy = 215;
+      const upperCx = lowerCx + ropeRadius * 2;
+      const upperCy = 108;
+      const leftRunX = lowerCx - ropeRadius;
+      const middleRunX = lowerCx + ropeRadius;
+      const freeRunX = upperCx + ropeRadius;
+      return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Pulley system with one upper fixed pulley attached to a fixed support and one lower moving pulley attached to a ${diagram.loadN} newton load. The rope is anchored to the upper support, descends tangentially around the lower pulley, rises tangentially to the upper pulley, passes over it, and ends at a free end pulled downward. Two rope strands support the moving load.`}>
         <svg viewBox="0 0 740 360" className="h-auto w-full">
           <rect x="90" y="30" width="560" height="16" rx="3" fill={fixedStroke}/>
           <text x="370" y="22" textAnchor="middle" fill="#D9F8FF" fontSize="16" fontWeight="600">Fixed upper support</text>
 
-          <line x1="520" y1="46" x2="520" y2="78" stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
-          <circle cx="520" cy="108" r="31" fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
-          <circle cx="520" cy="108" r="8" fill={hubFill}/>
+          <line x1={upperCx} y1="46" x2={upperCx} y2={upperCy - sheaveRadius} stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
+          <circle cx={upperCx} cy={upperCy} r={sheaveRadius} fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
+          <circle cx={upperCx} cy={upperCy} r="8" fill={hubFill}/>
 
-          <circle cx="300" cy="215" r="38" fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
-          <circle cx="300" cy="215" r="8" fill={hubFill}/>
-          <line x1="300" y1="253" x2="300" y2="276" stroke={movingStroke} strokeWidth="10" strokeLinecap="round"/>
-          <rect x="235" y="276" width="130" height="54" rx="10" fill="#171C23" stroke={movingStroke} strokeWidth="3"/>
-          <text x="300" y="309" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
+          <circle cx={lowerCx} cy={lowerCy} r={sheaveRadius} fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
+          <circle cx={lowerCx} cy={lowerCy} r="8" fill={hubFill}/>
+          <line x1={lowerCx} y1={lowerCy + sheaveRadius} x2={lowerCx} y2="276" stroke={movingStroke} strokeWidth="10" strokeLinecap="round"/>
+          <rect x={lowerCx - 65} y="276" width="130" height="54" rx="10" fill="#171C23" stroke={movingStroke} strokeWidth="3"/>
+          <text x={lowerCx} y="309" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
 
-          <circle cx="262" cy="46" r="6" fill={ropeStroke}/>
-          <path d="M262 46 L262 215 C262 266 338 266 338 215 L490 108 C490 67 550 67 550 108 L550 254" fill="none" stroke={ropeStroke} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
-          <line x1="550" y1="258" x2="550" y2="306" stroke="#FF5D5D" strokeWidth="6" strokeLinecap="round"/>
-          <polygon points="540,300 560,300 550,318" fill="#FF5D5D"/>
-          <text x="578" y="281" fill="#FF8B8B" fontSize="17" fontWeight="600">Pull down</text>
-          <text x="578" y="302" fill="#FF8B8B" fontSize="15">free end</text>
+          <circle cx={leftRunX} cy="46" r="6" fill={ropeStroke}/>
+          <path
+            d={`M${leftRunX} 46 L${leftRunX} ${lowerCy} C${leftRunX} ${lowerCy + 47} ${middleRunX} ${lowerCy + 47} ${middleRunX} ${lowerCy} L${middleRunX} ${upperCy} C${middleRunX} ${upperCy - 47} ${freeRunX} ${upperCy - 47} ${freeRunX} ${upperCy} L${freeRunX} 254`}
+            fill="none" stroke={ropeStroke} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"
+          />
+          <line x1={freeRunX} y1="258" x2={freeRunX} y2="306" stroke="#FF5D5D" strokeWidth="6" strokeLinecap="round"/>
+          <polygon points={`${freeRunX-10},300 ${freeRunX+10},300 ${freeRunX},318`} fill="#FF5D5D"/>
+          <text x={freeRunX + 28} y="281" fill="#FF8B8B" fontSize="17" fontWeight="600">Pull down</text>
+          <text x={freeRunX + 28} y="302" fill="#FF8B8B" fontSize="15">free end</text>
 
-          <text x="410" y="190" fill="#8D98A6" fontSize="16">2 supporting</text>
-          <text x="410" y="211" fill="#8D98A6" fontSize="16">rope strands</text>
+          <text x="485" y="190" fill="#8D98A6" fontSize="16">2 supporting</text>
+          <text x="485" y="211" fill="#8D98A6" fontSize="16">rope strands</text>
           <text x="398" y="329" fill="#5ED3F3" fontSize="15">Moving pulley attached to load</text>
           {diagram.loadTravelM !== undefined && <text x="610" y="344" textAnchor="middle" fill="#5ED3F3" fontSize="16">Load rises {diagram.loadTravelM} m ↑</text>}
         </svg>
       </div>;
     }
 
-    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Four-strand block-and-tackle. Two upper pulleys are attached to a fixed support. Two lower pulleys form a moving block attached to a ${diagram.loadN} newton load. The rope is anchored to the upper support, passes alternately around the lower and upper pulleys, and its free end is pulled downward. Four rope strands support the moving load.`}>
-      <svg viewBox="0 0 740 380" className="h-auto w-full">
+    const lower1Cx = 260;
+    const upper1Cx = lower1Cx + ropeRadius * 2;
+    const lower2Cx = upper1Cx + ropeRadius * 2;
+    const upper2Cx = lower2Cx + ropeRadius * 2;
+    const lowerCy = 220;
+    const upperCy = 105;
+    const run1X = lower1Cx - ropeRadius;
+    const run2X = lower1Cx + ropeRadius;
+    const run3X = lower2Cx - ropeRadius;
+    const run4X = lower2Cx + ropeRadius;
+    const freeRunX = upper2Cx + ropeRadius;
+
+    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Four-strand block-and-tackle. Two upper pulleys are attached to a fixed support. Two lower pulleys form a moving block attached to a ${diagram.loadN} newton load. The rope is anchored to the upper support and follows tangent runs around each sheave before ending at a free end pulled downward. Four rope strands support the moving load.`}>
+      <svg viewBox="0 0 740 390" className="h-auto w-full">
         <rect x="72" y="26" width="596" height="16" rx="3" fill={fixedStroke}/>
         <text x="370" y="19" textAnchor="middle" fill="#D9F8FF" fontSize="16" fontWeight="600">Fixed upper support</text>
 
-        <line x1="310" y1="42" x2="310" y2="72" stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
-        <line x1="480" y1="42" x2="480" y2="72" stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
-        <circle cx="310" cy="102" r="30" fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
-        <circle cx="480" cy="102" r="30" fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
-        <circle cx="310" cy="102" r="8" fill={hubFill}/><circle cx="480" cy="102" r="8" fill={hubFill}/>
+        <line x1={upper1Cx} y1="42" x2={upper1Cx} y2={upperCy - sheaveRadius} stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
+        <line x1={upper2Cx} y1="42" x2={upper2Cx} y2={upperCy - sheaveRadius} stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
+        <circle cx={upper1Cx} cy={upperCy} r={sheaveRadius} fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
+        <circle cx={upper2Cx} cy={upperCy} r={sheaveRadius} fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
+        <circle cx={upper1Cx} cy={upperCy} r="8" fill={hubFill}/><circle cx={upper2Cx} cy={upperCy} r="8" fill={hubFill}/>
 
-        <line x1="280" y1="215" x2="450" y2="215" stroke={movingStroke} strokeWidth="10" strokeLinecap="round" opacity="0.55"/>
-        <circle cx="280" cy="215" r="30" fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
-        <circle cx="450" cy="215" r="30" fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
-        <circle cx="280" cy="215" r="8" fill={hubFill}/><circle cx="450" cy="215" r="8" fill={hubFill}/>
-        <path d="M280 245 L280 258 L450 258 L450 245" fill="none" stroke={movingStroke} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
-        <line x1="365" y1="258" x2="365" y2="282" stroke={movingStroke} strokeWidth="10" strokeLinecap="round"/>
-        <rect x="300" y="282" width="130" height="54" rx="10" fill="#171C23" stroke={movingStroke} strokeWidth="3"/>
-        <text x="365" y="315" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
+        <line x1={lower1Cx} y1={lowerCy} x2={lower2Cx} y2={lowerCy} stroke={movingStroke} strokeWidth="10" strokeLinecap="round" opacity="0.55"/>
+        <circle cx={lower1Cx} cy={lowerCy} r={sheaveRadius} fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
+        <circle cx={lower2Cx} cy={lowerCy} r={sheaveRadius} fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
+        <circle cx={lower1Cx} cy={lowerCy} r="8" fill={hubFill}/><circle cx={lower2Cx} cy={lowerCy} r="8" fill={hubFill}/>
+        <path d={`M${lower1Cx} ${lowerCy + sheaveRadius} L${lower1Cx} 263 L${lower2Cx} 263 L${lower2Cx} ${lowerCy + sheaveRadius}`} fill="none" stroke={movingStroke} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1={(lower1Cx + lower2Cx) / 2} y1="263" x2={(lower1Cx + lower2Cx) / 2} y2="287" stroke={movingStroke} strokeWidth="10" strokeLinecap="round"/>
+        <rect x={(lower1Cx + lower2Cx) / 2 - 65} y="287" width="130" height="54" rx="10" fill="#171C23" stroke={movingStroke} strokeWidth="3"/>
+        <text x={(lower1Cx + lower2Cx) / 2} y="320" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
 
-        <circle cx="220" cy="42" r="6" fill={ropeStroke}/>
-        <path d="M220 42 L250 215 C250 255 310 255 310 215 L280 102 C280 62 340 62 340 102 L420 215 C420 255 480 255 480 215 L450 102 C450 62 510 62 510 102 L510 266" fill="none" stroke={ropeStroke} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
-        <line x1="510" y1="270" x2="510" y2="318" stroke="#FF5D5D" strokeWidth="6" strokeLinecap="round"/>
-        <polygon points="500,312 520,312 510,330" fill="#FF5D5D"/>
-        <text x="540" y="293" fill="#FF8B8B" fontSize="17" fontWeight="600">Pull down</text>
-        <text x="540" y="314" fill="#FF8B8B" fontSize="15">free end</text>
+        <circle cx={run1X} cy="42" r="6" fill={ropeStroke}/>
+        <path
+          d={`M${run1X} 42 L${run1X} ${lowerCy} C${run1X} ${lowerCy + 47} ${run2X} ${lowerCy + 47} ${run2X} ${lowerCy} L${run2X} ${upperCy} C${run2X} ${upperCy - 47} ${run3X} ${upperCy - 47} ${run3X} ${upperCy} L${run3X} ${lowerCy} C${run3X} ${lowerCy + 47} ${run4X} ${lowerCy + 47} ${run4X} ${lowerCy} L${run4X} ${upperCy} C${run4X} ${upperCy - 47} ${freeRunX} ${upperCy - 47} ${freeRunX} ${upperCy} L${freeRunX} 270`}
+          fill="none" stroke={ropeStroke} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"
+        />
+        <line x1={freeRunX} y1="274" x2={freeRunX} y2="322" stroke="#FF5D5D" strokeWidth="6" strokeLinecap="round"/>
+        <polygon points={`${freeRunX-10},316 ${freeRunX+10},316 ${freeRunX},334`} fill="#FF5D5D"/>
+        <text x={freeRunX + 28} y="297" fill="#FF8B8B" fontSize="17" fontWeight="600">Pull down</text>
+        <text x={freeRunX + 28} y="318" fill="#FF8B8B" fontSize="15">free end</text>
 
-        <text x="590" y="162" fill="#8D98A6" fontSize="16">4 supporting</text>
-        <text x="590" y="183" fill="#8D98A6" fontSize="16">rope strands</text>
-        <text x="465" y="351" fill="#5ED3F3" fontSize="15">Moving block attached to load</text>
-        {diagram.loadTravelM !== undefined && <text x="600" y="372" textAnchor="middle" fill="#5ED3F3" fontSize="16">Load rises {diagram.loadTravelM} m ↑</text>}
+        <text x="585" y="166" fill="#8D98A6" fontSize="16">4 supporting</text>
+        <text x="585" y="187" fill="#8D98A6" fontSize="16">rope strands</text>
+        <text x="465" y="356" fill="#5ED3F3" fontSize="15">Moving block attached to load</text>
+        {diagram.loadTravelM !== undefined && <text x="600" y="378" textAnchor="middle" fill="#5ED3F3" fontSize="16">Load rises {diagram.loadTravelM} m ↑</text>}
       </svg>
     </div>;
   }
@@ -6711,11 +6738,14 @@ function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrati
         <text x={loadX} y="65" textAnchor="middle" fill="#FFD6A8" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
         <line x1={effortX} y1="80" x2={effortX} y2="140" stroke="#5ED3F3" strokeWidth="6" markerEnd="url(#leverArrow)"/>
         <text x={effortX} y="65" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Effort ?</text>
-        <line x1={loadX} y1="238" x2={fulcrumX} y2="238" stroke="#8D98A6" strokeWidth="2"/><line x1={loadX} y1="230" x2={loadX} y2="246" stroke="#8D98A6" strokeWidth="2"/><line x1={fulcrumX} y1="230" x2={fulcrumX} y2="246" stroke="#8D98A6" strokeWidth="2"/>
-        <text x={(loadX+fulcrumX)/2} y="265" textAnchor="middle" fill="#AAB4C0" fontSize="17">{diagram.loadArmM} m</text>
-        <line x1={fulcrumX} y1="238" x2={effortX} y2="238" stroke="#8D98A6" strokeWidth="2"/><line x1={effortX} y1="230" x2={effortX} y2="246" stroke="#8D98A6" strokeWidth="2"/>
-        <text x={(fulcrumX+effortX)/2} y="265" textAnchor="middle" fill="#AAB4C0" fontSize="17">{diagram.effortArmM} m</text>
-        <text x={fulcrumX} y="225" textAnchor="middle" fill="#8D98A6" fontSize="14">fulcrum</text>
+        <line x1={loadX} y1="232" x2={fulcrumX} y2="232" stroke="#8D98A6" strokeWidth="2"/><line x1={loadX} y1="224" x2={loadX} y2="240" stroke="#8D98A6" strokeWidth="2"/><line x1={fulcrumX} y1="224" x2={fulcrumX} y2="240" stroke="#8D98A6" strokeWidth="2"/>
+        <rect x={(loadX+fulcrumX)/2 - 34} y="246" width="68" height="28" rx="7" fill="#111418" opacity="0.98"/>
+        <text x={(loadX+fulcrumX)/2} y="266" textAnchor="middle" fill="#C2CBD5" fontSize="17" fontWeight="600">{diagram.loadArmM} m</text>
+        <line x1={fulcrumX} y1="232" x2={effortX} y2="232" stroke="#8D98A6" strokeWidth="2"/><line x1={effortX} y1="224" x2={effortX} y2="240" stroke="#8D98A6" strokeWidth="2"/>
+        <rect x={(fulcrumX+effortX)/2 - 34} y="246" width="68" height="28" rx="7" fill="#111418" opacity="0.98"/>
+        <text x={(fulcrumX+effortX)/2} y="266" textAnchor="middle" fill="#C2CBD5" fontSize="17" fontWeight="600">{diagram.effortArmM} m</text>
+        <rect x={fulcrumX - 35} y="204" width="70" height="23" rx="6" fill="#111418" opacity="0.98"/>
+        <text x={fulcrumX} y="220" textAnchor="middle" fill="#8D98A6" fontSize="14">fulcrum</text>
       </svg>
     </div>;
   }
@@ -6727,13 +6757,15 @@ function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrati
         <text x="185" y="40" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Before</text>
         <line x1="55" y1="125" x2="315" y2="125" stroke="#DDE3EA" strokeWidth="10" strokeLinecap="round"/>
         <polygon points="165,180 205,180 185,130" fill="#6E7A88"/>
-        <text x="75" y="100" fill="#FFD6A8" fontSize="16">Load</text><text x="270" y="100" fill="#D9F8FF" fontSize="16">Effort</text>
-        <line x1="75" y1="82" x2="75" y2="116" stroke="#FFB86B" strokeWidth="5"/><line x1="285" y1="82" x2="285" y2="116" stroke="#5ED3F3" strokeWidth="5"/>
+        <line x1="75" y1="78" x2="75" y2="116" stroke="#FFB86B" strokeWidth="5"/><line x1="285" y1="78" x2="285" y2="116" stroke="#5ED3F3" strokeWidth="5"/>
+        <rect x="86" y="79" width="54" height="25" rx="6" fill="#111418" opacity="0.98"/><text x="94" y="97" fill="#FFD6A8" fontSize="16" fontWeight="600">Load</text>
+        <rect x="213" y="79" width="63" height="25" rx="6" fill="#111418" opacity="0.98"/><text x="221" y="97" fill="#D9F8FF" fontSize="16" fontWeight="600">Effort</text>
         <text x="555" y="40" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">After</text>
         <line x1="425" y1="125" x2="685" y2="125" stroke="#DDE3EA" strokeWidth="10" strokeLinecap="round"/>
         <polygon points={`${afterFulcrum-20},180 ${afterFulcrum+20},180 ${afterFulcrum},130`} fill="#5ED3F3"/>
-        <text x="445" y="100" fill="#FFD6A8" fontSize="16">Load</text><text x="640" y="100" fill="#D9F8FF" fontSize="16">Effort</text>
-        <line x1="445" y1="82" x2="445" y2="116" stroke="#FFB86B" strokeWidth="5"/><line x1="655" y1="82" x2="655" y2="116" stroke="#5ED3F3" strokeWidth="5"/>
+        <line x1="445" y1="78" x2="445" y2="116" stroke="#FFB86B" strokeWidth="5"/><line x1="655" y1="78" x2="655" y2="116" stroke="#5ED3F3" strokeWidth="5"/>
+        <rect x="456" y="79" width="54" height="25" rx="6" fill="#111418" opacity="0.98"/><text x="464" y="97" fill="#FFD6A8" fontSize="16" fontWeight="600">Load</text>
+        <rect x="583" y="79" width="63" height="25" rx="6" fill="#111418" opacity="0.98"/><text x="591" y="97" fill="#D9F8FF" fontSize="16" fontWeight="600">Effort</text>
         <text x="370" y="242" textAnchor="middle" fill="#8D98A6" fontSize="17">Load and effort positions stay fixed</text>
         <text x="370" y="269" textAnchor="middle" fill="#5ED3F3" fontSize="17">Fulcrum moves {diagram.shift === "toward_load" ? "toward the load ←" : "toward the effort →"}</text>
       </svg>
@@ -6756,7 +6788,7 @@ function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrati
         <line x1={largeX-largeW/2+4} y1="170" x2={largeX+largeW/2-4} y2="170" stroke="#D9F8FF" strokeWidth="10"/>
         <text x={smallX} y="90" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Input piston: {diagram.smallAreaCm2} cm²</text>
         <text x={largeX} y="90" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Output piston: {diagram.largeAreaCm2} cm²</text>
-        {diagram.inputForceN !== undefined ? <><line x1={smallX} y1="42" x2={smallX} y2="105" stroke="#FFB86B" strokeWidth="6"/><polygon points={`${smallX-9},98 ${smallX+9},98 ${smallX},112`} fill="#FFB86B"/><text x={smallX} y="28" textAnchor="middle" fill="#FFD6A8" fontSize="18">{diagram.inputForceN} N ↓</text><text x={largeX} y="35" textAnchor="middle" fill="#5ED3F3" fontSize="18">Output force ? ↑</text></> : <><line x1={smallX+55} y1="118" x2={smallX+55} y2="188" stroke="#FFB86B" strokeWidth="3"/><text x={smallX+86} y="148" fill="#FFD6A8" fontSize="17">↓ {diagram.inputMoveCm} cm</text><text x={largeX} y="35" textAnchor="middle" fill="#5ED3F3" fontSize="18">Output movement ? ↑</text></>}
+        {diagram.inputForceN !== undefined ? <><line x1={smallX} y1="42" x2={smallX} y2="105" stroke="#FFB86B" strokeWidth="6"/><polygon points={`${smallX-9},98 ${smallX+9},98 ${smallX},112`} fill="#FFB86B"/><text x={smallX} y="28" textAnchor="middle" fill="#FFD6A8" fontSize="18">{diagram.inputForceN} N ↓</text><text x={largeX} y="35" textAnchor="middle" fill="#5ED3F3" fontSize="18">Output force ? ↑</text></> : <><line x1={smallX+62} y1="112" x2={smallX+62} y2="190" stroke="#FFB86B" strokeWidth="5" strokeLinecap="round"/><polygon points={`${smallX+52},181 ${smallX+72},181 ${smallX+62},198`} fill="#FFB86B"/><text x={smallX+88} y="159" fill="#FFD6A8" fontSize="18" fontWeight="600">{diagram.inputMoveCm} cm</text><text x={largeX} y="35" textAnchor="middle" fill="#5ED3F3" fontSize="18">Output movement ? ↑</text></>}
         <text x="370" y="318" textAnchor="middle" fill="#8D98A6" fontSize="15">Connected incompressible fluid · schematic piston widths reflect area ratio</text>
       </svg>
     </div>;
