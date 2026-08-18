@@ -6625,36 +6625,74 @@ function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrati
   }
 
   if (diagram.kind === "pulley_system") {
-    const loadY = 242;
-    const topY = 52;
+    const ropeStroke = "#FF9F43";
+    const fixedStroke = "#7F8A98";
+    const movingStroke = "#5ED3F3";
+    const pulleyFill = "#20313D";
+    const hubFill = "#D9F8FF";
+
     if (diagram.supportingStrands === 2) {
-      return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Moving pulley with two supporting rope strands and a ${diagram.loadN} newton load.`}>
-        <svg viewBox="0 0 740 330" className="h-auto w-full">
-          <line x1="180" y1={topY} x2="560" y2={topY} stroke="#6E7A88" strokeWidth="10" strokeLinecap="round"/>
-          <circle cx="370" cy="165" r="55" fill="#171C23" stroke="#9AA3B2" strokeWidth="5"/>
-          <circle cx="370" cy="165" r="7" fill="#D9F8FF"/>
-          <path d="M285 52 L285 165 Q285 245 370 245 Q455 245 455 165 L455 52" fill="none" stroke="#DDE3EA" strokeWidth="8" strokeLinecap="round"/>
-          <line x1="370" y1="220" x2="370" y2={loadY} stroke="#9AA3B2" strokeWidth="7"/>
-          <rect x="305" y={loadY} width="130" height="54" rx="10" fill="#171C23" stroke="#5ED3F3" strokeWidth="3"/>
-          <text x="370" y={loadY+34} textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
-          <text x="370" y="315" textAnchor="middle" fill="#8D98A6" fontSize="16">2 supporting rope strands</text>
-          {diagram.loadTravelM !== undefined && <text x="560" y="235" textAnchor="middle" fill="#5ED3F3" fontSize="17">Load rises {diagram.loadTravelM} m ↑</text>}
+      return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Pulley system with one upper fixed pulley attached to a fixed support and one lower moving pulley attached to a ${diagram.loadN} newton load. The rope is anchored to the upper support, passes around the lower pulley and over the upper pulley, then ends at a free end pulled downward. Two rope strands support the moving load.`}>
+        <svg viewBox="0 0 740 360" className="h-auto w-full">
+          <rect x="90" y="30" width="560" height="16" rx="3" fill={fixedStroke}/>
+          <text x="370" y="22" textAnchor="middle" fill="#D9F8FF" fontSize="16" fontWeight="600">Fixed upper support</text>
+
+          <line x1="520" y1="46" x2="520" y2="78" stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
+          <circle cx="520" cy="108" r="31" fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
+          <circle cx="520" cy="108" r="8" fill={hubFill}/>
+
+          <circle cx="300" cy="215" r="38" fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
+          <circle cx="300" cy="215" r="8" fill={hubFill}/>
+          <line x1="300" y1="253" x2="300" y2="276" stroke={movingStroke} strokeWidth="10" strokeLinecap="round"/>
+          <rect x="235" y="276" width="130" height="54" rx="10" fill="#171C23" stroke={movingStroke} strokeWidth="3"/>
+          <text x="300" y="309" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
+
+          <circle cx="262" cy="46" r="6" fill={ropeStroke}/>
+          <path d="M262 46 L262 215 C262 266 338 266 338 215 L490 108 C490 67 550 67 550 108 L550 254" fill="none" stroke={ropeStroke} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+          <line x1="550" y1="258" x2="550" y2="306" stroke="#FF5D5D" strokeWidth="6" strokeLinecap="round"/>
+          <polygon points="540,300 560,300 550,318" fill="#FF5D5D"/>
+          <text x="578" y="281" fill="#FF8B8B" fontSize="17" fontWeight="600">Pull down</text>
+          <text x="578" y="302" fill="#FF8B8B" fontSize="15">free end</text>
+
+          <text x="410" y="190" fill="#8D98A6" fontSize="16">2 supporting</text>
+          <text x="410" y="211" fill="#8D98A6" fontSize="16">rope strands</text>
+          <text x="398" y="329" fill="#5ED3F3" fontSize="15">Moving pulley attached to load</text>
+          {diagram.loadTravelM !== undefined && <text x="610" y="344" textAnchor="middle" fill="#5ED3F3" fontSize="16">Load rises {diagram.loadTravelM} m ↑</text>}
         </svg>
       </div>;
     }
-    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Block-and-tackle schematic with four supporting rope strands and a ${diagram.loadN} newton load.`}>
-      <svg viewBox="0 0 740 330" className="h-auto w-full">
-        <line x1="170" y1={topY} x2="570" y2={topY} stroke="#6E7A88" strokeWidth="10" strokeLinecap="round"/>
-        <rect x="255" y="82" width="230" height="50" rx="22" fill="#171C23" stroke="#9AA3B2" strokeWidth="4"/>
-        <circle cx="315" cy="107" r="18" fill="#111418" stroke="#DDE3EA" strokeWidth="3"/><circle cx="425" cy="107" r="18" fill="#111418" stroke="#DDE3EA" strokeWidth="3"/>
-        {[280,340,400,460].map((x) => <line key={x} x1={x} y1="128" x2={x} y2="205" stroke="#DDE3EA" strokeWidth="7" strokeLinecap="round"/>)}
-        <rect x="250" y="195" width="240" height="58" rx="24" fill="#171C23" stroke="#5ED3F3" strokeWidth="4"/>
-        <circle cx="315" cy="224" r="18" fill="#111418" stroke="#DDE3EA" strokeWidth="3"/><circle cx="425" cy="224" r="18" fill="#111418" stroke="#DDE3EA" strokeWidth="3"/>
-        <line x1="370" y1="253" x2="370" y2="272" stroke="#9AA3B2" strokeWidth="7"/>
-        <rect x="305" y="270" width="130" height="45" rx="10" fill="#171C23" stroke="#5ED3F3" strokeWidth="3"/>
-        <text x="370" y="299" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Load {diagram.loadN} N</text>
-        <text x="600" y="170" textAnchor="middle" fill="#8D98A6" fontSize="16">4 supporting</text><text x="600" y="191" textAnchor="middle" fill="#8D98A6" fontSize="16">rope strands</text>
-        {diagram.loadTravelM !== undefined && <text x="600" y="235" textAnchor="middle" fill="#5ED3F3" fontSize="17">Load rises {diagram.loadTravelM} m ↑</text>}
+
+    return <div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-4" role="img" aria-label={`Four-strand block-and-tackle. Two upper pulleys are attached to a fixed support. Two lower pulleys form a moving block attached to a ${diagram.loadN} newton load. The rope is anchored to the upper support, passes alternately around the lower and upper pulleys, and its free end is pulled downward. Four rope strands support the moving load.`}>
+      <svg viewBox="0 0 740 380" className="h-auto w-full">
+        <rect x="72" y="26" width="596" height="16" rx="3" fill={fixedStroke}/>
+        <text x="370" y="19" textAnchor="middle" fill="#D9F8FF" fontSize="16" fontWeight="600">Fixed upper support</text>
+
+        <line x1="310" y1="42" x2="310" y2="72" stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
+        <line x1="480" y1="42" x2="480" y2="72" stroke={fixedStroke} strokeWidth="10" strokeLinecap="round"/>
+        <circle cx="310" cy="102" r="30" fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
+        <circle cx="480" cy="102" r="30" fill={pulleyFill} stroke="#AAB4C0" strokeWidth="4"/>
+        <circle cx="310" cy="102" r="8" fill={hubFill}/><circle cx="480" cy="102" r="8" fill={hubFill}/>
+
+        <line x1="280" y1="215" x2="450" y2="215" stroke={movingStroke} strokeWidth="10" strokeLinecap="round" opacity="0.55"/>
+        <circle cx="280" cy="215" r="30" fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
+        <circle cx="450" cy="215" r="30" fill={pulleyFill} stroke={movingStroke} strokeWidth="4"/>
+        <circle cx="280" cy="215" r="8" fill={hubFill}/><circle cx="450" cy="215" r="8" fill={hubFill}/>
+        <path d="M280 245 L280 258 L450 258 L450 245" fill="none" stroke={movingStroke} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="365" y1="258" x2="365" y2="282" stroke={movingStroke} strokeWidth="10" strokeLinecap="round"/>
+        <rect x="300" y="282" width="130" height="54" rx="10" fill="#171C23" stroke={movingStroke} strokeWidth="3"/>
+        <text x="365" y="315" textAnchor="middle" fill="#D9F8FF" fontSize="19" fontWeight="600">Load {diagram.loadN} N</text>
+
+        <circle cx="220" cy="42" r="6" fill={ropeStroke}/>
+        <path d="M220 42 L250 215 C250 255 310 255 310 215 L280 102 C280 62 340 62 340 102 L420 215 C420 255 480 255 480 215 L450 102 C450 62 510 62 510 102 L510 266" fill="none" stroke={ropeStroke} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+        <line x1="510" y1="270" x2="510" y2="318" stroke="#FF5D5D" strokeWidth="6" strokeLinecap="round"/>
+        <polygon points="500,312 520,312 510,330" fill="#FF5D5D"/>
+        <text x="540" y="293" fill="#FF8B8B" fontSize="17" fontWeight="600">Pull down</text>
+        <text x="540" y="314" fill="#FF8B8B" fontSize="15">free end</text>
+
+        <text x="590" y="162" fill="#8D98A6" fontSize="16">4 supporting</text>
+        <text x="590" y="183" fill="#8D98A6" fontSize="16">rope strands</text>
+        <text x="465" y="351" fill="#5ED3F3" fontSize="15">Moving block attached to load</text>
+        {diagram.loadTravelM !== undefined && <text x="600" y="372" textAnchor="middle" fill="#5ED3F3" fontSize="16">Load rises {diagram.loadTravelM} m ↑</text>}
       </svg>
     </div>;
   }
