@@ -6716,8 +6716,8 @@ function MechanicalCalibrationPilotDiagram({ item }: { item: MechanicalCalibrati
         <path d={`M${smallX} 262 L${smallX} 286 L${largeX} 286 L${largeX} 262`} fill="none" stroke="#5ED3F3" strokeWidth="12" strokeLinejoin="round"/>
         <line x1={smallX-smallW/2+4} y1="170" x2={smallX+smallW/2-4} y2="170" stroke="#D9F8FF" strokeWidth="10"/>
         <line x1={largeX-largeW/2+4} y1="170" x2={largeX+largeW/2-4} y2="170" stroke="#D9F8FF" strokeWidth="10"/>
-        <text x={smallX} y="90" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Input · {diagram.smallAreaCm2} cm²</text>
-        <text x={largeX} y="90" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Output · {diagram.largeAreaCm2} cm²</text>
+        <text x={smallX} y="90" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Input piston: {diagram.smallAreaCm2} cm²</text>
+        <text x={largeX} y="90" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Output piston: {diagram.largeAreaCm2} cm²</text>
         {diagram.inputForceN !== undefined ? <><line x1={smallX} y1="42" x2={smallX} y2="105" stroke="#FFB86B" strokeWidth="6"/><polygon points={`${smallX-9},98 ${smallX+9},98 ${smallX},112`} fill="#FFB86B"/><text x={smallX} y="28" textAnchor="middle" fill="#FFD6A8" fontSize="18">{diagram.inputForceN} N ↓</text><text x={largeX} y="35" textAnchor="middle" fill="#5ED3F3" fontSize="18">Output force ? ↑</text></> : <><line x1={smallX+55} y1="118" x2={smallX+55} y2="188" stroke="#FFB86B" strokeWidth="3"/><text x={smallX+86} y="148" fill="#FFD6A8" fontSize="17">↓ {diagram.inputMoveCm} cm</text><text x={largeX} y="35" textAnchor="middle" fill="#5ED3F3" fontSize="18">Output movement ? ↑</text></>}
         <text x="370" y="318" textAnchor="middle" fill="#8D98A6" fontSize="15">Connected incompressible fluid · schematic piston widths reflect area ratio</text>
       </svg>
