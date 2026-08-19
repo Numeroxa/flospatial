@@ -21,7 +21,7 @@ export type GeneralCalibrationBlueprint = {
   linkedLiveFamilyId?: string;
 };
 
-export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_08_V0_10";
+export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_08_V0_11";
 
 function b(
   domain: CalibrationDomain,
@@ -89,18 +89,18 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("numerical", 6, "Direct rate", "direct_rate", "Distance/time or flow/time.", "MCQ", 40, 50, "foundation", "Retain current strength.", "no", "pilot_live", "cleared", "direct_rate_v1"),
   b("numerical", 7, "Inverse work rate", "inverse_work_rate", "Workers/pumps and fixed job duration.", "MCQ", 50, 65, "applied", "Retain newly taught inverse-rate method.", "no", "pilot_live", "cleared", "inverse_work_rate_v1"),
   b("numerical", 8, "Average", "missing_value_average", "Find missing value from average.", "MCQ", 45, 55, "applied", "Criteria-style math/logic.", "no", "pilot_live", "cleared", "missing_value_average_v1"),
-  b("numerical", 9, "Money", "discount_tax_unit_price", "Discount then GST or unit-price comparison.", "MCQ", 50, 65, "applied", "FRV adult-context numeracy.", "no", "qa_review", "in_review", "discount_tax_unit_price_v1"),
-  b("numerical", 10, "Measurement conversion", "measurement_conversion", "mm/cm/m or L/mL; two-step conversion.", "MCQ", 40, 50, "foundation", "Expand measurement coverage.", "candidate", "qa_review", "in_review", "measurement_conversion_v1"),
-  b("numerical", 11, "Area", "composite_area", "Floor/rectangle with excluded section; ask usable area.", "MCQ", 50, 65, "applied", "Fill FRV measurement/geometry gap.", "no", "qa_review", "in_review", "composite_area_v1"),
-  b("numerical", 12, "Volume", "rectangular_volume", "Rectangular tank/container capacity.", "MCQ or numeric entry", 50, 65, "applied", "Fill FRV volume gap.", "no", "qa_review", "in_review", "rectangular_volume_v1"),
-  b("numerical", 13, "Scale plan", "plan_scale_distance", "Use a plan scale to find real distance.", "Plan + MCQ", 55, 70, "applied", "Fill maps/plans gap.", "no", "qa_review", "in_review", "plan_scale_distance_v1"),
-  b("numerical", 14, "Map/grid", "map_grid_distance", "Read route distance or coordinates from simple map.", "Map + MCQ", 50, 65, "applied", "FRV contextual data presentation.", "no", "qa_review", "in_review", "map_grid_distance_v1"),
-  b("numerical", 15, "Bar chart", "bar_chart_comparison", "Compare categories and calculate difference/percentage.", "Chart + MCQ", 50, 65, "applied", "Broaden data interpretation.", "no", "qa_review", "in_review", "bar_chart_comparison_v1"),
-  b("numerical", 16, "Line graph", "line_graph_rate", "Find trend, rate or interpolated value.", "Graph + MCQ", 50, 65, "applied", "Broaden graphical literacy.", "no", "qa_review", "in_review", "line_graph_rate_v1"),
-  b("numerical", 17, "Two-way table", "two_way_table", "Read conditional total or compare groups.", "Table + MCQ", 50, 65, "applied", "Data selection discipline."),
-  b("numerical", 18, "Basic probability", "simple_probability", "Simple event probability from counts.", "MCQ", 45, 60, "applied", "Fill statistics/probability gap."),
-  b("numerical", 19, "Numeric entry", "numeric_entry_area_rate", "Area/rate item requiring typed numeric response.", "Numeric entry", 50, 65, "applied", "Match FRV non-MCQ formats."),
-  b("numerical", 20, "True/false data claim", "data_claim_true_false", "Evaluate statement against table/graph.", "True/False", 45, 60, "applied", "Match FRV response-format variety."),
+  b("numerical", 9, "Money", "discount_tax_unit_price", "Discount then GST or unit-price comparison.", "MCQ", 50, 65, "applied", "FRV adult-context numeracy.", "no", "pilot_live", "cleared", "discount_tax_unit_price_v1"),
+  b("numerical", 10, "Measurement conversion", "measurement_conversion", "mm/cm/m or L/mL; two-step conversion.", "MCQ", 40, 50, "foundation", "Expand measurement coverage.", "candidate", "pilot_live", "cleared", "measurement_conversion_v1"),
+  b("numerical", 11, "Area", "composite_area", "Floor/rectangle with excluded section; ask usable area.", "MCQ", 50, 65, "applied", "Fill FRV measurement/geometry gap.", "no", "pilot_live", "cleared", "composite_area_v1"),
+  b("numerical", 12, "Volume", "rectangular_volume", "Rectangular tank/container capacity.", "MCQ or numeric entry", 50, 65, "applied", "Fill FRV volume gap.", "no", "pilot_live", "cleared", "rectangular_volume_v1"),
+  b("numerical", 13, "Scale plan", "plan_scale_distance", "Use a plan scale to find real distance.", "Plan + MCQ", 55, 70, "applied", "Fill maps/plans gap.", "no", "pilot_live", "cleared", "plan_scale_distance_v1"),
+  b("numerical", 14, "Map/grid", "map_grid_distance", "Read route distance or coordinates from simple map.", "Map + MCQ", 50, 65, "applied", "FRV contextual data presentation.", "no", "pilot_live", "cleared", "map_grid_distance_v1"),
+  b("numerical", 15, "Bar chart", "bar_chart_comparison", "Compare categories and calculate difference/percentage.", "Chart + MCQ", 50, 65, "applied", "Broaden data interpretation.", "no", "pilot_live", "cleared", "bar_chart_comparison_v1"),
+  b("numerical", 16, "Line graph", "line_graph_rate", "Find trend, rate or interpolated value.", "Graph + MCQ", 50, 65, "applied", "Broaden graphical literacy.", "no", "pilot_live", "cleared", "line_graph_rate_v1"),
+  b("numerical", 17, "Two-way table", "two_way_table", "Read conditional total or compare groups.", "Table + MCQ", 50, 65, "applied", "Data selection discipline.", "no", "qa_review", "in_review", "two_way_table_v1"),
+  b("numerical", 18, "Basic probability", "simple_probability", "Simple event probability from counts.", "MCQ", 45, 60, "applied", "Fill statistics/probability gap.", "no", "qa_review", "in_review", "simple_probability_v1"),
+  b("numerical", 19, "Numeric entry", "numeric_entry_area_rate", "Area/rate item requiring typed numeric response.", "Numeric entry", 50, 65, "applied", "Match FRV non-MCQ formats.", "no", "qa_review", "in_review", "numeric_entry_area_rate_v1"),
+  b("numerical", 20, "True/false data claim", "data_claim_true_false", "Evaluate statement against table/graph.", "True/False", 45, 60, "applied", "Match FRV response-format variety.", "no", "qa_review", "in_review", "data_claim_true_false_v1"),
 
   // Abstract & logical — 20
   b("abstract_logical", 1, "Next sequence - rotation", "sequence_rotation", "Single shape rotates fixed angle.", "Visual MCQ", 40, 55, "foundation", "FRV-style non-verbal sequence.", "candidate"),

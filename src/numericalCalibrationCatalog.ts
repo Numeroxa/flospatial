@@ -6,7 +6,8 @@ export type NumericalCalibrationDiagram =
   | { kind: "plan_scale"; planDistanceCm: number; scaleDenominator: number }
   | { kind: "map_grid_route"; blocksEast: number; blocksNorth: number; metresPerBlock: number }
   | { kind: "bar_chart"; categories: { label: string; value: number }[] }
-  | { kind: "line_graph"; points: { minute: number; value: number }[]; yLabel: string };
+  | { kind: "line_graph"; points: { minute: number; value: number }[]; yLabel: string }
+  | { kind: "two_way_table"; rowLabels: [string, string]; columnLabels: [string, string]; values: [[number, number], [number, number]] };
 
 export type NumericalCalibrationPilotItem = {
   questionId: string;
@@ -17,14 +18,16 @@ export type NumericalCalibrationPilotItem = {
   reasoningSteps: number;
   targetTimeRangeSec: { minSec: number; maxSec: number };
   stem: string;
+  responseFormat?: "mcq" | "numeric_entry" | "true_false";
   options: { optionId: NumericalCalibrationOptionId; text: string }[];
-  correctOptionId: NumericalCalibrationOptionId;
+  correctOptionId?: NumericalCalibrationOptionId;
+  numericAnswer?: { value: number; tolerance: number; unitLabel?: string };
   explanation: string;
-  misconceptionTags: Record<NumericalCalibrationOptionId, string>;
+  misconceptionTags: Partial<Record<NumericalCalibrationOptionId, string>>;
   diagram?: NumericalCalibrationDiagram;
 };
 
-export const NUMERICAL_CALIBRATION_PILOT_VERSION = "APTESTA_NUMERICAL_CAL_V0_10_2026_08";
+export const NUMERICAL_CALIBRATION_PILOT_VERSION = "APTESTA_NUMERICAL_CAL_V0_11_2026_08";
 
 export const numericalCalibrationCoreItems: NumericalCalibrationPilotItem[] = [
   {
@@ -342,6 +345,82 @@ export const numericalCalibrationAppliedDataItems: NumericalCalibrationPilotItem
   },
 ];
 
+export const numericalCalibrationFinalFormatItems: NumericalCalibrationPilotItem[] = [
+  {
+    questionId: "NUM-CAL-17",
+    blueprintId: "NUMERICAL-17",
+    familyId: "two_way_table_v1",
+    archetype: "two_way_table",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "The table shows training completion by shift. Of all staff who have NOT completed the training, what percentage work the night shift?",
+    diagram: { kind: "two_way_table", rowLabels: ["Day shift", "Night shift"], columnLabels: ["Completed", "Not completed"], values: [[36, 9], [24, 6]] },
+    options: [
+      { optionId: "A", text: "20%" },
+      { optionId: "B", text: "30%" },
+      { optionId: "C", text: "40%" },
+      { optionId: "D", text: "60%" },
+    ],
+    correctOptionId: "C",
+    explanation: "There are 9 + 6 = 15 staff who have not completed the training. Of those, 6 are on night shift. 6 ÷ 15 = 0.40 = 40%.",
+    misconceptionTags: { A: "used_night_noncomplete_over_all_night", B: "used_six_over_twenty", C: "correct", D: "used_night_completed_ratio" },
+  },
+  {
+    questionId: "NUM-CAL-18",
+    blueprintId: "NUMERICAL-18",
+    familyId: "simple_probability_v1",
+    archetype: "simple_probability",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    stem: "A bag contains 5 red markers, 3 blue markers and 2 green markers. One marker is chosen at random. What is the probability that it is blue?",
+    options: [
+      { optionId: "A", text: "0.2" },
+      { optionId: "B", text: "0.3" },
+      { optionId: "C", text: "0.5" },
+      { optionId: "D", text: "0.7" },
+    ],
+    correctOptionId: "B",
+    explanation: "There are 10 markers in total and 3 are blue, so the probability is 3 ÷ 10 = 0.3.",
+    misconceptionTags: { A: "used_green_count", B: "correct", C: "used_red_count", D: "used_nonblue_count" },
+  },
+  {
+    questionId: "NUM-CAL-19",
+    blueprintId: "NUMERICAL-19",
+    familyId: "numeric_entry_area_rate_v1",
+    archetype: "numeric_entry_area_rate",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    responseFormat: "numeric_entry",
+    stem: "A pump transfers 840 litres in 7 minutes at a constant rate. Enter the average flow rate in litres per minute.",
+    options: [],
+    numericAnswer: { value: 120, tolerance: 0.001, unitLabel: "L/min" },
+    explanation: "Average flow rate = volume ÷ time = 840 ÷ 7 = 120 L/min.",
+    misconceptionTags: {},
+  },
+  {
+    questionId: "NUM-CAL-20",
+    blueprintId: "NUMERICAL-20",
+    familyId: "data_claim_true_false_v1",
+    archetype: "data_claim_true_false",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    responseFormat: "true_false",
+    stem: "The table compares assessment outcomes at two sites. Claim: Site B has a higher pass rate than Site A. Is the claim true or false?",
+    diagram: { kind: "two_way_table", rowLabels: ["Site A", "Site B"], columnLabels: ["Passed", "Not passed"], values: [[30, 10], [24, 6]] },
+    options: [
+      { optionId: "A", text: "True" },
+      { optionId: "B", text: "False" },
+    ],
+    correctOptionId: "A",
+    explanation: "Site A pass rate = 30 ÷ 40 = 75%. Site B pass rate = 24 ÷ 30 = 80%. Site B is higher, so the claim is true.",
+    misconceptionTags: { A: "correct", B: "compared_pass_counts_instead_of_rates" },
+  },
+];
+
 // Kept for compatibility with v0.9 code paths and existing exports.
 export const numericalCalibrationPilotItems = numericalCalibrationCoreItems;
-export const numericalCalibrationAllItems = [...numericalCalibrationCoreItems, ...numericalCalibrationAppliedDataItems];
+export const numericalCalibrationAllItems = [...numericalCalibrationCoreItems, ...numericalCalibrationAppliedDataItems, ...numericalCalibrationFinalFormatItems];

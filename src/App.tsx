@@ -3,7 +3,7 @@ import { employerProfiles, gearDirectionFluencyProfile, providerProfiles } from 
 import { GEAR_DIRECTION_CALIBRATION_BANK_VERSION, GEAR_DIRECTION_PARALLEL_FORM_IDS, gearDirectionCalibrationBlueprintByQuestionId, gearDirectionCalibrationBlueprints } from "./calibrationCatalog";
 import { GENERAL_CALIBRATION_BLUEPRINT_VERSION, calibrationQaGate, generalCalibrationBlueprints, generalCalibrationDomains, getGeneralCalibrationSummary } from "./calibrationFramework";
 import { MECHANICAL_CALIBRATION_PILOT_VERSION, mechanicalCalibrationPilotItems, mechanicalCalibrationRotationItems, mechanicalCalibrationForceSystemsItems, mechanicalCalibrationExtensionItems, type MechanicalCalibrationDiagram, type MechanicalCalibrationPilotItem } from "./mechanicalCalibrationCatalog";
-import { NUMERICAL_CALIBRATION_PILOT_VERSION, numericalCalibrationAllItems, numericalCalibrationAppliedDataItems, numericalCalibrationCoreItems, type NumericalCalibrationDiagram, type NumericalCalibrationPilotItem } from "./numericalCalibrationCatalog";
+import { NUMERICAL_CALIBRATION_PILOT_VERSION, numericalCalibrationAllItems, numericalCalibrationAppliedDataItems, numericalCalibrationCoreItems, numericalCalibrationFinalFormatItems, type NumericalCalibrationDiagram, type NumericalCalibrationPilotItem } from "./numericalCalibrationCatalog";
 
 type AppScreen =
   | "landing"
@@ -603,7 +603,7 @@ function downloadMechanicalCalibrationPilotCsv() {
   if (typeof window === "undefined" || typeof document === "undefined") return;
   const runs = loadMechanicalCalibrationPilotRuns();
   const rows: (string | number | boolean | null | undefined)[][] = [[
-    "export_version", "pilot_version", "run_id", "question_id", "blueprint_id", "family_id", "archetype", "difficulty", "reasoning_steps", "target_min_sec", "target_max_sec", "correct", "selection_time_ms", "device_class", "misconception_tag", "answered_at",
+    "export_version", "pilot_version", "run_id", "question_id", "blueprint_id", "family_id", "archetype", "response_format", "difficulty", "reasoning_steps", "target_min_sec", "target_max_sec", "selected_response", "correct", "selection_time_ms", "device_class", "misconception_tag", "answered_at",
   ]];
   runs.forEach((run) => run.responses.forEach((response) => {
     const item = mechanicalCalibrationPilotItems.find((candidate) => candidate.questionId === response.questionId);
@@ -625,7 +625,8 @@ function downloadMechanicalCalibrationPilotCsv() {
 
 type NumericalCalibrationPilotResponse = {
   questionId: string;
-  selectedOptionId: "A" | "B" | "C" | "D";
+  selectedOptionId?: "A" | "B" | "C" | "D";
+  enteredValue?: number;
   correct: boolean;
   selectionTimeMs: number;
   answeredAt: string;
@@ -668,12 +669,12 @@ function downloadNumericalCalibrationPilotCsv() {
   if (typeof window === "undefined" || typeof document === "undefined") return;
   const runs = loadNumericalCalibrationPilotRuns();
   const rows: (string | number | boolean | null | undefined)[][] = [[
-    "export_version", "pilot_version", "run_id", "question_id", "blueprint_id", "family_id", "archetype", "difficulty", "reasoning_steps", "target_min_sec", "target_max_sec", "correct", "selection_time_ms", "device_class", "misconception_tag", "answered_at",
+    "export_version", "pilot_version", "run_id", "question_id", "blueprint_id", "family_id", "archetype", "response_format", "difficulty", "reasoning_steps", "target_min_sec", "target_max_sec", "selected_response", "correct", "selection_time_ms", "device_class", "misconception_tag", "answered_at",
   ]];
   runs.forEach((run) => run.responses.forEach((response) => {
     const item = numericalCalibrationAllItems.find((candidate) => candidate.questionId === response.questionId);
     rows.push([
-      "APTESTA_NUM_CAL_EXPORT_V0_10", run.pilotVersion, run.runId, response.questionId, item?.blueprintId, item?.familyId, item?.archetype, item?.difficulty, item?.reasoningSteps, item?.targetTimeRangeSec.minSec, item?.targetTimeRangeSec.maxSec, response.correct, Math.round(response.selectionTimeMs), response.deviceClass, response.misconceptionTag, response.answeredAt,
+      "APTESTA_NUM_CAL_EXPORT_V0_11", run.pilotVersion, run.runId, response.questionId, item?.blueprintId, item?.familyId, item?.archetype, item?.responseFormat ?? "mcq", item?.difficulty, item?.reasoningSteps, item?.targetTimeRangeSec.minSec, item?.targetTimeRangeSec.maxSec, response.enteredValue ?? response.selectedOptionId ?? "", response.correct, Math.round(response.selectionTimeMs), response.deviceClass, response.misconceptionTag, response.answeredAt,
     ]);
   }));
   const csv = rows.map((row) => row.map(csvCell).join(",")).join("\n");
@@ -7162,53 +7163,90 @@ function NumericalCalibrationPilotDiagram({ diagram }: { diagram?: NumericalCali
     return <div className="mb-6 overflow-hidden rounded-2xl border border-white/5 bg-[#0E1115] p-4"><svg viewBox="0 0 700 370" className="w-full" role="img" aria-label="Line graph showing volume over time"><line x1={x0} y1="55" x2={x0} y2={y0} stroke={line} strokeWidth="3"/><line x1={x0} y1={y0} x2={x0+w} y2={y0} stroke={line} strokeWidth="3"/>{diagram.points.map(p=><g key={p.minute}><line x1={px(p.minute)} y1={y0} x2={px(p.minute)} y2={y0+8} stroke={line} strokeWidth="2"/><text x={px(p.minute)} y={y0+30} fill={muted} fontSize="16" textAnchor="middle">{p.minute}</text><line x1={x0-8} y1={py(p.value)} x2={x0+w} y2={py(p.value)} stroke="#2C343D" strokeWidth="1"/><text x={x0-18} y={py(p.value)+6} fill={muted} fontSize="16" textAnchor="end">{p.value}</text></g>)}<polyline points={points} fill="none" stroke={cyan} strokeWidth="6" strokeLinejoin="round" strokeLinecap="round"/>{diagram.points.map(p=><circle key={`p${p.minute}`} cx={px(p.minute)} cy={py(p.value)} r="8" fill={orange} stroke="#0E1115" strokeWidth="3"/>)}<text x={x0+w/2} y="355" fill={text} fontSize="18" textAnchor="middle">Time (minutes)</text><text x="42" y="180" fill={text} fontSize="18" textAnchor="middle" transform="rotate(-90 42 180)">{diagram.yLabel}</text></svg></div>;
   }
 
+  if (diagram.kind === "two_way_table") {
+    const rowTotals = diagram.values.map((row) => row[0] + row[1]);
+    const columnTotals = [diagram.values[0][0] + diagram.values[1][0], diagram.values[0][1] + diagram.values[1][1]];
+    const grandTotal = rowTotals[0] + rowTotals[1];
+    return <div className="mb-6 overflow-hidden rounded-2xl border border-white/5 bg-[#0E1115] p-4" role="img" aria-label="Two-way table showing training completion by day and night shift">
+      <div className="mx-auto max-w-2xl overflow-x-auto">
+        <table className="w-full min-w-[560px] border-collapse text-center text-base">
+          <thead><tr><th className="border border-white/10 bg-[#151A20] p-3 text-left text-[#8D98A6]">Shift</th>{diagram.columnLabels.map((label) => <th key={label} className="border border-white/10 bg-[#151A20] p-3 text-[#D9F8FF]">{label}</th>)}<th className="border border-white/10 bg-[#151A20] p-3 text-[#8D98A6]">Total</th></tr></thead>
+          <tbody>{diagram.rowLabels.map((label, rowIndex) => <tr key={label}><th className="border border-white/10 p-3 text-left font-medium text-[#D9F8FF]">{label}</th>{diagram.values[rowIndex].map((value, columnIndex) => <td key={`${rowIndex}-${columnIndex}`} className="border border-white/10 p-3 text-xl font-semibold text-[#F4F6F8]">{value}</td>)}<td className="border border-white/10 p-3 text-[#AAB4C0]">{rowTotals[rowIndex]}</td></tr>)}<tr><th className="border border-white/10 bg-[#151A20] p-3 text-left text-[#8D98A6]">Total</th><td className="border border-white/10 bg-[#151A20] p-3 text-[#AAB4C0]">{columnTotals[0]}</td><td className="border border-white/10 bg-[#151A20] p-3 text-[#AAB4C0]">{columnTotals[1]}</td><td className="border border-white/10 bg-[#151A20] p-3 text-[#AAB4C0]">{grandTotal}</td></tr></tbody>
+        </table>
+      </div>
+    </div>;
+  }
+
   return null;
 }
 
-type NumericalCalibrationPilotSet = "core" | "applied_data";
+type NumericalCalibrationPilotSet = "core" | "applied_data" | "final_formats";
 
 function InternalNumericalCalibrationPilotScreen({ onBack }: { onBack: () => void }) {
   const [phase, setPhase] = useState<"intro" | "question" | "debrief">("intro");
   const [pilotSet, setPilotSet] = useState<NumericalCalibrationPilotSet>("core");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<"A" | "B" | "C" | "D" | null>(null);
+  const [numericEntry, setNumericEntry] = useState("");
   const [responses, setResponses] = useState<NumericalCalibrationPilotResponse[]>([]);
   const [runStartedAt, setRunStartedAt] = useState<string | null>(null);
   const questionStartedAtRef = useRef(0);
-  const activeItems = pilotSet === "core" ? numericalCalibrationCoreItems : numericalCalibrationAppliedDataItems;
+  const activeItems = pilotSet === "core" ? numericalCalibrationCoreItems : pilotSet === "applied_data" ? numericalCalibrationAppliedDataItems : numericalCalibrationFinalFormatItems;
   const item: NumericalCalibrationPilotItem | undefined = activeItems[questionIndex];
+  const currentResponse = item ? responses.find((response) => response.questionId === item.questionId) : undefined;
+  const answered = Boolean(currentResponse);
 
   useEffect(() => {
-    if (phase === "question" && selectedOptionId === null) questionStartedAtRef.current = performance.now();
-  }, [phase, questionIndex, selectedOptionId]);
+    if (phase === "question" && !answered) questionStartedAtRef.current = performance.now();
+  }, [phase, questionIndex, answered]);
 
   function startRun(set: NumericalCalibrationPilotSet) {
     setPilotSet(set);
     setQuestionIndex(0);
     setSelectedOptionId(null);
+    setNumericEntry("");
     setResponses([]);
     setRunStartedAt(now());
     setPhase("question");
   }
 
   function select(optionId: "A" | "B" | "C" | "D") {
-    if (selectedOptionId || !item) return;
+    if (answered || !item) return;
     const selectionTimeMs = Math.max(0, performance.now() - questionStartedAtRef.current);
+    const correct = optionId === item.correctOptionId;
     const response: NumericalCalibrationPilotResponse = {
       questionId: item.questionId,
       selectedOptionId: optionId,
-      correct: optionId === item.correctOptionId,
+      correct,
       selectionTimeMs,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
-      misconceptionTag: item.misconceptionTags[optionId],
+      misconceptionTag: item.misconceptionTags[optionId] ?? (correct ? "correct" : "incorrect"),
     };
     setSelectedOptionId(optionId);
     setResponses((current) => [...current, response]);
   }
 
+  function submitNumeric() {
+    if (answered || !item?.numericAnswer) return;
+    const value = Number(numericEntry);
+    if (!Number.isFinite(value)) return;
+    const selectionTimeMs = Math.max(0, performance.now() - questionStartedAtRef.current);
+    const correct = Math.abs(value - item.numericAnswer.value) <= item.numericAnswer.tolerance;
+    const response: NumericalCalibrationPilotResponse = {
+      questionId: item.questionId,
+      enteredValue: value,
+      correct,
+      selectionTimeMs,
+      answeredAt: now(),
+      deviceClass: getDeviceClass(),
+      misconceptionTag: correct ? "correct" : "numeric_entry_incorrect",
+    };
+    setResponses((current) => [...current, response]);
+  }
+
   function next() {
-    if (!selectedOptionId || !item) return;
+    if (!answered || !item) return;
     if (questionIndex === activeItems.length - 1) {
       saveNumericalCalibrationPilotRun({
         runId: id(`num-cal-${pilotSet}`),
@@ -7222,25 +7260,27 @@ function InternalNumericalCalibrationPilotScreen({ onBack }: { onBack: () => voi
     }
     setQuestionIndex((current) => current + 1);
     setSelectedOptionId(null);
+    setNumericEntry("");
   }
 
   if (phase === "intro") {
     const priorRuns = loadNumericalCalibrationPilotRuns();
-    return <Shell right="Internal numerical calibration"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only numerical lab · v0.10</p><h1 className="mt-4 text-4xl font-semibold">Numerical calibration</h1><p className="mt-5 max-w-3xl leading-relaxed text-[#9AA3B2]">The first eight core items have passed device QA. v0.10 keeps them available as a re-check and adds a separate eight-item applied/data set covering money, measurement, geometry, plans, maps and charts.</p><div className="mt-7 grid gap-4 lg:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Pilot-live re-check</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Core reasoning</div><div className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">8 items · arithmetic, estimation, percentages, ratio, rates and averages.</div><SecondaryButton className="mt-5" onClick={() => startRun("core")}>Re-run 8-item core set</SecondaryButton></div><div className="rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">New v0.10 QA set</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Applied & data reasoning</div><div className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">8 items · money, conversion, area, volume, scale plans, grid routes, bar charts and line graphs.</div><PrimaryButton className="mt-5" onClick={() => startRun("applied_data")}>Start 8-item v0.10 QA set</PrimaryButton></div></div><div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5 text-sm leading-relaxed text-[#C8D2DD]">This remains an internal item-quality pilot. Author timing ranges are provisional. For the new set, please pay particular attention to whether the diagrams can be interpreted immediately without zooming or unnecessary calculation clues.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton>{priorRuns.length > 0 && <SecondaryButton onClick={downloadNumericalCalibrationPilotCsv}>Export {priorRuns.length} prior run{priorRuns.length === 1 ? "" : "s"}</SecondaryButton>}</div></Card></section></Shell>;
+    return <Shell right="Internal numerical calibration"><section className="mx-auto max-w-6xl px-6 py-10 sm:px-8 sm:py-12"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only numerical lab · v0.11</p><h1 className="mt-4 text-4xl font-semibold">Numerical calibration</h1><p className="mt-5 max-w-3xl leading-relaxed text-[#9AA3B2]">Core reasoning and the applied/data set have passed device QA. v0.11 adds the final four blueprint formats so the complete 20-item Numerical calibration architecture can be reviewed.</p><div className="mt-7 grid gap-4 lg:grid-cols-3"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Pilot-live</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Core reasoning</div><div className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">8 items · arithmetic, estimation, percentages, ratio, rates and averages.</div><SecondaryButton className="mt-5" onClick={() => startRun("core")}>Re-run core set</SecondaryButton></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Pilot-live</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Applied & data reasoning</div><div className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">8 items · money, conversion, area, volume, plans, maps and charts.</div><SecondaryButton className="mt-5" onClick={() => startRun("applied_data")}>Re-run applied/data set</SecondaryButton></div><div className="rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">New v0.11 QA set</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Final formats</div><div className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">4 items · two-way table, probability, typed numeric entry and true/false data claim.</div><PrimaryButton className="mt-5" onClick={() => startRun("final_formats")}>Start 4-item v0.11 QA set</PrimaryButton></div></div><div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5 text-sm leading-relaxed text-[#C8D2DD]">This remains an internal item-quality pilot. Please check especially that the two-way table is immediately readable on mobile, that typed numeric entry feels natural, and that True/False is visually distinct from four-option MCQ.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton>{priorRuns.length > 0 && <SecondaryButton onClick={downloadNumericalCalibrationPilotCsv}>Export {priorRuns.length} prior run{priorRuns.length === 1 ? "" : "s"}</SecondaryButton>}</div></Card></section></Shell>;
   }
 
   if (!item) return null;
 
   if (phase === "question") {
-    const selectedCorrect = selectedOptionId === item.correctOptionId;
-    const currentResponse = responses.find((response) => response.questionId === item.questionId);
-    return <Shell right="Numerical calibration pilot"><section className="mx-auto max-w-5xl px-6 py-8 sm:px-8 sm:py-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70" style={{ width: `${((questionIndex + 1) / activeItems.length) * 100}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{item.blueprintId} · {item.archetype}</p><h1 className="mt-2 text-3xl font-semibold">Numerical calibration item</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {activeItems.length}<br/><span className="text-xs">Author range {item.targetTimeRangeSec.minSec}–{item.targetTimeRangeSec.maxSec}s</span></div></div><Card><NumericalCalibrationPilotDiagram diagram={item.diagram}/><p className={`${item.diagram ? "mt-2" : ""} text-xl leading-relaxed text-[#F4F6F8]`}>{item.stem}</p><div className="mt-6 grid gap-3 sm:grid-cols-2">{item.options.map((option) => <button key={option.optionId} type="button" disabled={Boolean(selectedOptionId)} onClick={() => select(option.optionId)} className={`rounded-2xl border p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.optionId}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{selectedOptionId && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{item.explanation}</p><p className="mt-3 text-sm text-[#8D98A6]">Selection latency: {formatSeconds(currentResponse?.selectionTimeMs ?? 0)} · diagnostic tag: {currentResponse?.misconceptionTag ?? "—"}</p></div><PrimaryButton className="shrink-0" onClick={next}>{questionIndex === activeItems.length - 1 ? "Complete pilot" : "Next item"}</PrimaryButton></div></div>}</Card></section></Shell>;
+    const selectedCorrect = currentResponse?.correct ?? false;
+    const responseFormat = item.responseFormat ?? "mcq";
+    return <Shell right="Numerical calibration pilot"><section className="mx-auto max-w-5xl px-6 py-8 sm:px-8 sm:py-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70" style={{ width: `${((questionIndex + 1) / activeItems.length) * 100}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{item.blueprintId} · {item.archetype}</p><h1 className="mt-2 text-3xl font-semibold">Numerical calibration item</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {activeItems.length}<br/><span className="text-xs">{responseFormat.replace("_", " ")} · author range {item.targetTimeRangeSec.minSec}–{item.targetTimeRangeSec.maxSec}s</span></div></div><Card><NumericalCalibrationPilotDiagram diagram={item.diagram}/><p className={`${item.diagram ? "mt-2" : ""} text-xl leading-relaxed text-[#F4F6F8]`}>{item.stem}</p>{responseFormat === "numeric_entry" ? <div className="mt-6 max-w-md"><label className="text-sm font-medium text-[#AAB4C0]" htmlFor="numerical-calibration-entry">Enter your answer</label><div className="mt-2 flex items-stretch gap-3"><input id="numerical-calibration-entry" type="number" inputMode="decimal" disabled={answered} value={numericEntry} onChange={(event) => setNumericEntry(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") submitNumeric(); }} className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-[#111418] px-5 py-4 text-xl text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/60" placeholder="Number"/><div className="flex items-center text-sm text-[#8D98A6]">{item.numericAnswer?.unitLabel}</div><PrimaryButton onClick={submitNumeric} disabled={answered || numericEntry.trim() === ""}>Submit</PrimaryButton></div></div> : <div className={`mt-6 grid gap-3 ${item.options.length <= 2 ? "sm:grid-cols-2" : "sm:grid-cols-2"}`}>{item.options.map((option) => <button key={option.optionId} type="button" disabled={answered} onClick={() => select(option.optionId)} className={`rounded-2xl border p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{responseFormat === "true_false" ? "" : option.optionId}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>}{answered && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{item.explanation}</p><p className="mt-3 text-sm text-[#8D98A6]">Selection latency: {formatSeconds(currentResponse?.selectionTimeMs ?? 0)} · diagnostic tag: {currentResponse?.misconceptionTag ?? "—"}</p></div><PrimaryButton className="shrink-0" onClick={next}>{questionIndex === activeItems.length - 1 ? "Complete pilot" : "Next item"}</PrimaryButton></div></div>}</Card></section></Shell>;
   }
 
   const correct = responses.filter((response) => response.correct).length;
   const times = responses.map((response) => response.selectionTimeMs);
   const spread = percentileRange(times);
-  return <Shell right="Numerical calibration debrief"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Internal calibration result</p><h1 className="mt-3 text-4xl font-semibold">{pilotSet === "applied_data" ? "Numerical v0.10 applied/data QA complete" : "Numerical core re-check complete"}</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">These are diagnostic observations only. The author timing ranges remain provisional and are not learner standards.</p></div><Badge>{NUMERICAL_CALIBRATION_PILOT_VERSION}</Badge></div><div className="mt-8 grid gap-4 sm:grid-cols-3"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median selection time</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(median(times))}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">IQR</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(spread.iqr)}</div></Card></div><Card className="mt-8"><h2 className="text-2xl font-semibold">Item observations</h2><div className="mt-5 overflow-x-auto"><table className="min-w-[720px] w-full text-left text-sm"><thead className="text-[#6E7A88]"><tr><th className="pb-3 pr-4">Item</th><th className="pb-3 pr-4">Result</th><th className="pb-3 pr-4">Selection</th><th className="pb-3">Diagnostic</th></tr></thead><tbody>{responses.map((response) => <tr key={response.questionId} className="border-t border-white/5"><td className="py-3 pr-4 text-[#DDE3EA]">{response.questionId}</td><td className="py-3 pr-4">{response.correct ? "Correct" : "Incorrect"}</td><td className="py-3 pr-4">{formatSeconds(response.selectionTimeMs)}</td><td className="py-3 text-[#9AA3B2]">{response.misconceptionTag}</td></tr>)}</tbody></table></div></Card><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={() => setPhase("intro")}>Back to numerical lab</SecondaryButton><SecondaryButton onClick={downloadNumericalCalibrationPilotCsv}>Export calibration CSV</SecondaryButton><PrimaryButton onClick={() => startRun(pilotSet)}>Run this set again</PrimaryButton></div></section></Shell>;
+  const debriefTitle = pilotSet === "final_formats" ? "Numerical v0.11 final-format QA complete" : pilotSet === "applied_data" ? "Numerical applied/data re-check complete" : "Numerical core re-check complete";
+  return <Shell right="Numerical calibration debrief"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Internal calibration result</p><h1 className="mt-3 text-4xl font-semibold">{debriefTitle}</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">These are diagnostic observations only. The author timing ranges remain provisional and are not learner standards.</p></div><Badge>{NUMERICAL_CALIBRATION_PILOT_VERSION}</Badge></div><div className="mt-8 grid gap-4 sm:grid-cols-3"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median selection time</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(median(times))}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">IQR</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(spread.iqr)}</div></Card></div><Card className="mt-8"><h2 className="text-2xl font-semibold">Item observations</h2><div className="mt-5 overflow-x-auto"><table className="min-w-[720px] w-full text-left text-sm"><thead className="text-[#6E7A88]"><tr><th className="pb-3 pr-4">Item</th><th className="pb-3 pr-4">Result</th><th className="pb-3 pr-4">Selection</th><th className="pb-3">Diagnostic</th></tr></thead><tbody>{responses.map((response) => <tr key={response.questionId} className="border-t border-white/5"><td className="py-3 pr-4 text-[#DDE3EA]">{response.questionId}</td><td className="py-3 pr-4">{response.correct ? "Correct" : "Incorrect"}</td><td className="py-3 pr-4">{formatSeconds(response.selectionTimeMs)}</td><td className="py-3 text-[#9AA3B2]">{response.misconceptionTag}</td></tr>)}</tbody></table></div></Card><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={() => setPhase("intro")}>Back to numerical lab</SecondaryButton><SecondaryButton onClick={downloadNumericalCalibrationPilotCsv}>Export calibration CSV</SecondaryButton><PrimaryButton onClick={() => startRun(pilotSet)}>Run this set again</PrimaryButton></div></section></Shell>;
 }
 
 function InternalCalibrationFrameworkScreen({ onBack, onOpenGearPilot, onOpenMechanicalPilot, onOpenNumericalPilot }: { onBack: () => void; onOpenGearPilot: () => void; onOpenMechanicalPilot: () => void; onOpenNumericalPilot: () => void }) {
@@ -7251,7 +7291,7 @@ function InternalCalibrationFrameworkScreen({ onBack, onOpenGearPilot, onOpenMec
 
     <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{summary.map((domain) => <div key={domain.id} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">{domain.label}</div><div className="mt-3 text-3xl font-semibold">{domain.total}</div><div className="mt-2 text-sm text-[#9AA3B2]">{domain.pilotLive} pilot live · {domain.blueprintOnly} blueprint-only</div></div>)}</div>
 
-    <div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current rule</div><p className="mt-3 text-lg leading-relaxed text-[#D9F8FF]">Blueprint status, implementation status, QA status and empirical calibration are separate things. Gear Direction remains pilot-live. Gear Speed Ratio, Compound Gears, Open Belt Direction and Crossed Belt Direction are now pilot-live after device QA. Mechanical extensions remain in QA review. Numerical 01–08 are pilot-live after device QA. Numerical 09–16 are authored and in QA review as the applied/data calibration slice.</p><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Framework: {GENERAL_CALIBRATION_BLUEPRINT_VERSION} · Live pilot families: {liveItems.length}</p></div>
+    <div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current rule</div><p className="mt-3 text-lg leading-relaxed text-[#D9F8FF]">Blueprint status, implementation status, QA status and empirical calibration are separate things. Gear Direction remains pilot-live. Gear Speed Ratio, Compound Gears, Open Belt Direction and Crossed Belt Direction are now pilot-live after device QA. Mechanical extensions remain in QA review. Numerical 01–16 are pilot-live after device QA. Numerical 17–20 are authored and in QA review as the final-format calibration slice.</p><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Framework: {GENERAL_CALIBRATION_BLUEPRINT_VERSION} · Live pilot families: {liveItems.length}</p></div>
 
     <div className="mt-8 rounded-2xl border border-white/5 bg-[#151A21] p-5"><details><summary className="cursor-pointer font-semibold text-[#D9F8FF]">Authoring & QA gate</summary><ol className="mt-5 space-y-3 text-sm leading-relaxed text-[#AAB4C0]">{calibrationQaGate.map((gate, index) => <li key={gate}><span className="mr-2 text-[#6E7A88]">{index + 1}.</span>{gate}</li>)}</ol></details></div>
 
