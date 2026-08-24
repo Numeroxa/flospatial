@@ -21,7 +21,7 @@ export type GeneralCalibrationBlueprint = {
   linkedLiveFamilyId?: string;
 };
 
-export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_08_V0_11";
+export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_08_V0_12";
 
 function b(
   domain: CalibrationDomain,
@@ -97,20 +97,20 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("numerical", 14, "Map/grid", "map_grid_distance", "Read route distance or coordinates from simple map.", "Map + MCQ", 50, 65, "applied", "FRV contextual data presentation.", "no", "pilot_live", "cleared", "map_grid_distance_v1"),
   b("numerical", 15, "Bar chart", "bar_chart_comparison", "Compare categories and calculate difference/percentage.", "Chart + MCQ", 50, 65, "applied", "Broaden data interpretation.", "no", "pilot_live", "cleared", "bar_chart_comparison_v1"),
   b("numerical", 16, "Line graph", "line_graph_rate", "Find trend, rate or interpolated value.", "Graph + MCQ", 50, 65, "applied", "Broaden graphical literacy.", "no", "pilot_live", "cleared", "line_graph_rate_v1"),
-  b("numerical", 17, "Two-way table", "two_way_table", "Read conditional total or compare groups.", "Table + MCQ", 50, 65, "applied", "Data selection discipline.", "no", "qa_review", "in_review", "two_way_table_v1"),
-  b("numerical", 18, "Basic probability", "simple_probability", "Simple event probability from counts.", "MCQ", 45, 60, "applied", "Fill statistics/probability gap.", "no", "qa_review", "in_review", "simple_probability_v1"),
-  b("numerical", 19, "Numeric entry", "numeric_entry_area_rate", "Area/rate item requiring typed numeric response.", "Numeric entry", 50, 65, "applied", "Match FRV non-MCQ formats.", "no", "qa_review", "in_review", "numeric_entry_area_rate_v1"),
-  b("numerical", 20, "True/false data claim", "data_claim_true_false", "Evaluate statement against table/graph.", "True/False", 45, 60, "applied", "Match FRV response-format variety.", "no", "qa_review", "in_review", "data_claim_true_false_v1"),
+  b("numerical", 17, "Two-way table", "two_way_table", "Read conditional total or compare groups.", "Table + MCQ", 50, 65, "applied", "Data selection discipline.", "no", "pilot_live", "cleared", "two_way_table_v1"),
+  b("numerical", 18, "Basic probability", "simple_probability", "Simple event probability from counts.", "MCQ", 45, 60, "applied", "Fill statistics/probability gap.", "no", "pilot_live", "cleared", "simple_probability_v1"),
+  b("numerical", 19, "Numeric entry", "numeric_entry_area_rate", "Area/rate item requiring typed numeric response.", "Numeric entry", 50, 65, "applied", "Match FRV non-MCQ formats.", "no", "pilot_live", "cleared", "numeric_entry_area_rate_v1"),
+  b("numerical", 20, "True/false data claim", "data_claim_true_false", "Evaluate statement against table/graph.", "True/False", 45, 60, "applied", "Match FRV response-format variety.", "no", "pilot_live", "cleared", "data_claim_true_false_v1"),
 
   // Abstract & logical — 20
-  b("abstract_logical", 1, "Next sequence - rotation", "sequence_rotation", "Single shape rotates fixed angle.", "Visual MCQ", 40, 55, "foundation", "FRV-style non-verbal sequence.", "candidate"),
-  b("abstract_logical", 2, "Next sequence - count", "sequence_count", "Symbols increase/decrease by fixed count.", "Visual MCQ", 40, 55, "foundation", "Basic visual rule.", "candidate"),
-  b("abstract_logical", 3, "Next sequence - alternation", "sequence_alternation", "Two rules alternate across positions.", "Visual MCQ", 50, 65, "applied", "Increase rule complexity."),
-  b("abstract_logical", 4, "Next sequence - dual feature", "sequence_dual_feature", "Shape rotates while shading alternates.", "Visual MCQ", 55, 70, "applied", "Test feature separation."),
-  b("abstract_logical", 5, "Missing matrix - addition", "matrix_addition", "Third cell combines first two.", "Matrix MCQ", 50, 65, "applied", "Retain current matrix strength."),
-  b("abstract_logical", 6, "Missing matrix - subtraction", "matrix_subtraction", "Elements cancel or remove.", "Matrix MCQ", 50, 65, "applied", "Ambiguity-audited matrix logic."),
-  b("abstract_logical", 7, "Missing matrix - rotation", "matrix_rotation", "Rows/columns transform orientation.", "Matrix MCQ", 55, 70, "applied", "Visual rule transfer."),
-  b("abstract_logical", 8, "Missing matrix - overlay", "matrix_overlay", "Two cells superimposed produce third.", "Matrix MCQ", 55, 70, "stretch", "More realistic visual complexity."),
+  b("abstract_logical", 1, "Next sequence - rotation", "sequence_rotation", "Single shape rotates fixed angle.", "Visual MCQ", 40, 55, "foundation", "FRV-style non-verbal sequence.", "candidate", "qa_review", "in_review", "sequence_rotation_v1"),
+  b("abstract_logical", 2, "Next sequence - count", "sequence_count", "Symbols increase/decrease by fixed count.", "Visual MCQ", 40, 55, "foundation", "Basic visual rule.", "candidate", "qa_review", "in_review", "sequence_count_v1"),
+  b("abstract_logical", 3, "Next sequence - alternation", "sequence_alternation", "Two rules alternate across positions.", "Visual MCQ", 50, 65, "applied", "Increase rule complexity.", "no", "qa_review", "in_review", "sequence_alternation_v1"),
+  b("abstract_logical", 4, "Next sequence - dual feature", "sequence_dual_feature", "Shape rotates while shading alternates.", "Visual MCQ", 55, 70, "applied", "Test feature separation.", "no", "qa_review", "in_review", "sequence_dual_feature_v1"),
+  b("abstract_logical", 5, "Missing matrix - addition", "matrix_addition", "Third cell combines first two.", "Matrix MCQ", 50, 65, "applied", "Retain current matrix strength.", "no", "qa_review", "in_review", "matrix_addition_v1"),
+  b("abstract_logical", 6, "Missing matrix - subtraction", "matrix_subtraction", "Elements cancel or remove.", "Matrix MCQ", 50, 65, "applied", "Ambiguity-audited matrix logic.", "no", "qa_review", "in_review", "matrix_subtraction_v1"),
+  b("abstract_logical", 7, "Missing matrix - rotation", "matrix_rotation", "Rows/columns transform orientation.", "Matrix MCQ", 55, 70, "applied", "Visual rule transfer.", "no", "qa_review", "in_review", "matrix_rotation_v1"),
+  b("abstract_logical", 8, "Missing matrix - overlay", "matrix_overlay", "Two cells superimposed produce third.", "Matrix MCQ", 55, 70, "stretch", "More realistic visual complexity.", "no", "qa_review", "in_review", "matrix_overlay_v1"),
   b("abstract_logical", 9, "Classification - outlier", "classification_outlier", "Four options share exact component set; one differs.", "Visual MCQ", 40, 55, "foundation", "Criteria-style outlier.", "candidate"),
   b("abstract_logical", 10, "Classification - symmetry", "classification_symmetry", "Odd one out based on one unique symmetry property.", "Visual MCQ", 45, 60, "applied", "Avoid multi-criterion ambiguity."),
   b("abstract_logical", 11, "Analogy - rotation", "analogy_rotation", "A changes to B; apply same visual transformation to C.", "Visual analogy", 45, 60, "applied", "Use explicit transform layout."),
