@@ -8804,20 +8804,29 @@ type AbstractLogicalStage = "guided" | "independent" | "assessment";
 function AbstractLogicalVisualPanel({ visual }: { visual: AbstractVisual }) {
   const maxColumns = Math.max(...visual.rows.map((row) => row.length));
   const isMatrix = visual.kind === "matrix";
+  const clusterableSymbols = new Set(["▲", "△", "●", "○", "■", "□", "◆", "◇"]);
   return (
-    <div className="mb-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-4 sm:p-7">
+    <div className="mb-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">
       {visual.caption && <div className="mb-4 text-xs uppercase leading-relaxed tracking-[0.14em] text-[#6E7A88]">{visual.caption}</div>}
-      <div className="mx-auto grid max-w-3xl gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))` }}>
+      <div className="mx-auto grid max-w-3xl gap-1.5 sm:gap-3" style={{ gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))` }}>
         {visual.rows.flatMap((row, rowIndex) =>
           Array.from({ length: maxColumns }, (_, colIndex) => {
             const cell = row[colIndex] ?? "";
+            const trimmedCell = cell.trim();
+            const cellSymbols = Array.from(trimmedCell);
             const isMissing = cell === "?";
-            const isSpacer = cell.trim() === "";
+            const isSpacer = trimmedCell === "";
             const isTransformWord = cell.toLowerCase() === "becomes";
+            const isRepeatedSymbolCell =
+              cellSymbols.length > 1 &&
+              cellSymbols.length <= 6 &&
+              clusterableSymbols.has(cellSymbols[0]) &&
+              cellSymbols.every((symbol) => symbol === cellSymbols[0]);
+            const clusterColumns = cellSymbols.length <= 2 ? cellSymbols.length : 2;
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className={`${isMatrix ? "min-h-[4.5rem]" : "min-h-20"} flex items-center justify-center rounded-2xl border px-2 text-center font-semibold ${
+                className={`${isMatrix ? "min-h-[4.5rem]" : "min-h-20"} min-w-0 overflow-hidden flex items-center justify-center rounded-2xl border px-1 text-center font-semibold sm:px-2 ${
                   isSpacer
                     ? "border-transparent bg-transparent"
                     : isTransformWord
@@ -8827,9 +8836,27 @@ function AbstractLogicalVisualPanel({ visual }: { visual: AbstractVisual }) {
                         : "border-white/10 bg-[#171C23] text-[#F4F6F8]"
                 }`}
               >
-                <span className={`${isTransformWord ? "text-xs uppercase tracking-[0.08em] sm:text-sm" : "whitespace-pre text-[1.65rem] leading-none sm:text-3xl"}`}>
-                  {cell}
-                </span>
+                {isRepeatedSymbolCell ? (
+                  <span
+                    className="grid items-center justify-center gap-x-1 gap-y-1 leading-none"
+                    style={{ gridTemplateColumns: `repeat(${clusterColumns}, auto)` }}
+                    aria-label={`${cellSymbols.length} ${cellSymbols[0]} symbols`}
+                  >
+                    {cellSymbols.map((symbol, symbolIndex) => (
+                      <span
+                        key={symbolIndex}
+                        className={`${cellSymbols.length > 2 && cellSymbols.length % 2 === 1 && symbolIndex === cellSymbols.length - 1 ? "col-span-2 justify-self-center" : ""} text-[1.15rem] leading-none sm:text-2xl`}
+                        aria-hidden="true"
+                      >
+                        {symbol}
+                      </span>
+                    ))}
+                  </span>
+                ) : (
+                  <span className={`${isTransformWord ? "text-[10px] uppercase tracking-[0.05em] sm:text-sm sm:tracking-[0.08em]" : "whitespace-pre text-[1.5rem] leading-none sm:text-3xl"}`}>
+                    {cell}
+                  </span>
+                )}
               </div>
             );
           })
