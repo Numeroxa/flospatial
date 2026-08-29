@@ -7236,11 +7236,13 @@ function NumericalCalibrationPilotDiagram({ diagram }: { diagram?: NumericalCali
     const rowTotals = diagram.values.map((row) => row[0] + row[1]);
     const columnTotals = [diagram.values[0][0] + diagram.values[1][0], diagram.values[0][1] + diagram.values[1][1]];
     const grandTotal = rowTotals[0] + rowTotals[1];
-    return <div className="mb-6 overflow-hidden rounded-2xl border border-white/5 bg-[#0E1115] p-4" role="img" aria-label="Two-way table showing training completion by day and night shift">
-      <div className="mx-auto max-w-2xl overflow-x-auto">
-        <table className="w-full min-w-[560px] border-collapse text-center text-base">
-          <thead><tr><th className="border border-white/10 bg-[#151A20] p-3 text-left text-[#8D98A6]">Shift</th>{diagram.columnLabels.map((label) => <th key={label} className="border border-white/10 bg-[#151A20] p-3 text-[#D9F8FF]">{label}</th>)}<th className="border border-white/10 bg-[#151A20] p-3 text-[#8D98A6]">Total</th></tr></thead>
-          <tbody>{diagram.rowLabels.map((label, rowIndex) => <tr key={label}><th className="border border-white/10 p-3 text-left font-medium text-[#D9F8FF]">{label}</th>{diagram.values[rowIndex].map((value, columnIndex) => <td key={`${rowIndex}-${columnIndex}`} className="border border-white/10 p-3 text-xl font-semibold text-[#F4F6F8]">{value}</td>)}<td className="border border-white/10 p-3 text-[#AAB4C0]">{rowTotals[rowIndex]}</td></tr>)}<tr><th className="border border-white/10 bg-[#151A20] p-3 text-left text-[#8D98A6]">Total</th><td className="border border-white/10 bg-[#151A20] p-3 text-[#AAB4C0]">{columnTotals[0]}</td><td className="border border-white/10 bg-[#151A20] p-3 text-[#AAB4C0]">{columnTotals[1]}</td><td className="border border-white/10 bg-[#151A20] p-3 text-[#AAB4C0]">{grandTotal}</td></tr></tbody>
+    const rowHeaderLabel = diagram.rowLabels.every((label) => label.toLowerCase().startsWith("site")) ? "Site" : diagram.rowLabels.every((label) => label.toLowerCase().includes("shift")) ? "Shift" : "Group";
+    return <div className="mb-6 w-full max-w-full overflow-hidden rounded-2xl border border-white/5 bg-[#0E1115] p-2 sm:p-4" role="img" aria-label="Two-way numerical data table">
+      <div className="mx-auto w-full max-w-2xl">
+        <table className="w-full table-fixed border-collapse text-center text-[11px] sm:text-base">
+          <colgroup><col style={{ width: "31%" }}/><col style={{ width: "23%" }}/><col style={{ width: "26%" }}/><col style={{ width: "20%" }}/></colgroup>
+          <thead><tr><th className="whitespace-normal break-words border border-white/10 bg-[#151A20] px-1.5 py-2 text-left text-[10px] leading-tight text-[#8D98A6] sm:p-3 sm:text-base">{rowHeaderLabel}</th>{diagram.columnLabels.map((label) => <th key={label} className="whitespace-normal break-words border border-white/10 bg-[#151A20] px-1 py-2 text-[9px] font-semibold leading-[1.1] text-[#D9F8FF] sm:p-3 sm:text-base">{label}</th>)}<th className="whitespace-normal break-words border border-white/10 bg-[#151A20] px-1 py-2 text-[9px] leading-tight text-[#8D98A6] sm:p-3 sm:text-base">Total</th></tr></thead>
+          <tbody>{diagram.rowLabels.map((label, rowIndex) => <tr key={label}><th className="whitespace-normal break-words border border-white/10 px-1.5 py-2 text-left text-[11px] font-medium leading-tight text-[#D9F8FF] sm:p-3 sm:text-base">{label}</th>{diagram.values[rowIndex].map((value, columnIndex) => <td key={`${rowIndex}-${columnIndex}`} className="border border-white/10 px-1 py-2 text-base font-semibold text-[#F4F6F8] sm:p-3 sm:text-xl">{value}</td>)}<td className="border border-white/10 px-1 py-2 text-[11px] text-[#AAB4C0] sm:p-3 sm:text-base">{rowTotals[rowIndex]}</td></tr>)}<tr><th className="border border-white/10 bg-[#151A20] px-1.5 py-2 text-left text-[11px] text-[#8D98A6] sm:p-3 sm:text-base">Total</th><td className="border border-white/10 bg-[#151A20] px-1 py-2 text-[11px] text-[#AAB4C0] sm:p-3 sm:text-base">{columnTotals[0]}</td><td className="border border-white/10 bg-[#151A20] px-1 py-2 text-[11px] text-[#AAB4C0] sm:p-3 sm:text-base">{columnTotals[1]}</td><td className="border border-white/10 bg-[#151A20] px-1 py-2 text-[11px] text-[#AAB4C0] sm:p-3 sm:text-base">{grandTotal}</td></tr></tbody>
         </table>
       </div>
     </div>;
@@ -8578,32 +8580,38 @@ function NumericalPracticeIntroScreen({ stage, onStart }: { stage: NumericalStag
 
 function NumericalDataTableView({ table }: { table?: NumericalDataTable }) {
   if (!table) return null;
+  const columnCount = Math.max(1, table.headers.length);
+  const firstColumnWidth = columnCount > 1 ? 34 : 100;
+  const remainingColumnWidth = columnCount > 1 ? (100 - firstColumnWidth) / (columnCount - 1) : 0;
   return (
-    <div className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0E1115]">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[320px] table-fixed border-collapse text-left text-xs sm:text-sm">
-          <thead>
-            <tr>
-              {table.headers.map((header) => (
-                <th key={header} className="break-words border-b border-white/10 px-2 py-2 text-[10px] uppercase leading-tight tracking-[0.06em] text-[#6E7A88] sm:px-3 sm:py-3 sm:text-xs sm:tracking-[0.12em]">
-                  {header}
-                </th>
+    <div className="mb-6 w-full max-w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0E1115]">
+      <table className="w-full table-fixed border-collapse text-left text-[11px] sm:text-sm">
+        <colgroup>
+          {table.headers.map((header, index) => (
+            <col key={`${header}-${index}`} style={{ width: `${index === 0 ? firstColumnWidth : remainingColumnWidth}%` }} />
+          ))}
+        </colgroup>
+        <thead>
+          <tr>
+            {table.headers.map((header) => (
+              <th key={header} className="whitespace-normal break-words border-b border-white/10 px-2 py-2 text-[9px] uppercase leading-[1.15] tracking-[0.03em] text-[#6E7A88] sm:px-3 sm:py-3 sm:text-xs sm:tracking-[0.10em]">
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {table.rows.map((row, rowIndex) => (
+            <tr key={rowIndex} className="border-b border-white/5 last:border-0">
+              {row.map((cell, cellIndex) => (
+                <td key={cellIndex} className="whitespace-normal break-words px-2 py-2 leading-tight text-[#DCE3EA] sm:px-3 sm:py-3 sm:leading-normal">
+                  {cell}
+                </td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {table.rows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="border-b border-white/5 last:border-0">
-                {row.map((cell, cellIndex) => (
-                  <td key={cellIndex} className="break-words px-2 py-2 leading-tight text-[#DCE3EA] sm:px-3 sm:py-3 sm:leading-normal">
-                    {cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
