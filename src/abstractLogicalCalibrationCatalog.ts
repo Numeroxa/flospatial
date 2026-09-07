@@ -17,7 +17,8 @@ export type AbstractLogicalCell = {
 export type AbstractLogicalCalibrationDiagram =
   | { kind: "sequence"; cells: AbstractLogicalCell[]; showMissingCell?: boolean }
   | { kind: "matrix"; rows: (AbstractLogicalCell | null)[][] }
-  | { kind: "analogy"; a: AbstractLogicalCell; b: AbstractLogicalCell; c: AbstractLogicalCell };
+  | { kind: "analogy"; a: AbstractLogicalCell; b: AbstractLogicalCell; c: AbstractLogicalCell }
+  | { kind: "rule_machine"; examples: { input: AbstractLogicalCell; output: AbstractLogicalCell }[]; target: AbstractLogicalCell };
 
 export type AbstractLogicalCalibrationOption = {
   optionId: AbstractLogicalCalibrationOptionId;
@@ -42,13 +43,14 @@ export type AbstractLogicalCalibrationPilotItem = {
   misconceptionTags: Partial<Record<AbstractLogicalCalibrationOptionId, string>>;
 };
 
-export const ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION = "APTESTA_ABSTRACT_LOGICAL_CAL_V0_13";
+export const ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION = "APTESTA_ABSTRACT_LOGICAL_CAL_V0_14";
 
 const circle = (x: number, y: number, filled = true, size = 13): AbstractLogicalMark => ({ kind: "circle", x, y, filled, size });
 const square = (x: number, y: number, filled = true, size = 24, rotation = 0): AbstractLogicalMark => ({ kind: "square", x, y, filled, size, rotation });
 const diamond = (x: number, y: number, filled = true, size = 24): AbstractLogicalMark => ({ kind: "diamond", x, y, filled, size });
 const triangle = (x: number, y: number, rotation = 0, filled = true, size = 28): AbstractLogicalMark => ({ kind: "triangle", x, y, rotation, filled, size });
 const arrow = (rotation: number): AbstractLogicalMark => ({ kind: "arrow", x: 50, y: 50, rotation, filled: true, size: 30 });
+const arrowAt = (x: number, y: number, rotation: number, size = 26): AbstractLogicalMark => ({ kind: "arrow", x, y, rotation, filled: true, size });
 const line = (rotation: number): AbstractLogicalMark => ({ kind: "line", x: 50, y: 50, rotation, length: 54 });
 const grid = (): AbstractLogicalMark => ({ kind: "grid", x: 50, y: 50, size: 70 });
 const cell = (...marks: AbstractLogicalMark[]): AbstractLogicalCell => ({ marks });
@@ -411,8 +413,104 @@ export const abstractLogicalCalibrationClassificationDeductionItems: AbstractLog
   },
 ];
 
+export const abstractLogicalCalibrationCompletionItems: AbstractLogicalCalibrationPilotItem[] = [
+  {
+    questionId: "AL-CAL-017",
+    blueprintId: "ABSTRACT_LOGICAL-17",
+    familyId: "pattern_reflection_rotation_v1",
+    archetype: "pattern_reflection_rotation",
+    difficulty: "stretch",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 55, maxSec: 70 },
+    stem: "The figure changes by alternating two transformations. Which figure comes next?",
+    diagram: { kind: "sequence", cells: [
+      cell(arrowAt(30, 30, 0), circle(70, 70, true, 10)),
+      cell(arrowAt(70, 30, 0), circle(30, 70, true, 10)),
+      cell(arrowAt(70, 70, 90), circle(30, 30, true, 10)),
+      cell(arrowAt(30, 70, 270), circle(70, 30, true, 10)),
+    ], showMissingCell: true },
+    options: [
+      { optionId: "A", visual: cell(arrowAt(30, 30, 0), circle(70, 70, true, 10)), misconceptionTag: "correct" },
+      { optionId: "B", visual: cell(arrowAt(30, 30, 180), circle(70, 70, true, 10)), misconceptionTag: "rotation_direction_error" },
+      { optionId: "C", visual: cell(arrowAt(30, 70, 270), circle(70, 30, true, 10)), misconceptionTag: "repeats_previous_cell" },
+      { optionId: "D", visual: cell(arrowAt(70, 70, 90), circle(30, 30, true, 10)), misconceptionTag: "applies_reflection_instead_of_rotation" },
+    ],
+    correctOptionId: "A",
+    explanation: "The changes alternate: first mirror left-to-right, then rotate the entire figure 90° clockwise. The fourth figure therefore rotates 90° clockwise to return to the first arrangement.",
+    misconceptionTags: { A: "correct", B: "rotation_direction_error", C: "repeats_previous_cell", D: "applies_reflection_instead_of_rotation" },
+  },
+  {
+    questionId: "AL-CAL-018",
+    blueprintId: "ABSTRACT_LOGICAL-18",
+    familyId: "diagrammatic_rule_machine_v1",
+    archetype: "diagrammatic_rule_machine",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "The same rule machine is applied to every input. Which output should the final input produce?",
+    diagram: { kind: "rule_machine", examples: [
+      { input: cell(triangle(50, 50, 0, true, 40)), output: cell(triangle(50, 50, 90, false, 40)) },
+      { input: cell(triangle(50, 50, 270, false, 40)), output: cell(triangle(50, 50, 0, true, 40)) },
+    ], target: cell(triangle(50, 50, 180, true, 40)) },
+    options: [
+      { optionId: "A", visual: cell(triangle(50, 50, 270, false, 40)), misconceptionTag: "correct" },
+      { optionId: "B", visual: cell(triangle(50, 50, 270, true, 40)), misconceptionTag: "rotation_only" },
+      { optionId: "C", visual: cell(triangle(50, 50, 90, false, 40)), misconceptionTag: "rotates_counterclockwise" },
+      { optionId: "D", visual: cell(triangle(50, 50, 180, false, 40)), misconceptionTag: "fill_change_only" },
+    ],
+    correctOptionId: "A",
+    explanation: "The machine performs two changes: rotate 90° clockwise and switch filled to outline (or outline to filled). A filled downward triangle therefore becomes an outline left-pointing triangle.",
+    misconceptionTags: { A: "correct", B: "rotation_only", C: "rotates_counterclockwise", D: "fill_change_only" },
+  },
+  {
+    questionId: "AL-CAL-019",
+    blueprintId: "ABSTRACT_LOGICAL-19",
+    familyId: "spatial_outlier_v1",
+    archetype: "spatial_outlier",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    stem: "Four figures are rotations of the same three-shape arrangement. One is a mirror image rather than a rotation. Which figure is the outlier?",
+    options: [
+      { optionId: "A", visual: cell(circle(28, 28, true, 11), square(72, 28, true, 18), diamond(28, 72, true, 18)), misconceptionTag: "valid_rotation" },
+      { optionId: "B", visual: cell(diamond(28, 28, true, 18), circle(72, 28, true, 11), square(72, 72, true, 18)), misconceptionTag: "valid_rotation" },
+      { optionId: "C", visual: cell(diamond(72, 28, true, 18), square(28, 72, true, 18), circle(72, 72, true, 11)), misconceptionTag: "valid_rotation" },
+      { optionId: "D", visual: cell(square(28, 28, true, 18), circle(28, 72, true, 11), diamond(72, 72, true, 18)), misconceptionTag: "valid_rotation" },
+      { optionId: "E", visual: cell(square(28, 28, true, 18), circle(72, 28, true, 11), diamond(72, 72, true, 18)), misconceptionTag: "correct" },
+    ],
+    correctOptionId: "E",
+    explanation: "A–D preserve the clockwise order of circle, square and diamond and can be made identical by rotation. E reverses that order, so it is the mirror-image outlier.",
+    misconceptionTags: { A: "valid_rotation", B: "valid_rotation", C: "valid_rotation", D: "valid_rotation", E: "correct" },
+  },
+  {
+    questionId: "AL-CAL-020",
+    blueprintId: "ABSTRACT_LOGICAL-20",
+    familyId: "integrated_matrix_v1",
+    archetype: "integrated_matrix",
+    difficulty: "stretch",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 60, maxSec: 75 },
+    stem: "Two features follow repeating rules across both rows and columns. Which box completes the matrix?",
+    diagram: { kind: "matrix", rows: [
+      [cell(arrowAt(50, 58, 0, 24), circle(50, 20, true, 8)), cell(arrowAt(50, 58, 90, 24), circle(38, 20, true, 8), circle(62, 20, true, 8)), cell(arrowAt(50, 58, 180, 24), circle(30, 20, true, 8), circle(50, 20, true, 8), circle(70, 20, true, 8))],
+      [cell(arrowAt(50, 58, 90, 24), circle(38, 20, true, 8), circle(62, 20, true, 8)), cell(arrowAt(50, 58, 180, 24), circle(30, 20, true, 8), circle(50, 20, true, 8), circle(70, 20, true, 8)), cell(arrowAt(50, 58, 270, 24), circle(50, 20, true, 8))],
+      [cell(arrowAt(50, 58, 180, 24), circle(30, 20, true, 8), circle(50, 20, true, 8), circle(70, 20, true, 8)), cell(arrowAt(50, 58, 270, 24), circle(50, 20, true, 8)), null],
+    ] },
+    options: [
+      { optionId: "A", visual: cell(arrowAt(50, 58, 0, 24), circle(38, 20, true, 8), circle(62, 20, true, 8)), misconceptionTag: "correct" },
+      { optionId: "B", visual: cell(arrowAt(50, 58, 0, 24), circle(30, 20, true, 8), circle(50, 20, true, 8), circle(70, 20, true, 8)), misconceptionTag: "count_cycle_error" },
+      { optionId: "C", visual: cell(arrowAt(50, 58, 90, 24), circle(38, 20, true, 8), circle(62, 20, true, 8)), misconceptionTag: "orientation_cycle_error" },
+      { optionId: "D", visual: cell(arrowAt(50, 58, 270, 24), circle(38, 20, true, 8), circle(62, 20, true, 8)), misconceptionTag: "repeats_previous_orientation" },
+    ],
+    correctOptionId: "A",
+    explanation: "Across each row and down each column, the arrow turns 90° clockwise and the dot count cycles 1, 2, 3. The missing box therefore needs an upward arrow with two dots.",
+    misconceptionTags: { A: "correct", B: "count_cycle_error", C: "orientation_cycle_error", D: "repeats_previous_orientation" },
+  },
+];
+
 export const abstractLogicalCalibrationAllItems = [
   ...abstractLogicalCalibrationSequenceMatrixItems,
   ...abstractLogicalCalibrationClassificationDeductionItems,
+  ...abstractLogicalCalibrationCompletionItems,
 ];
 
