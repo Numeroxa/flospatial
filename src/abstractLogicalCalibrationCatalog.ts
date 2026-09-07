@@ -1,5 +1,5 @@
 export type AbstractLogicalCalibrationDifficulty = "foundation" | "applied" | "stretch";
-export type AbstractLogicalCalibrationOptionId = "A" | "B" | "C" | "D";
+export type AbstractLogicalCalibrationOptionId = "A" | "B" | "C" | "D" | "E";
 
 export type AbstractLogicalMark =
   | { kind: "circle"; x: number; y: number; size?: number; filled?: boolean }
@@ -7,7 +7,8 @@ export type AbstractLogicalMark =
   | { kind: "diamond"; x: number; y: number; size?: number; filled?: boolean }
   | { kind: "triangle"; x: number; y: number; size?: number; filled?: boolean; rotation?: number }
   | { kind: "arrow"; x: number; y: number; size?: number; rotation?: number; filled?: boolean }
-  | { kind: "line"; x: number; y: number; length?: number; rotation?: number };
+  | { kind: "line"; x: number; y: number; length?: number; rotation?: number }
+  | { kind: "grid"; x: number; y: number; size?: number };
 
 export type AbstractLogicalCell = {
   marks: AbstractLogicalMark[];
@@ -15,11 +16,13 @@ export type AbstractLogicalCell = {
 
 export type AbstractLogicalCalibrationDiagram =
   | { kind: "sequence"; cells: AbstractLogicalCell[]; showMissingCell?: boolean }
-  | { kind: "matrix"; rows: (AbstractLogicalCell | null)[][] };
+  | { kind: "matrix"; rows: (AbstractLogicalCell | null)[][] }
+  | { kind: "analogy"; a: AbstractLogicalCell; b: AbstractLogicalCell; c: AbstractLogicalCell };
 
 export type AbstractLogicalCalibrationOption = {
   optionId: AbstractLogicalCalibrationOptionId;
-  visual: AbstractLogicalCell;
+  visual?: AbstractLogicalCell;
+  label?: string;
   misconceptionTag: string;
 };
 
@@ -32,14 +35,14 @@ export type AbstractLogicalCalibrationPilotItem = {
   reasoningSteps: number;
   targetTimeRangeSec: { minSec: number; maxSec: number };
   stem: string;
-  diagram: AbstractLogicalCalibrationDiagram;
+  diagram?: AbstractLogicalCalibrationDiagram;
   options: AbstractLogicalCalibrationOption[];
   correctOptionId: AbstractLogicalCalibrationOptionId;
   explanation: string;
   misconceptionTags: Partial<Record<AbstractLogicalCalibrationOptionId, string>>;
 };
 
-export const ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION = "APTESTA_ABSTRACT_LOGICAL_CAL_V0_12";
+export const ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION = "APTESTA_ABSTRACT_LOGICAL_CAL_V0_13";
 
 const circle = (x: number, y: number, filled = true, size = 13): AbstractLogicalMark => ({ kind: "circle", x, y, filled, size });
 const square = (x: number, y: number, filled = true, size = 24, rotation = 0): AbstractLogicalMark => ({ kind: "square", x, y, filled, size, rotation });
@@ -47,6 +50,7 @@ const diamond = (x: number, y: number, filled = true, size = 24): AbstractLogica
 const triangle = (x: number, y: number, rotation = 0, filled = true, size = 28): AbstractLogicalMark => ({ kind: "triangle", x, y, rotation, filled, size });
 const arrow = (rotation: number): AbstractLogicalMark => ({ kind: "arrow", x: 50, y: 50, rotation, filled: true, size: 30 });
 const line = (rotation: number): AbstractLogicalMark => ({ kind: "line", x: 50, y: 50, rotation, length: 54 });
+const grid = (): AbstractLogicalMark => ({ kind: "grid", x: 50, y: 50, size: 70 });
 const cell = (...marks: AbstractLogicalMark[]): AbstractLogicalCell => ({ marks });
 const dots = (count: number): AbstractLogicalCell => {
   const positions: [number, number][] = [
@@ -241,4 +245,174 @@ export const abstractLogicalCalibrationSequenceMatrixItems: AbstractLogicalCalib
   },
 ];
 
-export const abstractLogicalCalibrationAllItems = [...abstractLogicalCalibrationSequenceMatrixItems];
+
+export const abstractLogicalCalibrationClassificationDeductionItems: AbstractLogicalCalibrationPilotItem[] = [
+  {
+    questionId: "AL-CAL-009",
+    blueprintId: "ABSTRACT_LOGICAL-09",
+    familyId: "classification_outlier_v1",
+    archetype: "classification_outlier",
+    difficulty: "foundation",
+    reasoningSteps: 1,
+    targetTimeRangeSec: { minSec: 40, maxSec: 55 },
+    stem: "Four figures contain the same three component shapes. Which figure is the odd one out?",
+    options: [
+      { optionId: "A", visual: cell(circle(28, 50, true, 12), triangle(50, 50, 0, true, 18), square(72, 50, true, 16)), misconceptionTag: "same_component_set" },
+      { optionId: "B", visual: cell(square(28, 50, true, 16), circle(50, 50, true, 12), triangle(72, 50, 0, true, 18)), misconceptionTag: "same_component_set" },
+      { optionId: "C", visual: cell(triangle(28, 50, 0, true, 18), square(50, 50, true, 16), circle(72, 50, true, 12)), misconceptionTag: "same_component_set" },
+      { optionId: "D", visual: cell(circle(28, 50, true, 12), square(50, 50, true, 16), triangle(72, 50, 0, true, 18)), misconceptionTag: "same_component_set" },
+      { optionId: "E", visual: cell(circle(28, 50, true, 12), line(0), triangle(72, 50, 0, true, 18)), misconceptionTag: "correct" },
+    ],
+    correctOptionId: "E",
+    explanation: "A–D each contain a circle, triangle and square. E replaces the square with a line, so it is the outlier.",
+    misconceptionTags: { A: "same_component_set", B: "same_component_set", C: "same_component_set", D: "same_component_set", E: "correct" },
+  },
+  {
+    questionId: "AL-CAL-010",
+    blueprintId: "ABSTRACT_LOGICAL-10",
+    familyId: "classification_symmetry_v1",
+    archetype: "classification_symmetry",
+    difficulty: "applied",
+    reasoningSteps: 1,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    stem: "Four figures have a vertical line of symmetry. Which figure does not?",
+    options: [
+      { optionId: "A", visual: cell(circle(50, 50, false, 42)), misconceptionTag: "has_vertical_symmetry" },
+      { optionId: "B", visual: cell(square(50, 50, false, 42)), misconceptionTag: "has_vertical_symmetry" },
+      { optionId: "C", visual: cell(diamond(50, 50, false, 38)), misconceptionTag: "has_vertical_symmetry" },
+      { optionId: "D", visual: cell(triangle(50, 50, 0, false, 44)), misconceptionTag: "has_vertical_symmetry" },
+      { optionId: "E", visual: cell(arrow(90)), misconceptionTag: "correct" },
+    ],
+    correctOptionId: "E",
+    explanation: "The circle, square, diamond and upright triangle are all symmetric about a vertical line through their centre. The right-pointing arrow is not vertically symmetric.",
+    misconceptionTags: { A: "has_vertical_symmetry", B: "has_vertical_symmetry", C: "has_vertical_symmetry", D: "has_vertical_symmetry", E: "correct" },
+  },
+  {
+    questionId: "AL-CAL-011",
+    blueprintId: "ABSTRACT_LOGICAL-11",
+    familyId: "analogy_rotation_v1",
+    archetype: "analogy_rotation",
+    difficulty: "applied",
+    reasoningSteps: 1,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    stem: "A changes to B by turning 90° clockwise. Apply the same change to C. Which figure should replace the question mark?",
+    diagram: { kind: "analogy", a: cell(arrow(0)), b: cell(arrow(90)), c: cell(triangle(50, 50, 270, true, 32)) },
+    options: [
+      { optionId: "A", visual: cell(triangle(50, 50, 0, true, 32)), misconceptionTag: "correct" },
+      { optionId: "B", visual: cell(triangle(50, 50, 90, true, 32)), misconceptionTag: "turns_too_far" },
+      { optionId: "C", visual: cell(triangle(50, 50, 180, true, 32)), misconceptionTag: "reverses_rule" },
+      { optionId: "D", visual: cell(triangle(50, 50, 270, true, 32)), misconceptionTag: "no_transformation" },
+    ],
+    correctOptionId: "A",
+    explanation: "The first figure turns 90° clockwise. Turning the left-pointing triangle 90° clockwise makes it point up.",
+    misconceptionTags: { A: "correct", B: "turns_too_far", C: "reverses_rule", D: "no_transformation" },
+  },
+  {
+    questionId: "AL-CAL-012",
+    blueprintId: "ABSTRACT_LOGICAL-12",
+    familyId: "analogy_fill_change_v1",
+    archetype: "analogy_fill_change",
+    difficulty: "foundation",
+    reasoningSteps: 1,
+    targetTimeRangeSec: { minSec: 40, maxSec: 55 },
+    stem: "A changes to B by keeping the shape but changing it from filled to outline. Apply the same change to C.",
+    diagram: { kind: "analogy", a: cell(square(50, 50, true, 38)), b: cell(square(50, 50, false, 38)), c: cell(triangle(50, 50, 0, true, 42)) },
+    options: [
+      { optionId: "A", visual: cell(triangle(50, 50, 0, false, 42)), misconceptionTag: "correct" },
+      { optionId: "B", visual: cell(triangle(50, 50, 0, true, 42)), misconceptionTag: "fill_unchanged" },
+      { optionId: "C", visual: cell(square(50, 50, false, 38)), misconceptionTag: "copies_example_output" },
+      { optionId: "D", visual: cell(triangle(50, 50, 180, false, 42)), misconceptionTag: "adds_rotation" },
+    ],
+    correctOptionId: "A",
+    explanation: "Only the fill changes. The triangle keeps its orientation and becomes outline.",
+    misconceptionTags: { A: "correct", B: "fill_unchanged", C: "copies_example_output", D: "adds_rotation" },
+  },
+  {
+    questionId: "AL-CAL-013",
+    blueprintId: "ABSTRACT_LOGICAL-13",
+    familyId: "deduction_ordering_v1",
+    archetype: "deduction_ordering",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    stem: "Mia arrives before Noah. Noah arrives before Priya. Liam arrives after Priya. Which statement MUST be true?",
+    options: [
+      { optionId: "A", label: "Priya arrives before Noah.", misconceptionTag: "reverses_middle_relation" },
+      { optionId: "B", label: "Mia arrives before Priya.", misconceptionTag: "correct" },
+      { optionId: "C", label: "Liam arrives before Noah.", misconceptionTag: "reverses_end_relation" },
+      { optionId: "D", label: "Noah arrives after Liam.", misconceptionTag: "reverses_chain" },
+    ],
+    correctOptionId: "B",
+    explanation: "Mia is before Noah, and Noah is before Priya, so Mia must also be before Priya.",
+    misconceptionTags: { A: "reverses_middle_relation", B: "correct", C: "reverses_end_relation", D: "reverses_chain" },
+  },
+  {
+    questionId: "AL-CAL-014",
+    blueprintId: "ABSTRACT_LOGICAL-14",
+    familyId: "deduction_conditional_v1",
+    archetype: "deduction_conditional",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    stem: "If Pump A fails, the backup pump starts. If the backup pump starts, the warning light comes on. Pump A has failed. Which statement MUST be true?",
+    options: [
+      { optionId: "A", label: "The warning light comes on.", misconceptionTag: "correct" },
+      { optionId: "B", label: "Pump A starts again.", misconceptionTag: "unsupported_recovery" },
+      { optionId: "C", label: "The warning light stays off.", misconceptionTag: "contradicts_chain" },
+      { optionId: "D", label: "The backup pump does not start.", misconceptionTag: "contradicts_first_condition" },
+    ],
+    correctOptionId: "A",
+    explanation: "Pump A failing guarantees the backup starts; that in turn guarantees the warning light comes on.",
+    misconceptionTags: { A: "correct", B: "unsupported_recovery", C: "contradicts_chain", D: "contradicts_first_condition" },
+  },
+  {
+    questionId: "AL-CAL-015",
+    blueprintId: "ABSTRACT_LOGICAL-15",
+    familyId: "deduction_set_logic_v1",
+    archetype: "deduction_set_logic",
+    difficulty: "stretch",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    stem: "All engineers are trained. No trained workers are visitors. Which statement MUST be true?",
+    options: [
+      { optionId: "A", label: "No engineers are visitors.", misconceptionTag: "correct" },
+      { optionId: "B", label: "All trained workers are engineers.", misconceptionTag: "reverses_all_statement" },
+      { optionId: "C", label: "Some visitors are engineers.", misconceptionTag: "contradicts_sets" },
+      { optionId: "D", label: "All visitors are untrained engineers.", misconceptionTag: "unsupported_subset" },
+    ],
+    correctOptionId: "A",
+    explanation: "Every engineer belongs to the trained group, and trained workers cannot be visitors. Therefore engineers cannot be visitors.",
+    misconceptionTags: { A: "correct", B: "reverses_all_statement", C: "contradicts_sets", D: "unsupported_subset" },
+  },
+  {
+    questionId: "AL-CAL-016",
+    blueprintId: "ABSTRACT_LOGICAL-16",
+    familyId: "pattern_movement_grid_v1",
+    archetype: "pattern_movement_grid",
+    difficulty: "applied",
+    reasoningSteps: 1,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    stem: "The dot moves clockwise around the four corner positions of the grid. Which grid comes next?",
+    diagram: { kind: "sequence", cells: [
+      cell(grid(), circle(27, 27, true, 12)),
+      cell(grid(), circle(73, 27, true, 12)),
+      cell(grid(), circle(73, 73, true, 12)),
+      cell(grid(), circle(27, 73, true, 12)),
+    ], showMissingCell: true },
+    options: [
+      { optionId: "A", visual: cell(grid(), circle(27, 27, true, 12)), misconceptionTag: "correct" },
+      { optionId: "B", visual: cell(grid(), circle(73, 27, true, 12)), misconceptionTag: "skips_cycle_reset" },
+      { optionId: "C", visual: cell(grid(), circle(73, 73, true, 12)), misconceptionTag: "repeats_third_position" },
+      { optionId: "D", visual: cell(grid(), circle(50, 50, true, 12)), misconceptionTag: "moves_to_centre" },
+    ],
+    correctOptionId: "A",
+    explanation: "The dot moves top-left, top-right, bottom-right, bottom-left, then returns to top-left.",
+    misconceptionTags: { A: "correct", B: "skips_cycle_reset", C: "repeats_third_position", D: "moves_to_centre" },
+  },
+];
+
+export const abstractLogicalCalibrationAllItems = [
+  ...abstractLogicalCalibrationSequenceMatrixItems,
+  ...abstractLogicalCalibrationClassificationDeductionItems,
+];
+

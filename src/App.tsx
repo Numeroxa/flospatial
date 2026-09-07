@@ -4,7 +4,7 @@ import { GEAR_DIRECTION_CALIBRATION_BANK_VERSION, GEAR_DIRECTION_PARALLEL_FORM_I
 import { GENERAL_CALIBRATION_BLUEPRINT_VERSION, calibrationQaGate, generalCalibrationBlueprints, generalCalibrationDomains, getGeneralCalibrationSummary } from "./calibrationFramework";
 import { MECHANICAL_CALIBRATION_PILOT_VERSION, mechanicalCalibrationPilotItems, mechanicalCalibrationRotationItems, mechanicalCalibrationForceSystemsItems, mechanicalCalibrationExtensionItems, type MechanicalCalibrationDiagram, type MechanicalCalibrationPilotItem } from "./mechanicalCalibrationCatalog";
 import { NUMERICAL_CALIBRATION_PILOT_VERSION, numericalCalibrationAllItems, numericalCalibrationAppliedDataItems, numericalCalibrationCoreItems, numericalCalibrationFinalFormatItems, type NumericalCalibrationDiagram, type NumericalCalibrationPilotItem } from "./numericalCalibrationCatalog";
-import { ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION, abstractLogicalCalibrationAllItems, abstractLogicalCalibrationSequenceMatrixItems, type AbstractLogicalCalibrationDiagram, type AbstractLogicalCalibrationPilotItem, type AbstractLogicalCell, type AbstractLogicalMark } from "./abstractLogicalCalibrationCatalog";
+import { ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION, abstractLogicalCalibrationAllItems, abstractLogicalCalibrationClassificationDeductionItems, abstractLogicalCalibrationSequenceMatrixItems, type AbstractLogicalCalibrationDiagram, type AbstractLogicalCalibrationOptionId, type AbstractLogicalCalibrationPilotItem, type AbstractLogicalCell, type AbstractLogicalMark } from "./abstractLogicalCalibrationCatalog";
 
 type AppScreen =
   | "landing"
@@ -559,7 +559,7 @@ function getDeviceClass(): "phone" | "tablet" | "desktop" {
 }
 type MechanicalCalibrationPilotResponse = {
   questionId: string;
-  selectedOptionId: "A" | "B" | "C" | "D";
+  selectedOptionId: AbstractLogicalCalibrationOptionId;
   correct: boolean;
   selectionTimeMs: number;
   answeredAt: string;
@@ -693,7 +693,7 @@ function downloadNumericalCalibrationPilotCsv() {
 
 type AbstractLogicalCalibrationPilotResponse = {
   questionId: string;
-  selectedOptionId: "A" | "B" | "C" | "D";
+  selectedOptionId: AbstractLogicalCalibrationOptionId;
   correct: boolean;
   selectionTimeMs: number;
   answeredAt: string;
@@ -7384,6 +7384,13 @@ function AbstractLogicalCalibrationMarkSvg({ mark }: { mark: AbstractLogicalMark
     const length = mark.length ?? 54;
     return <line x1={mark.x - length / 2} y1={mark.y} x2={mark.x + length / 2} y2={mark.y} stroke={stroke} strokeWidth="6" strokeLinecap="round" transform={`rotate(${mark.rotation ?? 0} ${mark.x} ${mark.y})`} />;
   }
+  if (mark.kind === "grid") {
+    const size = mark.size ?? 70;
+    const left = mark.x - size / 2;
+    const top = mark.y - size / 2;
+    const step = size / 3;
+    return <g fill="none" stroke="#65717F" strokeWidth="2"><rect x={left} y={top} width={size} height={size} rx="2"/><line x1={left + step} y1={top} x2={left + step} y2={top + size}/><line x1={left + step * 2} y1={top} x2={left + step * 2} y2={top + size}/><line x1={left} y1={top + step} x2={left + size} y2={top + step}/><line x1={left} y1={top + step * 2} x2={left + size} y2={top + step * 2}/></g>;
+  }
   return null;
 }
 
@@ -7396,20 +7403,28 @@ function AbstractLogicalCalibrationCellView({ cell, compact = false }: { cell: A
 function AbstractLogicalCalibrationDiagramView({ diagram }: { diagram: AbstractLogicalCalibrationDiagram }) {
   if (diagram.kind === "sequence") {
     const cells: (AbstractLogicalCell | null)[] = [...diagram.cells, ...(diagram.showMissingCell ? [null] : [])];
-    return <div className="mb-7 rounded-3xl border border-white/5 bg-[#0F1216] p-4 sm:p-6"><div className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}>{cells.map((sequenceCell, index) => <div key={index}><AbstractLogicalCalibrationCellView cell={sequenceCell} compact /></div>)}</div></div>;
+    return <div className="mb-7 rounded-3xl border border-white/5 bg-[#0F1216] p-3 sm:p-6"><div className="grid gap-1.5 sm:gap-3" style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}>{cells.map((sequenceCell, index) => <div key={index}><AbstractLogicalCalibrationCellView cell={sequenceCell} compact /></div>)}</div></div>;
+  }
+  if (diagram.kind === "analogy") {
+    const pair = (leftLabel: string, leftCell: AbstractLogicalCell, rightLabel: string, rightCell: AbstractLogicalCell | null) => <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto_minmax(0,1fr)] items-center gap-2"><span className="text-sm font-semibold text-[#8D98A6]">{leftLabel}</span><AbstractLogicalCalibrationCellView cell={leftCell} compact/><span className="text-2xl text-[#5ED3F3]">→</span><span className="text-sm font-semibold text-[#8D98A6]">{rightLabel}</span><AbstractLogicalCalibrationCellView cell={rightCell} compact/></div>;
+    return <div className="mb-7 rounded-3xl border border-white/5 bg-[#0F1216] p-4 sm:p-6"><div className="mx-auto grid max-w-xl gap-4 sm:grid-cols-2">{pair("A", diagram.a, "B", diagram.b)}{pair("C", diagram.c, "?", null)}</div></div>;
   }
   const columnCount = Math.max(...diagram.rows.map((row) => row.length));
   return <div className="mb-7 rounded-3xl border border-white/5 bg-[#0F1216] p-4 sm:p-6"><div className="mx-auto grid max-w-lg gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}>{diagram.rows.flatMap((row, rowIndex) => row.map((matrixCell, columnIndex) => <div key={`${rowIndex}-${columnIndex}`}><AbstractLogicalCalibrationCellView cell={matrixCell} /></div>))}</div></div>;
 }
 
+type AbstractLogicalCalibrationPilotSet = "sequence_matrix" | "classification_deduction";
+
 function InternalAbstractLogicalCalibrationPilotScreen({ onBack }: { onBack: () => void }) {
   const [phase, setPhase] = useState<"intro" | "question" | "debrief">("intro");
+  const [pilotSet, setPilotSet] = useState<AbstractLogicalCalibrationPilotSet>("classification_deduction");
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [selectedOptionId, setSelectedOptionId] = useState<"A" | "B" | "C" | "D" | null>(null);
+  const [selectedOptionId, setSelectedOptionId] = useState<AbstractLogicalCalibrationOptionId | null>(null);
   const [responses, setResponses] = useState<AbstractLogicalCalibrationPilotResponse[]>([]);
   const [runStartedAt, setRunStartedAt] = useState<string | null>(null);
   const questionStartedAtRef = useRef(0);
-  const item: AbstractLogicalCalibrationPilotItem | undefined = abstractLogicalCalibrationSequenceMatrixItems[questionIndex];
+  const activeItems = pilotSet === "classification_deduction" ? abstractLogicalCalibrationClassificationDeductionItems : abstractLogicalCalibrationSequenceMatrixItems;
+  const item: AbstractLogicalCalibrationPilotItem | undefined = activeItems[questionIndex];
   const currentResponse = item ? responses.find((response) => response.questionId === item.questionId) : undefined;
   const answered = Boolean(currentResponse);
 
@@ -7417,7 +7432,8 @@ function InternalAbstractLogicalCalibrationPilotScreen({ onBack }: { onBack: () 
     if (phase === "question" && !answered) questionStartedAtRef.current = performance.now();
   }, [phase, questionIndex, answered]);
 
-  function startRun() {
+  function startRun(set: AbstractLogicalCalibrationPilotSet) {
+    setPilotSet(set);
     setQuestionIndex(0);
     setSelectedOptionId(null);
     setResponses([]);
@@ -7425,7 +7441,7 @@ function InternalAbstractLogicalCalibrationPilotScreen({ onBack }: { onBack: () 
     setPhase("question");
   }
 
-  function select(optionId: "A" | "B" | "C" | "D") {
+  function select(optionId: AbstractLogicalCalibrationOptionId) {
     if (answered || !item) return;
     const selectionTimeMs = Math.max(0, performance.now() - questionStartedAtRef.current);
     const correct = optionId === item.correctOptionId;
@@ -7444,7 +7460,7 @@ function InternalAbstractLogicalCalibrationPilotScreen({ onBack }: { onBack: () 
 
   function next() {
     if (!answered || !item) return;
-    if (questionIndex === abstractLogicalCalibrationSequenceMatrixItems.length - 1) {
+    if (questionIndex === activeItems.length - 1) {
       saveAbstractLogicalCalibrationPilotRun({
         runId: id("abstract-logical-cal"),
         pilotVersion: ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION,
@@ -7461,20 +7477,22 @@ function InternalAbstractLogicalCalibrationPilotScreen({ onBack }: { onBack: () 
 
   if (phase === "intro") {
     const priorRuns = loadAbstractLogicalCalibrationPilotRuns();
-    return <Shell right="Internal abstract & logical calibration"><section className="mx-auto max-w-6xl px-6 py-10 sm:px-8 sm:py-12"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only abstract & logical lab · v0.12</p><h1 className="mt-4 text-4xl font-semibold">Sequence & matrix reasoning</h1><p className="mt-5 max-w-3xl leading-relaxed text-[#9AA3B2]">The Numerical blueprint is now QA-cleared. This first Abstract & Logical slice implements blueprint items 01–08: four sequence rules followed by four matrix rules.</p><div className="mt-7 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">New v0.12 QA set</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Visual sequences & matrices</div><div className="mt-2 max-w-3xl text-sm leading-relaxed text-[#AAB4C0]">8 items · rotation, count, alternation, dual-feature sequence, addition, subtraction, rotation and overlay matrices.</div><PrimaryButton className="mt-5" onClick={startRun}>Start 8-item v0.12 QA set</PrimaryButton></div><div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-5 text-sm leading-relaxed text-[#C8D2DD]">For this pass, focus on whether every rule is visually unambiguous, whether the symbols remain comfortably legible on phone screens, and whether any distractor could reasonably be defended as another valid answer.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton>{priorRuns.length > 0 && <SecondaryButton onClick={downloadAbstractLogicalCalibrationPilotCsv}>Export {priorRuns.length} prior run{priorRuns.length === 1 ? "" : "s"}</SecondaryButton>}</div></Card></section></Shell>;
+    return <Shell right="Internal abstract & logical calibration"><section className="mx-auto max-w-6xl px-6 py-10 sm:px-8 sm:py-12"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only abstract & logical lab · v0.13</p><h1 className="mt-4 text-4xl font-semibold">Abstract & logical calibration</h1><p className="mt-5 max-w-3xl leading-relaxed text-[#9AA3B2]">The second calibration slice now implements blueprint items 09–16 while keeping the original sequence/matrix set available for re-checking.</p><div className="mt-7 grid gap-4 lg:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Existing v0.12 set</div><div className="mt-2 text-xl font-semibold">Sequences & matrices</div><div className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">8 items · blueprint 01–08. Retained for visual/device re-checks.</div><SecondaryButton className="mt-5" onClick={() => startRun("sequence_matrix")}>Run 01–08 again</SecondaryButton></div><div className="rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">New v0.13 QA set</div><div className="mt-2 text-xl font-semibold text-[#D9F8FF]">Classification, analogy & deduction</div><div className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">8 items · outliers, symmetry, two visual analogies, three deductive-logic formats and grid movement.</div><PrimaryButton className="mt-5" onClick={() => startRun("classification_deduction")}>Start 8-item v0.13 QA set</PrimaryButton></div></div><div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-5 text-sm leading-relaxed text-[#C8D2DD]">For this pass, check that the odd-one-out rule has only one defensible answer, that visual analogies are obvious in layout as well as logic, and that the deduction questions test reasoning rather than tricky wording.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onBack}>Back to framework</SecondaryButton>{priorRuns.length > 0 && <SecondaryButton onClick={downloadAbstractLogicalCalibrationPilotCsv}>Export {priorRuns.length} prior run{priorRuns.length === 1 ? "" : "s"}</SecondaryButton>}</div></Card></section></Shell>;
   }
 
   if (!item) return null;
 
   if (phase === "question") {
     const selectedCorrect = currentResponse?.correct ?? false;
-    return <Shell right="Abstract & logical calibration"><section className="mx-auto max-w-5xl px-4 py-7 sm:px-8 sm:py-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70" style={{ width: `${((questionIndex + 1) / abstractLogicalCalibrationSequenceMatrixItems.length) * 100}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{item.blueprintId} · {item.archetype}</p><h1 className="mt-2 text-3xl font-semibold">Abstract & logical calibration item</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {abstractLogicalCalibrationSequenceMatrixItems.length}<br/><span className="text-xs">author range {item.targetTimeRangeSec.minSec}–{item.targetTimeRangeSec.maxSec}s</span></div></div><Card><AbstractLogicalCalibrationDiagramView diagram={item.diagram}/><p className="text-xl leading-relaxed text-[#F4F6F8]">{item.stem}</p><div className="mt-6 grid grid-cols-2 gap-3">{item.options.map((option) => <button key={option.optionId} type="button" disabled={answered} onClick={() => select(option.optionId)} className={`rounded-2xl border p-3 text-left transition sm:p-4 ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><div className="mb-2 text-sm font-semibold text-[#5ED3F3]">{option.optionId}</div><div className="mx-auto max-w-[150px]"><AbstractLogicalCalibrationCellView cell={option.visual}/></div></button>)}</div>{answered && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{item.explanation}</p><p className="mt-3 text-sm text-[#8D98A6]">Selection latency: {formatSeconds(currentResponse?.selectionTimeMs ?? 0)} · diagnostic tag: {currentResponse?.misconceptionTag ?? "—"}</p></div><PrimaryButton className="shrink-0" onClick={next}>{questionIndex === abstractLogicalCalibrationSequenceMatrixItems.length - 1 ? "Complete pilot" : "Next item"}</PrimaryButton></div></div>}</Card></section></Shell>;
+    const textOptionSet = item.options.every((option) => Boolean(option.label));
+    return <Shell right="Abstract & logical calibration"><section className="mx-auto max-w-5xl px-4 py-7 sm:px-8 sm:py-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70" style={{ width: `${((questionIndex + 1) / activeItems.length) * 100}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{item.blueprintId} · {item.archetype}</p><h1 className="mt-2 text-3xl font-semibold">Abstract & logical calibration item</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {activeItems.length}<br/><span className="text-xs">author range {item.targetTimeRangeSec.minSec}–{item.targetTimeRangeSec.maxSec}s</span></div></div><Card>{item.diagram && <AbstractLogicalCalibrationDiagramView diagram={item.diagram}/>}<p className="text-xl leading-relaxed text-[#F4F6F8]">{item.stem}</p><div className={`mt-6 grid gap-3 ${textOptionSet ? "grid-cols-1" : "grid-cols-2"}`}>{item.options.map((option) => <button key={option.optionId} type="button" disabled={answered} onClick={() => select(option.optionId)} className={`rounded-2xl border p-3 text-left transition sm:p-4 ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><div className="mb-2 text-sm font-semibold text-[#5ED3F3]">{option.optionId}</div>{option.visual ? <div className="mx-auto max-w-[150px]"><AbstractLogicalCalibrationCellView cell={option.visual}/></div> : <div className="py-1 text-base leading-relaxed text-[#E5EAF0] sm:text-lg">{option.label}</div>}</button>)}</div>{answered && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{item.explanation}</p><p className="mt-3 text-sm text-[#8D98A6]">Selection latency: {formatSeconds(currentResponse?.selectionTimeMs ?? 0)} · diagnostic tag: {currentResponse?.misconceptionTag ?? "—"}</p></div><PrimaryButton className="shrink-0" onClick={next}>{questionIndex === activeItems.length - 1 ? "Complete pilot" : "Next item"}</PrimaryButton></div></div>}</Card></section></Shell>;
   }
 
   const correct = responses.filter((response) => response.correct).length;
   const times = responses.map((response) => response.selectionTimeMs);
   const spread = percentileRange(times);
-  return <Shell right="Abstract & logical calibration debrief"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Internal calibration result</p><h1 className="mt-3 text-4xl font-semibold">Abstract & Logical v0.12 QA complete</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">These are item-quality observations only. Timing ranges remain provisional and are not learner standards.</p></div><Badge>{ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION}</Badge></div><div className="mt-8 grid gap-4 sm:grid-cols-3"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median selection time</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(median(times))}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">IQR</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(spread.iqr)}</div></Card></div><Card className="mt-8"><h2 className="text-2xl font-semibold">Item observations</h2><div className="mt-5 overflow-x-auto"><table className="min-w-[680px] w-full text-left text-sm"><thead className="text-[#6E7A88]"><tr><th className="pb-3 pr-4">Item</th><th className="pb-3 pr-4">Result</th><th className="pb-3 pr-4">Selection</th><th className="pb-3">Diagnostic</th></tr></thead><tbody>{responses.map((response) => <tr key={response.questionId} className="border-t border-white/5"><td className="py-3 pr-4 text-[#DDE3EA]">{response.questionId}</td><td className="py-3 pr-4">{response.correct ? "Correct" : "Incorrect"}</td><td className="py-3 pr-4">{formatSeconds(response.selectionTimeMs)}</td><td className="py-3 text-[#9AA3B2]">{response.misconceptionTag}</td></tr>)}</tbody></table></div></Card><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={() => setPhase("intro")}>Back to abstract/logical lab</SecondaryButton><SecondaryButton onClick={downloadAbstractLogicalCalibrationPilotCsv}>Export calibration CSV</SecondaryButton><PrimaryButton onClick={startRun}>Run this set again</PrimaryButton></div></section></Shell>;
+  const debriefTitle = pilotSet === "classification_deduction" ? "Abstract & Logical v0.13 QA complete" : "Sequence & matrix re-check complete";
+  return <Shell right="Abstract & logical calibration debrief"><section className="mx-auto max-w-5xl px-6 py-10 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Internal calibration result</p><h1 className="mt-3 text-4xl font-semibold">{debriefTitle}</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">These are item-quality observations only. Timing ranges remain provisional and are not learner standards.</p></div><Badge>{ABSTRACT_LOGICAL_CALIBRATION_PILOT_VERSION}</Badge></div><div className="mt-8 grid gap-4 sm:grid-cols-3"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correct}/{responses.length}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Median selection time</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(median(times))}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">IQR</div><div className="mt-3 text-3xl font-semibold">{formatSeconds(spread.iqr)}</div></Card></div><Card className="mt-8"><h2 className="text-2xl font-semibold">Item observations</h2><div className="mt-5 overflow-x-auto"><table className="min-w-[680px] w-full text-left text-sm"><thead className="text-[#6E7A88]"><tr><th className="pb-3 pr-4">Item</th><th className="pb-3 pr-4">Result</th><th className="pb-3 pr-4">Selection</th><th className="pb-3">Diagnostic</th></tr></thead><tbody>{responses.map((response) => <tr key={response.questionId} className="border-t border-white/5"><td className="py-3 pr-4 text-[#DDE3EA]">{response.questionId}</td><td className="py-3 pr-4">{response.correct ? "Correct" : "Incorrect"}</td><td className="py-3 pr-4">{formatSeconds(response.selectionTimeMs)}</td><td className="py-3 text-[#9AA3B2]">{response.misconceptionTag}</td></tr>)}</tbody></table></div></Card><div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={() => setPhase("intro")}>Back to abstract/logical lab</SecondaryButton><SecondaryButton onClick={downloadAbstractLogicalCalibrationPilotCsv}>Export calibration CSV</SecondaryButton><PrimaryButton onClick={() => startRun(pilotSet)}>Run this set again</PrimaryButton></div></section></Shell>;
 }
 
 function InternalCalibrationFrameworkScreen({ onBack, onOpenGearPilot, onOpenMechanicalPilot, onOpenNumericalPilot, onOpenAbstractLogicalPilot }: { onBack: () => void; onOpenGearPilot: () => void; onOpenMechanicalPilot: () => void; onOpenNumericalPilot: () => void; onOpenAbstractLogicalPilot: () => void }) {
@@ -7485,7 +7503,7 @@ function InternalCalibrationFrameworkScreen({ onBack, onOpenGearPilot, onOpenMec
 
     <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{summary.map((domain) => <div key={domain.id} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-sm font-semibold text-[#D9F8FF]">{domain.label}</div><div className="mt-3 text-3xl font-semibold">{domain.total}</div><div className="mt-2 text-sm text-[#9AA3B2]">{domain.pilotLive} pilot live · {domain.blueprintOnly} blueprint-only</div></div>)}</div>
 
-    <div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current rule</div><p className="mt-3 text-lg leading-relaxed text-[#D9F8FF]">Blueprint status, implementation status, QA status and empirical calibration are separate things. Gear Direction remains pilot-live. Gear Speed Ratio, Compound Gears, Open Belt Direction and Crossed Belt Direction are now pilot-live after device QA. Mechanical extensions remain in QA review. Numerical 01–20 are now pilot-live after device QA. Abstract & Logical 01–08 are authored and in QA review as the first visual sequence/matrix slice.</p><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Framework: {GENERAL_CALIBRATION_BLUEPRINT_VERSION} · Live pilot families: {liveItems.length}</p></div>
+    <div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Current rule</div><p className="mt-3 text-lg leading-relaxed text-[#D9F8FF]">Blueprint status, implementation status, QA status and empirical calibration are separate things. Gear Direction remains pilot-live. Gear Speed Ratio, Compound Gears, Open Belt Direction and Crossed Belt Direction are now pilot-live after device QA. Mechanical extensions remain in QA review. Numerical 01–20 are now pilot-live after device QA. Abstract & Logical 01–16 are authored and in QA review. Items 09–16 form the new v0.13 classification, analogy, deduction and movement-grid slice.</p><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Framework: {GENERAL_CALIBRATION_BLUEPRINT_VERSION} · Live pilot families: {liveItems.length}</p></div>
 
     <div className="mt-8 rounded-2xl border border-white/5 bg-[#151A21] p-5"><details><summary className="cursor-pointer font-semibold text-[#D9F8FF]">Authoring & QA gate</summary><ol className="mt-5 space-y-3 text-sm leading-relaxed text-[#AAB4C0]">{calibrationQaGate.map((gate, index) => <li key={gate}><span className="mr-2 text-[#6E7A88]">{index + 1}.</span>{gate}</li>)}</ol></details></div>
 

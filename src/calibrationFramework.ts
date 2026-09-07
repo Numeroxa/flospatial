@@ -21,7 +21,7 @@ export type GeneralCalibrationBlueprint = {
   linkedLiveFamilyId?: string;
 };
 
-export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_08_V0_12";
+export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_08_V0_13";
 
 function b(
   domain: CalibrationDomain,
@@ -111,14 +111,14 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("abstract_logical", 6, "Missing matrix - subtraction", "matrix_subtraction", "Elements cancel or remove.", "Matrix MCQ", 50, 65, "applied", "Ambiguity-audited matrix logic.", "no", "qa_review", "in_review", "matrix_subtraction_v1"),
   b("abstract_logical", 7, "Missing matrix - rotation", "matrix_rotation", "Rows/columns transform orientation.", "Matrix MCQ", 55, 70, "applied", "Visual rule transfer.", "no", "qa_review", "in_review", "matrix_rotation_v1"),
   b("abstract_logical", 8, "Missing matrix - overlay", "matrix_overlay", "Two cells superimposed produce third.", "Matrix MCQ", 55, 70, "stretch", "More realistic visual complexity.", "no", "qa_review", "in_review", "matrix_overlay_v1"),
-  b("abstract_logical", 9, "Classification - outlier", "classification_outlier", "Four options share exact component set; one differs.", "Visual MCQ", 40, 55, "foundation", "Criteria-style outlier.", "candidate"),
-  b("abstract_logical", 10, "Classification - symmetry", "classification_symmetry", "Odd one out based on one unique symmetry property.", "Visual MCQ", 45, 60, "applied", "Avoid multi-criterion ambiguity."),
-  b("abstract_logical", 11, "Analogy - rotation", "analogy_rotation", "A changes to B; apply same visual transformation to C.", "Visual analogy", 45, 60, "applied", "Use explicit transform layout."),
-  b("abstract_logical", 12, "Analogy - fill change", "analogy_fill_change", "Filled becomes outline while shape retained.", "Visual analogy", 40, 55, "foundation", "Simple one-rule analogy.", "candidate"),
-  b("abstract_logical", 13, "Deduction - ordering", "deduction_ordering", "Three/four entities with before/after constraints.", "Text logic MCQ", 45, 60, "applied", "FENZ deductive component."),
-  b("abstract_logical", 14, "Deduction - conditional", "deduction_conditional", "If/then statements; choose must-follow conclusion.", "Text logic MCQ", 45, 60, "applied", "FENZ deductive component."),
-  b("abstract_logical", 15, "Deduction - set logic", "deduction_set_logic", "All/some/none statements; choose necessary conclusion.", "Text logic MCQ", 50, 65, "stretch", "Higher logical precision."),
-  b("abstract_logical", 16, "Pattern - movement grid", "pattern_movement_grid", "Dot moves around positions on a grid.", "Visual MCQ", 45, 60, "applied", "Spatial-pattern crossover."),
+  b("abstract_logical", 9, "Classification - outlier", "classification_outlier", "Four options share exact component set; one differs.", "Visual MCQ", 40, 55, "foundation", "Criteria-style outlier.", "candidate", "qa_review", "in_review", "classification_outlier_v1"),
+  b("abstract_logical", 10, "Classification - symmetry", "classification_symmetry", "Odd one out based on one unique symmetry property.", "Visual MCQ", 45, 60, "applied", "Avoid multi-criterion ambiguity.", "no", "qa_review", "in_review", "classification_symmetry_v1"),
+  b("abstract_logical", 11, "Analogy - rotation", "analogy_rotation", "A changes to B; apply same visual transformation to C.", "Visual analogy", 45, 60, "applied", "Use explicit transform layout.", "no", "qa_review", "in_review", "analogy_rotation_v1"),
+  b("abstract_logical", 12, "Analogy - fill change", "analogy_fill_change", "Filled becomes outline while shape retained.", "Visual analogy", 40, 55, "foundation", "Simple one-rule analogy.", "candidate", "qa_review", "in_review", "analogy_fill_change_v1"),
+  b("abstract_logical", 13, "Deduction - ordering", "deduction_ordering", "Three/four entities with before/after constraints.", "Text logic MCQ", 45, 60, "applied", "FENZ deductive component.", "no", "qa_review", "in_review", "deduction_ordering_v1"),
+  b("abstract_logical", 14, "Deduction - conditional", "deduction_conditional", "If/then statements; choose must-follow conclusion.", "Text logic MCQ", 45, 60, "applied", "FENZ deductive component.", "no", "qa_review", "in_review", "deduction_conditional_v1"),
+  b("abstract_logical", 15, "Deduction - set logic", "deduction_set_logic", "All/some/none statements; choose necessary conclusion.", "Text logic MCQ", 50, 65, "stretch", "Higher logical precision.", "no", "qa_review", "in_review", "deduction_set_logic_v1"),
+  b("abstract_logical", 16, "Pattern - movement grid", "pattern_movement_grid", "Dot moves around positions on a grid.", "Visual MCQ", 45, 60, "applied", "Spatial-pattern crossover.", "no", "qa_review", "in_review", "pattern_movement_grid_v1"),
   b("abstract_logical", 17, "Pattern - reflection", "pattern_reflection_rotation", "Figure alternates mirror reflection and rotation.", "Visual MCQ", 55, 70, "stretch", "Higher visual demand."),
   b("abstract_logical", 18, "Diagrammatic rule", "diagrammatic_rule_machine", "Input/output icons show a rule machine.", "Diagram MCQ", 50, 65, "applied", "WA diagrammatic-reasoning calibration."),
   b("abstract_logical", 19, "Spatial outlier", "spatial_outlier", "Five compound figures; one lacks the shared arrangement.", "Visual MCQ", 45, 60, "applied", "Criteria-style spatial classification."),
