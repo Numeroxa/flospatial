@@ -21,7 +21,7 @@ export type GeneralCalibrationBlueprint = {
   linkedLiveFamilyId?: string;
 };
 
-export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_09_V0_14";
+export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_09_V0_15";
 
 function b(
   domain: CalibrationDomain,
@@ -103,14 +103,14 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("numerical", 20, "True/false data claim", "data_claim_true_false", "Evaluate statement against table/graph.", "True/False", 45, 60, "applied", "Match FRV response-format variety.", "no", "pilot_live", "cleared", "data_claim_true_false_v1"),
 
   // Abstract & logical — 20
-  b("abstract_logical", 1, "Next sequence - rotation", "sequence_rotation", "Single shape rotates fixed angle.", "Visual MCQ", 40, 55, "foundation", "FRV-style non-verbal sequence.", "candidate", "qa_review", "in_review", "sequence_rotation_v1"),
-  b("abstract_logical", 2, "Next sequence - count", "sequence_count", "Symbols increase/decrease by fixed count.", "Visual MCQ", 40, 55, "foundation", "Basic visual rule.", "candidate", "qa_review", "in_review", "sequence_count_v1"),
-  b("abstract_logical", 3, "Next sequence - alternation", "sequence_alternation", "Two rules alternate across positions.", "Visual MCQ", 50, 65, "applied", "Increase rule complexity.", "no", "qa_review", "in_review", "sequence_alternation_v1"),
-  b("abstract_logical", 4, "Next sequence - dual feature", "sequence_dual_feature", "Shape rotates while shading alternates.", "Visual MCQ", 55, 70, "applied", "Test feature separation.", "no", "qa_review", "in_review", "sequence_dual_feature_v1"),
-  b("abstract_logical", 5, "Missing matrix - addition", "matrix_addition", "Third cell combines first two.", "Matrix MCQ", 50, 65, "applied", "Retain current matrix strength.", "no", "qa_review", "in_review", "matrix_addition_v1"),
-  b("abstract_logical", 6, "Missing matrix - subtraction", "matrix_subtraction", "Elements cancel or remove.", "Matrix MCQ", 50, 65, "applied", "Ambiguity-audited matrix logic.", "no", "qa_review", "in_review", "matrix_subtraction_v1"),
-  b("abstract_logical", 7, "Missing matrix - rotation", "matrix_rotation", "Rows/columns transform orientation.", "Matrix MCQ", 55, 70, "applied", "Visual rule transfer.", "no", "qa_review", "in_review", "matrix_rotation_v1"),
-  b("abstract_logical", 8, "Missing matrix - overlay", "matrix_overlay", "Two cells superimposed produce third.", "Matrix MCQ", 55, 70, "stretch", "More realistic visual complexity.", "no", "qa_review", "in_review", "matrix_overlay_v1"),
+  b("abstract_logical", 1, "Next sequence - rotation", "sequence_rotation", "Single shape rotates fixed angle.", "Visual MCQ", 40, 55, "foundation", "FRV-style non-verbal sequence.", "candidate", "pilot_live", "cleared", "sequence_rotation_v1"),
+  b("abstract_logical", 2, "Next sequence - count", "sequence_count", "Symbols increase/decrease by fixed count.", "Visual MCQ", 40, 55, "foundation", "Basic visual rule.", "candidate", "pilot_live", "cleared", "sequence_count_v1"),
+  b("abstract_logical", 3, "Next sequence - alternation", "sequence_alternation", "Two rules alternate across positions.", "Visual MCQ", 50, 65, "applied", "Increase rule complexity.", "no", "pilot_live", "cleared", "sequence_alternation_v1"),
+  b("abstract_logical", 4, "Next sequence - dual feature", "sequence_dual_feature", "Shape rotates while shading alternates.", "Visual MCQ", 55, 70, "applied", "Test feature separation.", "no", "pilot_live", "cleared", "sequence_dual_feature_v1"),
+  b("abstract_logical", 5, "Missing matrix - addition", "matrix_addition", "Third cell combines first two.", "Matrix MCQ", 50, 65, "applied", "Retain current matrix strength.", "no", "pilot_live", "cleared", "matrix_addition_v1"),
+  b("abstract_logical", 6, "Missing matrix - subtraction", "matrix_subtraction", "Elements cancel or remove.", "Matrix MCQ", 50, 65, "applied", "Ambiguity-audited matrix logic.", "no", "pilot_live", "cleared", "matrix_subtraction_v1"),
+  b("abstract_logical", 7, "Missing matrix - rotation", "matrix_rotation", "Rows/columns transform orientation.", "Matrix MCQ", 55, 70, "applied", "Visual rule transfer.", "no", "pilot_live", "cleared", "matrix_rotation_v1"),
+  b("abstract_logical", 8, "Missing matrix - overlay", "matrix_overlay", "Two cells superimposed produce third.", "Matrix MCQ", 55, 70, "stretch", "More realistic visual complexity.", "no", "pilot_live", "cleared", "matrix_overlay_v1"),
   b("abstract_logical", 9, "Classification - outlier", "classification_outlier", "Four options share exact component set; one differs.", "Visual MCQ", 40, 55, "foundation", "Criteria-style outlier.", "candidate", "pilot_live", "cleared", "classification_outlier_v1"),
   b("abstract_logical", 10, "Classification - symmetry", "classification_symmetry", "Odd one out based on one unique symmetry property.", "Visual MCQ", 45, 60, "applied", "Avoid multi-criterion ambiguity.", "no", "pilot_live", "cleared", "classification_symmetry_v1"),
   b("abstract_logical", 11, "Analogy - rotation", "analogy_rotation", "A changes to B; apply same visual transformation to C.", "Visual analogy", 45, 60, "applied", "Use explicit transform layout.", "no", "pilot_live", "cleared", "analogy_rotation_v1"),
@@ -119,20 +119,20 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("abstract_logical", 14, "Deduction - conditional", "deduction_conditional", "If/then statements; choose must-follow conclusion.", "Text logic MCQ", 45, 60, "applied", "FENZ deductive component.", "no", "pilot_live", "cleared", "deduction_conditional_v1"),
   b("abstract_logical", 15, "Deduction - set logic", "deduction_set_logic", "All/some/none statements; choose necessary conclusion.", "Text logic MCQ", 50, 65, "stretch", "Higher logical precision.", "no", "pilot_live", "cleared", "deduction_set_logic_v1"),
   b("abstract_logical", 16, "Pattern - movement grid", "pattern_movement_grid", "Dot moves around positions on a grid.", "Visual MCQ", 45, 60, "applied", "Spatial-pattern crossover.", "no", "pilot_live", "cleared", "pattern_movement_grid_v1"),
-  b("abstract_logical", 17, "Pattern - reflection", "pattern_reflection_rotation", "Figure alternates mirror reflection and rotation.", "Visual MCQ", 55, 70, "stretch", "Higher visual demand.", "no", "qa_review", "in_review", "pattern_reflection_rotation_v1"),
-  b("abstract_logical", 18, "Diagrammatic rule", "diagrammatic_rule_machine", "Input/output icons show a rule machine.", "Diagram MCQ", 50, 65, "applied", "WA diagrammatic-reasoning calibration.", "no", "qa_review", "in_review", "diagrammatic_rule_machine_v1"),
-  b("abstract_logical", 19, "Spatial outlier", "spatial_outlier", "Five compound figures; one lacks the shared arrangement.", "Visual MCQ", 45, 60, "applied", "Criteria-style spatial classification.", "no", "qa_review", "in_review", "spatial_outlier_v1"),
-  b("abstract_logical", 20, "Integrated matrix", "integrated_matrix", "Two simultaneous rules across rows and columns.", "Matrix MCQ", 60, 75, "stretch", "Upper-end calibration item.", "no", "qa_review", "in_review", "integrated_matrix_v1"),
+  b("abstract_logical", 17, "Pattern - reflection", "pattern_reflection_rotation", "Figure alternates mirror reflection and rotation.", "Visual MCQ", 55, 70, "stretch", "Higher visual demand.", "no", "pilot_live", "cleared", "pattern_reflection_rotation_v1"),
+  b("abstract_logical", 18, "Diagrammatic rule", "diagrammatic_rule_machine", "Input/output icons show a rule machine.", "Diagram MCQ", 50, 65, "applied", "WA diagrammatic-reasoning calibration.", "no", "pilot_live", "cleared", "diagrammatic_rule_machine_v1"),
+  b("abstract_logical", 19, "Spatial outlier", "spatial_outlier", "Five compound figures; one lacks the shared arrangement.", "Visual MCQ", 45, 60, "applied", "Criteria-style spatial classification.", "no", "pilot_live", "cleared", "spatial_outlier_v1"),
+  b("abstract_logical", 20, "Integrated matrix", "integrated_matrix", "Two simultaneous rules across rows and columns.", "Matrix MCQ", 60, 75, "stretch", "Upper-end calibration item.", "no", "pilot_live", "cleared", "integrated_matrix_v1"),
 
   // Verbal — 20
-  b("verbal", 1, "Explicit fact", "explicit_fact", "Short workplace notice; retrieve stated detail.", "Passage MCQ", 40, 50, "foundation", "Retain current strength."),
-  b("verbal", 2, "Explicit condition", "explicit_condition", "Instruction with exception; identify when rule applies.", "Passage MCQ", 45, 55, "applied", "Conditions/limits."),
-  b("verbal", 3, "Main point", "main_point", "Short paragraph; choose best summary.", "Passage MCQ", 45, 60, "applied", "Literacy breadth."),
-  b("verbal", 4, "Supported inference", "supported_inference", "Choose modest inference, reject overclaim.", "Passage MCQ", 50, 65, "applied", "Retain current strength."),
-  b("verbal", 5, "Meaning in context", "meaning_in_context", "Infer meaning of familiar word/phrase from passage.", "Passage MCQ", 45, 60, "applied", "Broaden context vocabulary."),
-  b("verbal", 6, "Sequence instruction", "instruction_sequence", "Multi-step procedure; identify correct order.", "Instruction MCQ", 45, 60, "applied", "Retain current strength."),
-  b("verbal", 7, "Exception handling", "instruction_exception", "Procedure with unless/except condition.", "Instruction MCQ", 50, 65, "applied", "Real workplace comprehension."),
-  b("verbal", 8, "Evidence scope", "evidence_scope", "Small survey/study; choose justified conclusion.", "Passage MCQ", 50, 65, "applied", "Retain current scope discipline."),
+  b("verbal", 1, "Explicit fact", "explicit_fact", "Short workplace notice; retrieve stated detail.", "Passage MCQ", 40, 50, "foundation", "Retain current strength.", "no", "qa_review", "in_review", "explicit_fact_v1"),
+  b("verbal", 2, "Explicit condition", "explicit_condition", "Instruction with exception; identify when rule applies.", "Passage MCQ", 45, 55, "applied", "Conditions/limits.", "no", "qa_review", "in_review", "explicit_condition_v1"),
+  b("verbal", 3, "Main point", "main_point", "Short paragraph; choose best summary.", "Passage MCQ", 45, 60, "applied", "Literacy breadth.", "no", "qa_review", "in_review", "main_point_v1"),
+  b("verbal", 4, "Supported inference", "supported_inference", "Choose modest inference, reject overclaim.", "Passage MCQ", 50, 65, "applied", "Retain current strength.", "no", "qa_review", "in_review", "supported_inference_v1"),
+  b("verbal", 5, "Meaning in context", "meaning_in_context", "Infer meaning of familiar word/phrase from passage.", "Passage MCQ", 45, 60, "applied", "Broaden context vocabulary.", "no", "qa_review", "in_review", "meaning_in_context_v1"),
+  b("verbal", 6, "Sequence instruction", "instruction_sequence", "Multi-step procedure; identify correct order.", "Instruction MCQ", 45, 60, "applied", "Retain current strength.", "no", "qa_review", "in_review", "instruction_sequence_v1"),
+  b("verbal", 7, "Exception handling", "instruction_exception", "Procedure with unless/except condition.", "Instruction MCQ", 50, 65, "applied", "Real workplace comprehension.", "no", "qa_review", "in_review", "instruction_exception_v1"),
+  b("verbal", 8, "Evidence scope", "evidence_scope", "Small survey/study; choose justified conclusion.", "Passage MCQ", 50, 65, "applied", "Retain current scope discipline.", "no", "qa_review", "in_review", "evidence_scope_v1"),
   b("verbal", 9, "Compare two texts", "dual_text_compare", "Two short notices; identify agreement/difference.", "Dual passage MCQ", 60, 75, "applied", "FRV varied-text literacy."),
   b("verbal", 10, "Longer passage", "long_passage_explicit", "180-250 word informational passage; explicit detail.", "Passage MCQ", 60, 75, "applied", "Increase FRV text-length realism."),
   b("verbal", 11, "Longer passage inference", "long_passage_inference", "Same passage; supported inference.", "Passage MCQ", 60, 75, "applied", "Sustained reading demand."),
