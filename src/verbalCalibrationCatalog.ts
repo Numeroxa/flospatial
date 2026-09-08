@@ -1,11 +1,25 @@
 export type VerbalCalibrationDifficulty = "foundation" | "applied" | "stretch";
 export type VerbalCalibrationOptionId = "A" | "B" | "C" | "D";
 
+export type VerbalCalibrationSourceSection = {
+  title: string;
+  paragraphs?: string[];
+  bullets?: string[];
+};
+
+export type VerbalCalibrationSourceTable = {
+  caption?: string;
+  headers: string[];
+  rows: string[][];
+};
+
 export type VerbalCalibrationSource = {
   eyebrow?: string;
   title?: string;
   paragraphs?: string[];
   bullets?: string[];
+  sections?: VerbalCalibrationSourceSection[];
+  table?: VerbalCalibrationSourceTable;
 };
 
 export type VerbalCalibrationOption = {
@@ -30,7 +44,7 @@ export type VerbalCalibrationPilotItem = {
   misconceptionTags: Partial<Record<VerbalCalibrationOptionId, string>>;
 };
 
-export const VERBAL_CALIBRATION_PILOT_VERSION = "APTESTA_VERBAL_CAL_V0_15";
+export const VERBAL_CALIBRATION_PILOT_VERSION = "APTESTA_VERBAL_CAL_V0_16";
 
 const option = (optionId: VerbalCalibrationOptionId, text: string, misconceptionTag: string): VerbalCalibrationOption => ({ optionId, text, misconceptionTag });
 
@@ -249,6 +263,223 @@ export const verbalCalibrationCoreItems: VerbalCalibrationPilotItem[] = [
   },
 ];
 
+export const verbalCalibrationAppliedItems: VerbalCalibrationPilotItem[] = [
+  {
+    questionId: "VB-CAL-009",
+    blueprintId: "VERBAL-09",
+    familyId: "dual_text_compare_v1",
+    archetype: "dual_text_compare",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 60, maxSec: 75 },
+    source: {
+      eyebrow: "Two Tuesday notices",
+      sections: [
+        {
+          title: "Vehicle bay cleaning",
+          paragraphs: [
+            "Bay 2 will be unavailable from 14:00 to 15:00 while the floor is cleaned. Vehicles due to leave during that hour should be moved to Bay 1 before 13:45. Normal access to Bay 2 resumes at 15:00.",
+          ],
+        },
+        {
+          title: "Breathing-apparatus servicing",
+          paragraphs: [
+            "The service bench will be unavailable from 14:30 to 16:00. Cylinders may still be collected from the adjacent store. Equipment due for servicing should be left on the marked rack before 14:20.",
+          ],
+        },
+      ],
+    },
+    stem: "Which statement is true of both notices?",
+    options: [
+      option("A", "They require users to take an action before a temporary restriction begins.", "correct"),
+      option("B", "They prevent all equipment collection while the restricted area is unavailable.", "extends_restriction_beyond_text"),
+      option("C", "They state that normal access resumes at 15:00.", "imports_time_from_first_notice"),
+      option("D", "They describe restrictions lasting exactly one hour.", "assumes_same_duration"),
+    ],
+    correctOptionId: "A",
+    explanation: "Both notices ask users to do something before a temporary restriction starts: move vehicles before 13:45 and leave servicing equipment before 14:20. The other details differ between the notices.",
+    misconceptionTags: { A: "correct", B: "extends_restriction_beyond_text", C: "imports_time_from_first_notice", D: "assumes_same_duration" },
+  },
+  {
+    questionId: "VB-CAL-010",
+    blueprintId: "VERBAL-10",
+    familyId: "long_passage_explicit_v1",
+    archetype: "long_passage_explicit",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 60, maxSec: 75 },
+    source: {
+      eyebrow: "Operations trial",
+      title: "Pre-packed flood-response crates",
+      paragraphs: [
+        "During July, North District ran a four-week trial of pre-packed flood-response crates. Four stations each received two sealed crates containing the equipment normally collected from several storerooms after an alert. Every crate carried an external checklist, and crews checked the seal and expiry dates each week without opening it. The crates were not to be opened for routine training.",
+        "If a seal was broken or an item was used, the crate was returned to central logistics for restocking and a reserve crate was issued. The trial was intended to reduce the time between an alert and vehicle departure; it did not change crew numbers or the response procedure. Across 12 exercises, the median departure time fell from 11 minutes before the trial to 8 minutes during it. Two trial exercises still took longer than 11 minutes, and in both cases crew assembly was delayed.",
+        "Staff generally liked having equipment in one place, although several noted that the crates occupied useful bay space. The district plans a further trial at two stations with different building layouts before deciding whether to use the system permanently.",
+      ],
+    },
+    stem: "What happened when a crate seal was broken or an item from the crate was used?",
+    options: [
+      option("A", "The crate stayed at the station until the end of the four-week trial.", "confuses_trial_duration_with_restocking"),
+      option("B", "The crew restocked the crate from its usual storerooms.", "substitutes_old_collection_process"),
+      option("C", "The crate was returned to central logistics and a reserve crate was issued.", "correct"),
+      option("D", "The station stopped taking part in the trial.", "invents_trial_withdrawal"),
+    ],
+    correctOptionId: "C",
+    explanation: "The passage explicitly states that a used or unsealed crate went back to central logistics for restocking and was replaced by a reserve crate.",
+    misconceptionTags: { A: "confuses_trial_duration_with_restocking", B: "substitutes_old_collection_process", C: "correct", D: "invents_trial_withdrawal" },
+  },
+  {
+    questionId: "VB-CAL-011",
+    blueprintId: "VERBAL-11",
+    familyId: "long_passage_inference_v1",
+    archetype: "long_passage_inference",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 60, maxSec: 75 },
+    source: {
+      eyebrow: "Operations trial",
+      title: "Pre-packed flood-response crates",
+      paragraphs: [
+        "During July, North District ran a four-week trial of pre-packed flood-response crates. Four stations each received two sealed crates containing the equipment normally collected from several storerooms after an alert. Every crate carried an external checklist, and crews checked the seal and expiry dates each week without opening it. The crates were not to be opened for routine training.",
+        "If a seal was broken or an item was used, the crate was returned to central logistics for restocking and a reserve crate was issued. The trial was intended to reduce the time between an alert and vehicle departure; it did not change crew numbers or the response procedure. Across 12 exercises, the median departure time fell from 11 minutes before the trial to 8 minutes during it. Two trial exercises still took longer than 11 minutes, and in both cases crew assembly was delayed.",
+        "Staff generally liked having equipment in one place, although several noted that the crates occupied useful bay space. The district plans a further trial at two stations with different building layouts before deciding whether to use the system permanently.",
+      ],
+    },
+    stem: "Which inference is best supported by the trial?",
+    options: [
+      option("A", "Pre-packed crates may reduce equipment-gathering delay, but they do not remove delays caused by late crew assembly.", "correct"),
+      option("B", "Pre-packed crates have been proven to reduce departure time at every station regardless of layout.", "overgeneralises_and_claims_proof"),
+      option("C", "All staff preferred the crates to the previous system.", "turns_general_feedback_into_unanimity"),
+      option("D", "The district has already decided to introduce the crates permanently.", "ignores_planned_further_trial"),
+    ],
+    correctOptionId: "A",
+    explanation: "Departure times were generally lower, while the two slower trial exercises were linked to delayed crew assembly. That supports a modest inference about equipment-gathering delay, not universal proof or a final rollout decision.",
+    misconceptionTags: { A: "correct", B: "overgeneralises_and_claims_proof", C: "turns_general_feedback_into_unanimity", D: "ignores_planned_further_trial" },
+  },
+  {
+    questionId: "VB-CAL-012",
+    blueprintId: "VERBAL-12",
+    familyId: "mixed_source_table_text_v1",
+    archetype: "mixed_source_table_text",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 55, maxSec: 70 },
+    source: {
+      eyebrow: "Training roster",
+      title: "Pump 2 assignment",
+      paragraphs: [
+        "The 10:00 Pump 2 exercise needs one operator. The operator must have a current Pump 2 authorisation and must be available by 10:00.",
+      ],
+      table: {
+        caption: "Roster information",
+        headers: ["Person", "Pump 2 auth.", "Available"],
+        rows: [
+          ["Ana", "Current", "10:20"],
+          ["Ben", "Expired", "09:45"],
+          ["Cara", "Current", "09:50"],
+          ["Dev", "Current", "10:40"],
+        ],
+      },
+    },
+    stem: "Who can be assigned as the Pump 2 operator at 10:00?",
+    options: [
+      option("A", "Ana", "meets_authorisation_but_misses_time"),
+      option("B", "Ben", "meets_time_but_authorisation_expired"),
+      option("C", "Cara", "correct"),
+      option("D", "Dev", "meets_authorisation_but_misses_time"),
+    ],
+    correctOptionId: "C",
+    explanation: "Cara is the only person who meets both conditions: current Pump 2 authorisation and availability by 10:00.",
+    misconceptionTags: { A: "meets_authorisation_but_misses_time", B: "meets_time_but_authorisation_expired", C: "correct", D: "meets_authorisation_but_misses_time" },
+  },
+  {
+    questionId: "VB-CAL-013",
+    blueprintId: "VERBAL-13",
+    familyId: "vocabulary_antonym_v1",
+    archetype: "vocabulary_antonym",
+    difficulty: "foundation",
+    reasoningSteps: 1,
+    targetTimeRangeSec: { minSec: 20, maxSec: 30 },
+    source: { eyebrow: "Vocabulary", title: "SCARCE" },
+    stem: "Which word is opposite in meaning to “scarce”?",
+    options: [
+      option("A", "Abundant", "correct"),
+      option("B", "Limited", "chooses_related_meaning"),
+      option("C", "Rare", "chooses_synonym"),
+      option("D", "Inadequate", "chooses_negative_association"),
+    ],
+    correctOptionId: "A",
+    explanation: "“Scarce” means in short supply or hard to find. “Abundant” means plentiful, so it is the opposite.",
+    misconceptionTags: { A: "correct", B: "chooses_related_meaning", C: "chooses_synonym", D: "chooses_negative_association" },
+  },
+  {
+    questionId: "VB-CAL-014",
+    blueprintId: "VERBAL-14",
+    familyId: "vocabulary_synonym_v1",
+    archetype: "vocabulary_synonym",
+    difficulty: "foundation",
+    reasoningSteps: 1,
+    targetTimeRangeSec: { minSec: 20, maxSec: 30 },
+    source: { eyebrow: "Vocabulary", title: "VERIFY" },
+    stem: "Which word is closest in meaning to “verify”?",
+    options: [
+      option("A", "Confirm", "correct"),
+      option("B", "Postpone", "chooses_unrelated_process_word"),
+      option("C", "Estimate", "confuses_checking_with_approximation"),
+      option("D", "Replace", "chooses_unrelated_action"),
+    ],
+    correctOptionId: "A",
+    explanation: "To verify something is to check or confirm that it is true or correct.",
+    misconceptionTags: { A: "correct", B: "chooses_unrelated_process_word", C: "confuses_checking_with_approximation", D: "chooses_unrelated_action" },
+  },
+  {
+    questionId: "VB-CAL-015",
+    blueprintId: "VERBAL-15",
+    familyId: "word_relationship_v1",
+    archetype: "word_relationship",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 25, maxSec: 35 },
+    source: { eyebrow: "Word relationship", title: "THERMOMETER : TEMPERATURE" },
+    stem: "Thermometer is to temperature as scale is to ____.",
+    options: [
+      option("A", "Weight", "correct"),
+      option("B", "Distance", "chooses_measurement_but_wrong_instrument"),
+      option("C", "Volume", "chooses_measurement_but_wrong_instrument"),
+      option("D", "Speed", "chooses_measurement_but_wrong_instrument"),
+    ],
+    correctOptionId: "A",
+    explanation: "A thermometer measures temperature; in the same relationship, a scale measures weight.",
+    misconceptionTags: { A: "correct", B: "chooses_measurement_but_wrong_instrument", C: "chooses_measurement_but_wrong_instrument", D: "chooses_measurement_but_wrong_instrument" },
+  },
+  {
+    questionId: "VB-CAL-016",
+    blueprintId: "VERBAL-16",
+    familyId: "sentence_completion_v1",
+    archetype: "sentence_completion",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 25, maxSec: 35 },
+    source: {
+      eyebrow: "Sentence completion",
+      paragraphs: [
+        "Because the weather report was uncertain, the coordinator kept the departure time _____ until the final update.",
+      ],
+    },
+    stem: "Which word best completes the sentence?",
+    options: [
+      option("A", "permanent", "contradicts_uncertainty"),
+      option("B", "provisional", "correct"),
+      option("C", "overdue", "imports_lateness"),
+      option("D", "identical", "does_not_fit_context"),
+    ],
+    correctOptionId: "B",
+    explanation: "“Provisional” means temporary or subject to later confirmation, which fits a departure time being held open until the final weather update.",
+    misconceptionTags: { A: "contradicts_uncertainty", B: "correct", C: "imports_lateness", D: "does_not_fit_context" },
+  },
+];
+
 export const verbalCalibrationAllItems: VerbalCalibrationPilotItem[] = [
   ...verbalCalibrationCoreItems,
+  ...verbalCalibrationAppliedItems,
 ];

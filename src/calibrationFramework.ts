@@ -21,7 +21,7 @@ export type GeneralCalibrationBlueprint = {
   linkedLiveFamilyId?: string;
 };
 
-export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_09_V0_15";
+export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_09_V0_16";
 
 function b(
   domain: CalibrationDomain,
@@ -125,22 +125,22 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("abstract_logical", 20, "Integrated matrix", "integrated_matrix", "Two simultaneous rules across rows and columns.", "Matrix MCQ", 60, 75, "stretch", "Upper-end calibration item.", "no", "pilot_live", "cleared", "integrated_matrix_v1"),
 
   // Verbal — 20
-  b("verbal", 1, "Explicit fact", "explicit_fact", "Short workplace notice; retrieve stated detail.", "Passage MCQ", 40, 50, "foundation", "Retain current strength.", "no", "qa_review", "in_review", "explicit_fact_v1"),
-  b("verbal", 2, "Explicit condition", "explicit_condition", "Instruction with exception; identify when rule applies.", "Passage MCQ", 45, 55, "applied", "Conditions/limits.", "no", "qa_review", "in_review", "explicit_condition_v1"),
-  b("verbal", 3, "Main point", "main_point", "Short paragraph; choose best summary.", "Passage MCQ", 45, 60, "applied", "Literacy breadth.", "no", "qa_review", "in_review", "main_point_v1"),
-  b("verbal", 4, "Supported inference", "supported_inference", "Choose modest inference, reject overclaim.", "Passage MCQ", 50, 65, "applied", "Retain current strength.", "no", "qa_review", "in_review", "supported_inference_v1"),
-  b("verbal", 5, "Meaning in context", "meaning_in_context", "Infer meaning of familiar word/phrase from passage.", "Passage MCQ", 45, 60, "applied", "Broaden context vocabulary.", "no", "qa_review", "in_review", "meaning_in_context_v1"),
-  b("verbal", 6, "Sequence instruction", "instruction_sequence", "Multi-step procedure; identify correct order.", "Instruction MCQ", 45, 60, "applied", "Retain current strength.", "no", "qa_review", "in_review", "instruction_sequence_v1"),
-  b("verbal", 7, "Exception handling", "instruction_exception", "Procedure with unless/except condition.", "Instruction MCQ", 50, 65, "applied", "Real workplace comprehension.", "no", "qa_review", "in_review", "instruction_exception_v1"),
-  b("verbal", 8, "Evidence scope", "evidence_scope", "Small survey/study; choose justified conclusion.", "Passage MCQ", 50, 65, "applied", "Retain current scope discipline.", "no", "qa_review", "in_review", "evidence_scope_v1"),
-  b("verbal", 9, "Compare two texts", "dual_text_compare", "Two short notices; identify agreement/difference.", "Dual passage MCQ", 60, 75, "applied", "FRV varied-text literacy."),
-  b("verbal", 10, "Longer passage", "long_passage_explicit", "180-250 word informational passage; explicit detail.", "Passage MCQ", 60, 75, "applied", "Increase FRV text-length realism."),
-  b("verbal", 11, "Longer passage inference", "long_passage_inference", "Same passage; supported inference.", "Passage MCQ", 60, 75, "applied", "Sustained reading demand."),
-  b("verbal", 12, "Table + text", "mixed_source_table_text", "Read a short roster/instruction plus table.", "Mixed-source MCQ", 55, 70, "applied", "Adult-context literacy/data crossover."),
-  b("verbal", 13, "Vocabulary antonym", "vocabulary_antonym", "Common work-relevant word; choose opposite.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes"),
-  b("verbal", 14, "Vocabulary synonym", "vocabulary_synonym", "Common work-relevant word; choose nearest meaning.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes"),
-  b("verbal", 15, "Word relationship", "word_relationship", "Complete analogy between common words.", "Micro MCQ", 25, 35, "applied", "Criteria-style verbal relationship.", "yes"),
-  b("verbal", 16, "Sentence completion", "sentence_completion", "Choose word that best completes a concise sentence.", "Micro MCQ", 25, 35, "applied", "Fast verbal reasoning.", "yes"),
+  b("verbal", 1, "Explicit fact", "explicit_fact", "Short workplace notice; retrieve stated detail.", "Passage MCQ", 40, 50, "foundation", "Retain current strength.", "no", "pilot_live", "cleared", "explicit_fact_v1"),
+  b("verbal", 2, "Explicit condition", "explicit_condition", "Instruction with exception; identify when rule applies.", "Passage MCQ", 45, 55, "applied", "Conditions/limits.", "no", "pilot_live", "cleared", "explicit_condition_v1"),
+  b("verbal", 3, "Main point", "main_point", "Short paragraph; choose best summary.", "Passage MCQ", 45, 60, "applied", "Literacy breadth.", "no", "pilot_live", "cleared", "main_point_v1"),
+  b("verbal", 4, "Supported inference", "supported_inference", "Choose modest inference, reject overclaim.", "Passage MCQ", 50, 65, "applied", "Retain current strength.", "no", "pilot_live", "cleared", "supported_inference_v1"),
+  b("verbal", 5, "Meaning in context", "meaning_in_context", "Infer meaning of familiar word/phrase from passage.", "Passage MCQ", 45, 60, "applied", "Broaden context vocabulary.", "no", "pilot_live", "cleared", "meaning_in_context_v1"),
+  b("verbal", 6, "Sequence instruction", "instruction_sequence", "Multi-step procedure; identify correct order.", "Instruction MCQ", 45, 60, "applied", "Retain current strength.", "no", "pilot_live", "cleared", "instruction_sequence_v1"),
+  b("verbal", 7, "Exception handling", "instruction_exception", "Procedure with unless/except condition.", "Instruction MCQ", 50, 65, "applied", "Real workplace comprehension.", "no", "pilot_live", "cleared", "instruction_exception_v1"),
+  b("verbal", 8, "Evidence scope", "evidence_scope", "Small survey/study; choose justified conclusion.", "Passage MCQ", 50, 65, "applied", "Retain current scope discipline.", "no", "pilot_live", "cleared", "evidence_scope_v1"),
+  b("verbal", 9, "Compare two texts", "dual_text_compare", "Two short notices; identify agreement/difference.", "Dual passage MCQ", 60, 75, "applied", "FRV varied-text literacy.", "no", "qa_review", "in_review", "dual_text_compare_v1"),
+  b("verbal", 10, "Longer passage", "long_passage_explicit", "180-250 word informational passage; explicit detail.", "Passage MCQ", 60, 75, "applied", "Increase FRV text-length realism.", "no", "qa_review", "in_review", "long_passage_explicit_v1"),
+  b("verbal", 11, "Longer passage inference", "long_passage_inference", "Same passage; supported inference.", "Passage MCQ", 60, 75, "applied", "Sustained reading demand.", "no", "qa_review", "in_review", "long_passage_inference_v1"),
+  b("verbal", 12, "Table + text", "mixed_source_table_text", "Read a short roster/instruction plus table.", "Mixed-source MCQ", 55, 70, "applied", "Adult-context literacy/data crossover.", "no", "qa_review", "in_review", "mixed_source_table_text_v1"),
+  b("verbal", 13, "Vocabulary antonym", "vocabulary_antonym", "Common work-relevant word; choose opposite.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes", "qa_review", "in_review", "vocabulary_antonym_v1"),
+  b("verbal", 14, "Vocabulary synonym", "vocabulary_synonym", "Common work-relevant word; choose nearest meaning.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes", "qa_review", "in_review", "vocabulary_synonym_v1"),
+  b("verbal", 15, "Word relationship", "word_relationship", "Complete analogy between common words.", "Micro MCQ", 25, 35, "applied", "Criteria-style verbal relationship.", "yes", "qa_review", "in_review", "word_relationship_v1"),
+  b("verbal", 16, "Sentence completion", "sentence_completion", "Choose word that best completes a concise sentence.", "Micro MCQ", 25, 35, "applied", "Fast verbal reasoning.", "yes", "qa_review", "in_review", "sentence_completion_v1"),
   b("verbal", 17, "Claim vs evidence", "claim_vs_evidence", "Short report plus four claims; choose supported one.", "Passage MCQ", 50, 65, "applied", "Evidence discipline."),
   b("verbal", 18, "Ambiguous pronoun/reference", "reference_resolution", "Identify what a pronoun/phrase refers to.", "Passage MCQ", 45, 60, "applied", "Reading precision."),
   b("verbal", 19, "Policy interpretation", "policy_interpretation", "Policy excerpt; choose permitted action.", "Passage MCQ", 55, 70, "applied", "Job-relevant comprehension."),
