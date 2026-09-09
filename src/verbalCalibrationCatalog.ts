@@ -44,7 +44,7 @@ export type VerbalCalibrationPilotItem = {
   misconceptionTags: Partial<Record<VerbalCalibrationOptionId, string>>;
 };
 
-export const VERBAL_CALIBRATION_PILOT_VERSION = "APTESTA_VERBAL_CAL_V0_16";
+export const VERBAL_CALIBRATION_PILOT_VERSION = "APTESTA_VERBAL_CAL_V0_17";
 
 const option = (optionId: VerbalCalibrationOptionId, text: string, misconceptionTag: string): VerbalCalibrationOption => ({ optionId, text, misconceptionTag });
 
@@ -479,7 +479,117 @@ export const verbalCalibrationAppliedItems: VerbalCalibrationPilotItem[] = [
   },
 ];
 
+export const verbalCalibrationCompletionItems: VerbalCalibrationPilotItem[] = [
+  {
+    questionId: "VB-CAL-017",
+    blueprintId: "VERBAL-17",
+    familyId: "claim_vs_evidence_v1",
+    archetype: "claim_vs_evidence",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 50, maxSec: 65 },
+    source: {
+      eyebrow: "Handover trial",
+      title: "Night-shift checklist",
+      paragraphs: [
+        "A depot tested a one-page handover checklist on its night shift for six weeks. During the trial, 27 of 30 handovers contained all six required information items. In the previous six-week period, 21 of 30 handovers had contained all six items. Staffing levels were unchanged. The trial involved this depot only, and two of the three incomplete trial handovers concerned equipment that was still away for repair.",
+      ],
+    },
+    stem: "Which claim is supported by the evidence given?",
+    options: [
+      option("A", "The checklist eliminated incomplete handovers at the depot.", "turns_improvement_into_elimination"),
+      option("B", "Complete handovers were more common during the checklist trial than in the previous six-week period at this depot.", "correct"),
+      option("C", "The checklist was proven to be the cause of the improvement.", "claims_causation_from_before_after_comparison"),
+      option("D", "The same improvement will occur at every depot that adopts the checklist.", "generalises_beyond_single_depot"),
+    ],
+    correctOptionId: "B",
+    explanation: "The report supports a limited comparison at this depot: 27 of 30 handovers were complete during the trial versus 21 of 30 previously. It does not show elimination, prove causation or justify generalising to every depot.",
+    misconceptionTags: { A: "turns_improvement_into_elimination", B: "correct", C: "claims_causation_from_before_after_comparison", D: "generalises_beyond_single_depot" },
+  },
+  {
+    questionId: "VB-CAL-018",
+    blueprintId: "VERBAL-18",
+    familyId: "reference_resolution_v1",
+    archetype: "reference_resolution",
+    difficulty: "applied",
+    reasoningSteps: 2,
+    targetTimeRangeSec: { minSec: 45, maxSec: 60 },
+    source: {
+      eyebrow: "Inspection note",
+      paragraphs: [
+        "During the morning inspection, the crew found that the portable pump's suction hose had split. They replaced the hose before starting the pump. This allowed the wet test to proceed without postponing the exercise.",
+      ],
+    },
+    stem: "In the final sentence, what does “This” refer to?",
+    options: [
+      option("A", "Finding the split during the morning inspection", "selects_earlier_event_not_immediate_cause"),
+      option("B", "Replacing the suction hose before starting the pump", "correct"),
+      option("C", "Starting the pump before the hose was replaced", "reverses_sequence"),
+      option("D", "Postponing the exercise", "selects_outcome_that_did_not_occur"),
+    ],
+    correctOptionId: "B",
+    explanation: "“This” refers to the immediately preceding action: replacing the split suction hose before the pump was started. That replacement is what allowed the wet test to proceed.",
+    misconceptionTags: { A: "selects_earlier_event_not_immediate_cause", B: "correct", C: "reverses_sequence", D: "selects_outcome_that_did_not_occur" },
+  },
+  {
+    questionId: "VB-CAL-019",
+    blueprintId: "VERBAL-19",
+    familyId: "policy_interpretation_v1",
+    archetype: "policy_interpretation",
+    difficulty: "applied",
+    reasoningSteps: 3,
+    targetTimeRangeSec: { minSec: 55, maxSec: 70 },
+    source: {
+      eyebrow: "Workshop access policy",
+      bullets: [
+        "Authorised technicians may collect standard hand tools during workshop opening hours without supervisor approval.",
+        "Power tools may be collected only by technicians with a current power-tool endorsement.",
+        "After-hours collection of any tool requires approval from the duty supervisor.",
+        "A tool tagged OUT OF SERVICE must not be removed except by maintenance staff taking it for repair.",
+      ],
+    },
+    stem: "Lena is an authorised technician but does not hold a power-tool endorsement. At 14:00, which action is permitted without supervisor approval?",
+    options: [
+      option("A", "Collect an available standard hand tool that is not tagged OUT OF SERVICE.", "correct"),
+      option("B", "Collect a power drill because the workshop is open.", "ignores_power_tool_endorsement"),
+      option("C", "Collect a standard hand tool tagged OUT OF SERVICE for normal use.", "ignores_out_of_service_restriction"),
+      option("D", "Return at 22:00 and collect a standard hand tool without contacting the duty supervisor.", "ignores_after_hours_approval"),
+    ],
+    correctOptionId: "A",
+    explanation: "During opening hours an authorised technician may collect an ordinary standard hand tool without supervisor approval. Lena cannot collect a power tool without the endorsement, cannot remove an OUT OF SERVICE tool for normal use, and needs duty-supervisor approval after hours.",
+    misconceptionTags: { A: "correct", B: "ignores_power_tool_endorsement", C: "ignores_out_of_service_restriction", D: "ignores_after_hours_approval" },
+  },
+  {
+    questionId: "VB-CAL-020",
+    blueprintId: "VERBAL-20",
+    familyId: "multi_paragraph_synthesis_v1",
+    archetype: "multi_paragraph_synthesis",
+    difficulty: "stretch",
+    reasoningSteps: 4,
+    targetTimeRangeSec: { minSec: 65, maxSec: 80 },
+    source: {
+      eyebrow: "Drill review",
+      title: "Pre-start briefings",
+      paragraphs: [
+        "For six weeks, Station 6 used a 10-minute pre-start equipment briefing before routine drills. Compared with the previous six weeks, the average number of omitted equipment checks fell from 3.1 to 1.4 per drill. However, drills began an average of six minutes later.",
+        "In three time-critical simulations, supervisors shortened the briefing to three minutes. Those simulations averaged 2.3 omitted checks. The review team concluded that the full briefing improved check completeness but may not suit every time-critical situation, and it recommended testing an intermediate five-minute format.",
+      ],
+    },
+    stem: "Which conclusion is best supported by the passage as a whole?",
+    options: [
+      option("A", "Longer pre-start briefings were associated with fewer omitted checks, but the extra time creates a trade-off that warrants testing a shorter format.", "correct"),
+      option("B", "The 10-minute briefing should be mandatory before every response because it removed all omitted checks.", "ignores_time_tradeoff_and_claims_elimination"),
+      option("C", "Shortening the briefing to three minutes produced better check completeness than the 10-minute briefing.", "reverses_reported_pattern"),
+      option("D", "The review showed that briefing length has no relationship to check completeness.", "ignores_observed_difference"),
+    ],
+    correctOptionId: "A",
+    explanation: "Both paragraphs support a balanced conclusion: longer briefings coincided with more complete checks, but they also cost time. The three-minute simulations sat between the earlier and 10-minute results, supporting the plan to test a compromise rather than an absolute rule.",
+    misconceptionTags: { A: "correct", B: "ignores_time_tradeoff_and_claims_elimination", C: "reverses_reported_pattern", D: "ignores_observed_difference" },
+  },
+];
+
 export const verbalCalibrationAllItems: VerbalCalibrationPilotItem[] = [
   ...verbalCalibrationCoreItems,
   ...verbalCalibrationAppliedItems,
+  ...verbalCalibrationCompletionItems,
 ];

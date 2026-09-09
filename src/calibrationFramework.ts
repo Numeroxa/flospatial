@@ -21,7 +21,7 @@ export type GeneralCalibrationBlueprint = {
   linkedLiveFamilyId?: string;
 };
 
-export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_09_V0_16";
+export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_09_V0_17";
 
 function b(
   domain: CalibrationDomain,
@@ -133,18 +133,18 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("verbal", 6, "Sequence instruction", "instruction_sequence", "Multi-step procedure; identify correct order.", "Instruction MCQ", 45, 60, "applied", "Retain current strength.", "no", "pilot_live", "cleared", "instruction_sequence_v1"),
   b("verbal", 7, "Exception handling", "instruction_exception", "Procedure with unless/except condition.", "Instruction MCQ", 50, 65, "applied", "Real workplace comprehension.", "no", "pilot_live", "cleared", "instruction_exception_v1"),
   b("verbal", 8, "Evidence scope", "evidence_scope", "Small survey/study; choose justified conclusion.", "Passage MCQ", 50, 65, "applied", "Retain current scope discipline.", "no", "pilot_live", "cleared", "evidence_scope_v1"),
-  b("verbal", 9, "Compare two texts", "dual_text_compare", "Two short notices; identify agreement/difference.", "Dual passage MCQ", 60, 75, "applied", "FRV varied-text literacy.", "no", "qa_review", "in_review", "dual_text_compare_v1"),
-  b("verbal", 10, "Longer passage", "long_passage_explicit", "180-250 word informational passage; explicit detail.", "Passage MCQ", 60, 75, "applied", "Increase FRV text-length realism.", "no", "qa_review", "in_review", "long_passage_explicit_v1"),
-  b("verbal", 11, "Longer passage inference", "long_passage_inference", "Same passage; supported inference.", "Passage MCQ", 60, 75, "applied", "Sustained reading demand.", "no", "qa_review", "in_review", "long_passage_inference_v1"),
-  b("verbal", 12, "Table + text", "mixed_source_table_text", "Read a short roster/instruction plus table.", "Mixed-source MCQ", 55, 70, "applied", "Adult-context literacy/data crossover.", "no", "qa_review", "in_review", "mixed_source_table_text_v1"),
-  b("verbal", 13, "Vocabulary antonym", "vocabulary_antonym", "Common work-relevant word; choose opposite.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes", "qa_review", "in_review", "vocabulary_antonym_v1"),
-  b("verbal", 14, "Vocabulary synonym", "vocabulary_synonym", "Common work-relevant word; choose nearest meaning.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes", "qa_review", "in_review", "vocabulary_synonym_v1"),
-  b("verbal", 15, "Word relationship", "word_relationship", "Complete analogy between common words.", "Micro MCQ", 25, 35, "applied", "Criteria-style verbal relationship.", "yes", "qa_review", "in_review", "word_relationship_v1"),
-  b("verbal", 16, "Sentence completion", "sentence_completion", "Choose word that best completes a concise sentence.", "Micro MCQ", 25, 35, "applied", "Fast verbal reasoning.", "yes", "qa_review", "in_review", "sentence_completion_v1"),
-  b("verbal", 17, "Claim vs evidence", "claim_vs_evidence", "Short report plus four claims; choose supported one.", "Passage MCQ", 50, 65, "applied", "Evidence discipline."),
-  b("verbal", 18, "Ambiguous pronoun/reference", "reference_resolution", "Identify what a pronoun/phrase refers to.", "Passage MCQ", 45, 60, "applied", "Reading precision."),
-  b("verbal", 19, "Policy interpretation", "policy_interpretation", "Policy excerpt; choose permitted action.", "Passage MCQ", 55, 70, "applied", "Job-relevant comprehension."),
-  b("verbal", 20, "Multi-paragraph synthesis", "multi_paragraph_synthesis", "Two paragraphs; choose conclusion supported by both.", "Passage MCQ", 65, 80, "stretch", "Upper-end literacy calibration."),
+  b("verbal", 9, "Compare two texts", "dual_text_compare", "Two short notices; identify agreement/difference.", "Dual passage MCQ", 60, 75, "applied", "FRV varied-text literacy.", "no", "pilot_live", "cleared", "dual_text_compare_v1"),
+  b("verbal", 10, "Longer passage", "long_passage_explicit", "180-250 word informational passage; explicit detail.", "Passage MCQ", 60, 75, "applied", "Increase FRV text-length realism.", "no", "pilot_live", "cleared", "long_passage_explicit_v1"),
+  b("verbal", 11, "Longer passage inference", "long_passage_inference", "Same passage; supported inference.", "Passage MCQ", 60, 75, "applied", "Sustained reading demand.", "no", "pilot_live", "cleared", "long_passage_inference_v1"),
+  b("verbal", 12, "Table + text", "mixed_source_table_text", "Read a short roster/instruction plus table.", "Mixed-source MCQ", 55, 70, "applied", "Adult-context literacy/data crossover.", "no", "pilot_live", "cleared", "mixed_source_table_text_v1"),
+  b("verbal", 13, "Vocabulary antonym", "vocabulary_antonym", "Common work-relevant word; choose opposite.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes", "pilot_live", "cleared", "vocabulary_antonym_v1"),
+  b("verbal", 14, "Vocabulary synonym", "vocabulary_synonym", "Common work-relevant word; choose nearest meaning.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes", "pilot_live", "cleared", "vocabulary_synonym_v1"),
+  b("verbal", 15, "Word relationship", "word_relationship", "Complete analogy between common words.", "Micro MCQ", 25, 35, "applied", "Criteria-style verbal relationship.", "yes", "pilot_live", "cleared", "word_relationship_v1"),
+  b("verbal", 16, "Sentence completion", "sentence_completion", "Choose word that best completes a concise sentence.", "Micro MCQ", 25, 35, "applied", "Fast verbal reasoning.", "yes", "pilot_live", "cleared", "sentence_completion_v1"),
+  b("verbal", 17, "Claim vs evidence", "claim_vs_evidence", "Short report plus four claims; choose supported one.", "Passage MCQ", 50, 65, "applied", "Evidence discipline.", "no", "qa_review", "in_review", "claim_vs_evidence_v1"),
+  b("verbal", 18, "Ambiguous pronoun/reference", "reference_resolution", "Identify what a pronoun/phrase refers to.", "Passage MCQ", 45, 60, "applied", "Reading precision.", "no", "qa_review", "in_review", "reference_resolution_v1"),
+  b("verbal", 19, "Policy interpretation", "policy_interpretation", "Policy excerpt; choose permitted action.", "Passage MCQ", 55, 70, "applied", "Job-relevant comprehension.", "no", "qa_review", "in_review", "policy_interpretation_v1"),
+  b("verbal", 20, "Multi-paragraph synthesis", "multi_paragraph_synthesis", "Two paragraphs; choose conclusion supported by both.", "Passage MCQ", 65, 80, "stretch", "Upper-end literacy calibration.", "no", "qa_review", "in_review", "multi_paragraph_synthesis_v1"),
 ];
 
 export const generalCalibrationBlueprintById = Object.fromEntries(
