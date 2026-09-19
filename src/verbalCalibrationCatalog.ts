@@ -479,6 +479,7 @@ export const verbalCalibrationAppliedItems: VerbalCalibrationPilotItem[] = [
   },
 ];
 
+
 export const verbalCalibrationCompletionItems: VerbalCalibrationPilotItem[] = [
   {
     questionId: "VB-CAL-017",
@@ -489,22 +490,22 @@ export const verbalCalibrationCompletionItems: VerbalCalibrationPilotItem[] = [
     reasoningSteps: 3,
     targetTimeRangeSec: { minSec: 50, maxSec: 65 },
     source: {
-      eyebrow: "Handover trial",
-      title: "Night-shift checklist",
+      eyebrow: "Maintenance review",
+      title: "Daily inspection reminders",
       paragraphs: [
-        "A depot tested a one-page handover checklist on its night shift for six weeks. During the trial, 27 of 30 handovers contained all six required information items. In the previous six-week period, 21 of 30 handovers had contained all six items. Staffing levels were unchanged. The trial involved this depot only, and two of the three incomplete trial handovers concerned equipment that was still away for repair.",
+        "A depot introduced an automated reminder at the start of each shift for four weeks. In the four weeks before the reminder was introduced, 46 daily vehicle inspections were recorded as late. During the four-week trial, 29 inspections were recorded as late. The number of vehicles and scheduled inspections was similar in both periods. No other changes were formally tracked during the trial.",
       ],
     },
-    stem: "Which claim is supported by the evidence given?",
+    stem: "Which claim is supported by the information given?",
     options: [
-      option("A", "The checklist eliminated incomplete handovers at the depot.", "turns_improvement_into_elimination"),
-      option("B", "Complete handovers were more common during the checklist trial than in the previous six-week period at this depot.", "correct"),
-      option("C", "The checklist was proven to be the cause of the improvement.", "claims_causation_from_before_after_comparison"),
-      option("D", "The same improvement will occur at every depot that adopts the checklist.", "generalises_beyond_single_depot"),
+      option("A", "The automated reminder caused the reduction in late inspections.", "claims_causation_from_before_after_comparison"),
+      option("B", "Late inspections were less common during the four-week reminder trial than in the preceding four weeks.", "correct"),
+      option("C", "The reminder will reduce late inspections at every depot.", "generalises_beyond_observed_setting"),
+      option("D", "No factors other than the reminder could have affected inspection timing.", "assumes_untracked_factors_absent"),
     ],
     correctOptionId: "B",
-    explanation: "The report supports a limited comparison at this depot: 27 of 30 handovers were complete during the trial versus 21 of 30 previously. It does not show elimination, prove causation or justify generalising to every depot.",
-    misconceptionTags: { A: "turns_improvement_into_elimination", B: "correct", C: "claims_causation_from_before_after_comparison", D: "generalises_beyond_single_depot" },
+    explanation: "The report supports a direct comparison of the two observed periods: 29 late inspections during the trial versus 46 beforehand. It does not establish that the reminder caused the difference or that the result would generalise elsewhere.",
+    misconceptionTags: { A: "claims_causation_from_before_after_comparison", B: "correct", C: "generalises_beyond_observed_setting", D: "assumes_untracked_factors_absent" },
   },
   {
     questionId: "VB-CAL-018",
@@ -515,21 +516,21 @@ export const verbalCalibrationCompletionItems: VerbalCalibrationPilotItem[] = [
     reasoningSteps: 2,
     targetTimeRangeSec: { minSec: 45, maxSec: 60 },
     source: {
-      eyebrow: "Inspection note",
+      eyebrow: "Incident note",
       paragraphs: [
-        "During the morning inspection, the crew found that the portable pump's suction hose had split. They replaced the hose before starting the pump. This allowed the wet test to proceed without postponing the exercise.",
+        "The mechanic inspected the portable generator after it failed to start. The generator was then tagged out of service until a replacement fuel line could be fitted. This action prevented crews from using the generator during the afternoon exercise.",
       ],
     },
-    stem: "In the final sentence, what does “This” refer to?",
+    stem: "In the final sentence, what does “This action” refer to?",
     options: [
-      option("A", "Finding the split during the morning inspection", "selects_earlier_event_not_immediate_cause"),
-      option("B", "Replacing the suction hose before starting the pump", "correct"),
-      option("C", "Starting the pump before the hose was replaced", "reverses_sequence"),
-      option("D", "Postponing the exercise", "selects_outcome_that_did_not_occur"),
+      option("A", "Inspecting the generator", "selects_earlier_action"),
+      option("B", "The generator failing to start", "selects_event_not_action"),
+      option("C", "Tagging the generator out of service", "correct"),
+      option("D", "Fitting the replacement fuel line", "selects_future_repair"),
     ],
-    correctOptionId: "B",
-    explanation: "“This” refers to the immediately preceding action: replacing the split suction hose before the pump was started. That replacement is what allowed the wet test to proceed.",
-    misconceptionTags: { A: "selects_earlier_event_not_immediate_cause", B: "correct", C: "reverses_sequence", D: "selects_outcome_that_did_not_occur" },
+    correctOptionId: "C",
+    explanation: "“This action” refers to the immediately preceding action: tagging the generator out of service. That is what prevented crews from using it during the exercise.",
+    misconceptionTags: { A: "selects_earlier_action", B: "selects_event_not_action", C: "correct", D: "selects_future_repair" },
   },
   {
     questionId: "VB-CAL-019",
@@ -540,24 +541,25 @@ export const verbalCalibrationCompletionItems: VerbalCalibrationPilotItem[] = [
     reasoningSteps: 3,
     targetTimeRangeSec: { minSec: 55, maxSec: 70 },
     source: {
-      eyebrow: "Workshop access policy",
+      eyebrow: "Depot policy",
+      title: "Private vehicles in the loading yard",
       bullets: [
-        "Authorised technicians may collect standard hand tools during workshop opening hours without supervisor approval.",
-        "Power tools may be collected only by technicians with a current power-tool endorsement.",
-        "After-hours collection of any tool requires approval from the duty supervisor.",
-        "A tool tagged OUT OF SERVICE must not be removed except by maintenance staff taking it for repair.",
+        "Private vehicles may enter the loading yard only to load or unload work equipment.",
+        "The driver must remain with the vehicle at all times.",
+        "A private vehicle may remain in the yard for no more than 10 minutes.",
+        "Between 07:00 and 09:00, the loading yard is restricted to fleet vehicles only.",
       ],
     },
-    stem: "Lena is an authorised technician but does not hold a power-tool endorsement. At 14:00, which action is permitted without supervisor approval?",
+    stem: "Which action is permitted by the policy?",
     options: [
-      option("A", "Collect an available standard hand tool that is not tagged OUT OF SERVICE.", "correct"),
-      option("B", "Collect a power drill because the workshop is open.", "ignores_power_tool_endorsement"),
-      option("C", "Collect a standard hand tool tagged OUT OF SERVICE for normal use.", "ignores_out_of_service_restriction"),
-      option("D", "Return at 22:00 and collect a standard hand tool without contacting the duty supervisor.", "ignores_after_hours_approval"),
+      option("A", "At 08:15, a staff member drives in for five minutes to collect work equipment and remains with the vehicle.", "ignores_time_restriction"),
+      option("B", "At 13:30, a staff member drives in to collect work equipment, remains with the vehicle and leaves after seven minutes.", "correct"),
+      option("C", "At 14:00, a staff member parks in the yard for eight minutes while attending a meeting inside the building.", "driver_leaves_vehicle_and_wrong_purpose"),
+      option("D", "At 16:00, a staff member unloads work equipment but remains in the yard for 15 minutes.", "exceeds_time_limit"),
     ],
-    correctOptionId: "A",
-    explanation: "During opening hours an authorised technician may collect an ordinary standard hand tool without supervisor approval. Lena cannot collect a power tool without the endorsement, cannot remove an OUT OF SERVICE tool for normal use, and needs duty-supervisor approval after hours.",
-    misconceptionTags: { A: "correct", B: "ignores_power_tool_endorsement", C: "ignores_out_of_service_restriction", D: "ignores_after_hours_approval" },
+    correctOptionId: "B",
+    explanation: "Option B satisfies every condition: the purpose is work-equipment collection, it is outside the 07:00–09:00 fleet-only period, the driver stays with the vehicle, and the stay is under 10 minutes.",
+    misconceptionTags: { A: "ignores_time_restriction", B: "correct", C: "driver_leaves_vehicle_and_wrong_purpose", D: "exceeds_time_limit" },
   },
   {
     questionId: "VB-CAL-020",
@@ -568,23 +570,32 @@ export const verbalCalibrationCompletionItems: VerbalCalibrationPilotItem[] = [
     reasoningSteps: 4,
     targetTimeRangeSec: { minSec: 65, maxSec: 80 },
     source: {
-      eyebrow: "Drill review",
-      title: "Pre-start briefings",
-      paragraphs: [
-        "For six weeks, Station 6 used a 10-minute pre-start equipment briefing before routine drills. Compared with the previous six weeks, the average number of omitted equipment checks fell from 3.1 to 1.4 per drill. However, drills began an average of six minutes later.",
-        "In three time-critical simulations, supervisors shortened the briefing to three minutes. Those simulations averaged 2.3 omitted checks. The review team concluded that the full briefing improved check completeness but may not suit every time-critical situation, and it recommended testing an intermediate five-minute format.",
+      eyebrow: "Training attendance review",
+      sections: [
+        {
+          title: "Overall result",
+          paragraphs: [
+            "After monthly safety briefings were moved to the 15-minute overlap between day and night shifts, attendance across the district rose from 68% to 86%. Most stations recorded attendance above 80%, but Station 4 remained at 61%.",
+          ],
+        },
+        {
+          title: "Station 4",
+          paragraphs: [
+            "Station 4 uses a roster pattern in which the day and night crews overlap on only two days each week. The station will trial a different briefing time next month so that all roster groups have a regular opportunity to attend.",
+          ],
+        },
       ],
     },
-    stem: "Which conclusion is best supported by the passage as a whole?",
+    stem: "Which conclusion is best supported by both sections?",
     options: [
-      option("A", "Longer pre-start briefings were associated with fewer omitted checks, but the extra time creates a trade-off that warrants testing a shorter format.", "correct"),
-      option("B", "The 10-minute briefing should be mandatory before every response because it removed all omitted checks.", "ignores_time_tradeoff_and_claims_elimination"),
-      option("C", "Shortening the briefing to three minutes produced better check completeness than the 10-minute briefing.", "reverses_reported_pattern"),
-      option("D", "The review showed that briefing length has no relationship to check completeness.", "ignores_observed_difference"),
+      option("A", "Moving briefings to shift overlap improved attendance at every station.", "overstates_uniform_result"),
+      option("B", "Station 4 staff are less interested in safety briefings than staff at other stations.", "invents_motivation"),
+      option("C", "The overlap-time approach was associated with higher district attendance, but Station 4 may need a schedule better suited to its roster pattern.", "correct"),
+      option("D", "Station 4 should stop using shift overlap for any training activity.", "extends_beyond_evidence"),
     ],
-    correctOptionId: "A",
-    explanation: "Both paragraphs support a balanced conclusion: longer briefings coincided with more complete checks, but they also cost time. The three-minute simulations sat between the earlier and 10-minute results, supporting the plan to test a compromise rather than an absolute rule.",
-    misconceptionTags: { A: "correct", B: "ignores_time_tradeoff_and_claims_elimination", C: "reverses_reported_pattern", D: "ignores_observed_difference" },
+    correctOptionId: "C",
+    explanation: "The first section shows higher attendance overall but a persistent shortfall at Station 4. The second identifies a roster constraint and a planned alternative timing trial. Together they support a qualified conclusion about overall improvement and the need for a better fit at Station 4.",
+    misconceptionTags: { A: "overstates_uniform_result", B: "invents_motivation", C: "correct", D: "extends_beyond_evidence" },
   },
 ];
 
