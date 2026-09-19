@@ -21,7 +21,7 @@ export type GeneralCalibrationBlueprint = {
   linkedLiveFamilyId?: string;
 };
 
-export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_09_V0_17";
+export const GENERAL_CALIBRATION_BLUEPRINT_VERSION = "APTESTA_GENERAL_CAL_BLUEPRINT_2026_09_V0_18";
 
 function b(
   domain: CalibrationDomain,
@@ -64,21 +64,21 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("mechanical", 3, "Compound gears", "compound_gear_speed", "Two gears share a shaft within a four-gear train.", "Diagram MCQ", 45, 55, "stretch", "Add multi-stage speed reasoning.", "no", "pilot_live", "cleared", "compound_gear_speed_v1"),
   b("mechanical", 4, "Belt drive direction", "open_belt_direction", "Open belt between two pulleys; ask driven direction.", "Diagram MCQ", 30, 35, "foundation", "Fill FRV wheels/belts gap.", "yes", "pilot_live", "cleared", "open_belt_direction_v1"),
   b("mechanical", 5, "Crossed belt direction", "crossed_belt_direction", "Crossed belt; ask driven direction.", "Diagram MCQ", 30, 35, "applied", "Distinguish open vs crossed belt.", "yes", "pilot_live", "cleared", "crossed_belt_direction_v1"),
-  b("mechanical", 6, "Pulley mechanical advantage", "pulley_supporting_strands", "Moving pulley block; count supporting strands.", "Diagram MCQ", 35, 40, "foundation", "Retain current strength; speed recognition.", "yes", "qa_review", "in_review", "pulley_supporting_strands_v1"),
-  b("mechanical", 7, "Pulley distance trade-off", "pulley_distance_tradeoff", "Load rises 0.5 m with four supports; ask rope travel.", "Diagram MCQ", 40, 45, "applied", "Test force-distance relationship.", "no", "qa_review", "in_review", "pulley_distance_tradeoff_v1"),
-  b("mechanical", 8, "Lever moments", "lever_moment_balance", "Load/effort arms labelled; ask effort force.", "Diagram MCQ", 40, 50, "applied", "Retain current strength with corrected arm arrows.", "no", "qa_review", "in_review", "lever_moment_balance_v1"),
-  b("mechanical", 9, "Lever fulcrum shift", "lever_fulcrum_shift", "Same lever before/after fulcrum movement; ask effect on effort.", "Diagram MCQ", 35, 40, "applied", "Reason qualitatively rather than calculate.", "candidate", "qa_review", "in_review", "lever_fulcrum_shift_v1"),
-  b("mechanical", 10, "Hydraulic force", "hydraulic_force_area", "Two piston areas; input force given; ask output force.", "Diagram MCQ", 45, 55, "applied", "Retain current pressure/area strength.", "no", "qa_review", "in_review", "hydraulic_force_area_v1"),
-  b("mechanical", 11, "Hydraulic movement", "hydraulic_volume_displacement", "Small piston moves given distance; ask large piston movement.", "Diagram MCQ", 45, 55, "stretch", "Add volume conservation, not only force.", "no", "qa_review", "in_review", "hydraulic_volume_displacement_v1"),
-  b("mechanical", 12, "Linked bars", "linked_bar_motion", "Two pivoted bars linked by a connector; ask motion of second end.", "Diagram MCQ", 35, 45, "applied", "Fill FRV linked-bars gap.", "candidate", "qa_review", "in_review", "linked_bar_motion_v1"),
-  b("mechanical", 13, "Bell crank / linkage", "bell_crank_direction", "Right-angle linkage changes direction of movement.", "Diagram MCQ", 35, 45, "applied", "Rapid cause-and-effect recognition.", "yes", "qa_review", "in_review", "bell_crank_direction_v1"),
-  b("mechanical", 14, "Inclined plane", "inclined_plane_force", "Compare force required on two ramps reaching same height.", "Diagram MCQ", 35, 45, "foundation", "Broaden simple machines.", "no", "qa_review", "in_review", "inclined_plane_force_v1"),
-  b("mechanical", 15, "Wheel and axle", "wheel_axle_advantage", "Different radii; ask which arrangement gives greater mechanical advantage.", "Diagram MCQ", 35, 45, "applied", "Fill wheels/simple-machines coverage.", "no", "qa_review", "in_review", "wheel_axle_advantage_v1"),
-  b("mechanical", 16, "Force / friction", "friction_start_force", "Same block on two surfaces; ask which needs more force to start.", "Diagram MCQ", 30, 40, "foundation", "Fill forces/motion gap.", "candidate", "qa_review", "in_review", "friction_start_force_v1"),
-  b("mechanical", 17, "Centre of mass / stability", "stability_base_height", "Three objects with different base/height; ask most stable.", "Diagram MCQ", 30, 40, "applied", "Useful practical physics style.", "candidate", "qa_review", "in_review", "stability_base_height_v1"),
-  b("mechanical", 18, "Acceleration / inertia", "trolley_inertia", "Object on trolley during sudden acceleration; ask relative motion.", "Diagram MCQ", 35, 45, "applied", "Fill forces/motion gap.", "no", "qa_review", "in_review", "trolley_inertia_v1"),
-  b("mechanical", 19, "3D mechanical visualisation", "mechanical_view_rotation", "Simple shaft/handle arrangement viewed from another angle.", "Spatial-mech MCQ", 45, 60, "stretch", "Directly address FRV 3D visualisation.", "no", "qa_review", "in_review", "mechanical_view_rotation_v1"),
-  b("mechanical", 20, "Integrated machine", "integrated_machine_motion", "Gear drives pulley/lever or linkage; ask final motion.", "Diagram MCQ", 50, 60, "stretch", "Test method selection under realistic complexity.", "no", "qa_review", "in_review", "integrated_machine_motion_v1"),
+  b("mechanical", 6, "Pulley mechanical advantage", "pulley_supporting_strands", "Moving pulley block; count supporting strands.", "Diagram MCQ", 35, 40, "foundation", "Retain current strength; speed recognition.", "yes", "pilot_live", "cleared", "pulley_supporting_strands_v1"),
+  b("mechanical", 7, "Pulley distance trade-off", "pulley_distance_tradeoff", "Load rises 0.5 m with four supports; ask rope travel.", "Diagram MCQ", 40, 45, "applied", "Test force-distance relationship.", "no", "pilot_live", "cleared", "pulley_distance_tradeoff_v1"),
+  b("mechanical", 8, "Lever moments", "lever_moment_balance", "Load/effort arms labelled; ask effort force.", "Diagram MCQ", 40, 50, "applied", "Retain current strength with corrected arm arrows.", "no", "pilot_live", "cleared", "lever_moment_balance_v1"),
+  b("mechanical", 9, "Lever fulcrum shift", "lever_fulcrum_shift", "Same lever before/after fulcrum movement; ask effect on effort.", "Diagram MCQ", 35, 40, "applied", "Reason qualitatively rather than calculate.", "candidate", "pilot_live", "cleared", "lever_fulcrum_shift_v1"),
+  b("mechanical", 10, "Hydraulic force", "hydraulic_force_area", "Two piston areas; input force given; ask output force.", "Diagram MCQ", 45, 55, "applied", "Retain current pressure/area strength.", "no", "pilot_live", "cleared", "hydraulic_force_area_v1"),
+  b("mechanical", 11, "Hydraulic movement", "hydraulic_volume_displacement", "Small piston moves given distance; ask large piston movement.", "Diagram MCQ", 45, 55, "stretch", "Add volume conservation, not only force.", "no", "pilot_live", "cleared", "hydraulic_volume_displacement_v1"),
+  b("mechanical", 12, "Linked bars", "linked_bar_motion", "Two pivoted bars linked by a connector; ask motion of second end.", "Diagram MCQ", 35, 45, "applied", "Fill FRV linked-bars gap.", "candidate", "pilot_live", "cleared", "linked_bar_motion_v1"),
+  b("mechanical", 13, "Bell crank / linkage", "bell_crank_direction", "Right-angle linkage changes direction of movement.", "Diagram MCQ", 35, 45, "applied", "Rapid cause-and-effect recognition.", "yes", "pilot_live", "cleared", "bell_crank_direction_v1"),
+  b("mechanical", 14, "Inclined plane", "inclined_plane_force", "Compare force required on two ramps reaching same height.", "Diagram MCQ", 35, 45, "foundation", "Broaden simple machines.", "no", "pilot_live", "cleared", "inclined_plane_force_v1"),
+  b("mechanical", 15, "Wheel and axle", "wheel_axle_advantage", "Different radii; ask which arrangement gives greater mechanical advantage.", "Diagram MCQ", 35, 45, "applied", "Fill wheels/simple-machines coverage.", "no", "pilot_live", "cleared", "wheel_axle_advantage_v1"),
+  b("mechanical", 16, "Force / friction", "friction_start_force", "Same block on two surfaces; ask which needs more force to start.", "Diagram MCQ", 30, 40, "foundation", "Fill forces/motion gap.", "candidate", "pilot_live", "cleared", "friction_start_force_v1"),
+  b("mechanical", 17, "Centre of mass / stability", "stability_base_height", "Three objects with different base/height; ask most stable.", "Diagram MCQ", 30, 40, "applied", "Useful practical physics style.", "candidate", "pilot_live", "cleared", "stability_base_height_v1"),
+  b("mechanical", 18, "Acceleration / inertia", "trolley_inertia", "Object on trolley during sudden acceleration; ask relative motion.", "Diagram MCQ", 35, 45, "applied", "Fill forces/motion gap.", "no", "pilot_live", "cleared", "trolley_inertia_v1"),
+  b("mechanical", 19, "3D mechanical visualisation", "mechanical_view_rotation", "Simple shaft/handle arrangement viewed from another angle.", "Spatial-mech MCQ", 45, 60, "stretch", "Directly address FRV 3D visualisation.", "no", "pilot_live", "cleared", "mechanical_view_rotation_v1"),
+  b("mechanical", 20, "Integrated machine", "integrated_machine_motion", "Gear drives pulley/lever or linkage; ask final motion.", "Diagram MCQ", 50, 60, "stretch", "Test method selection under realistic complexity.", "no", "pilot_live", "cleared", "integrated_machine_motion_v1"),
 
   // Numerical — 20
   b("numerical", 1, "Mental arithmetic", "mental_arithmetic_two_step", "Two-step arithmetic with friendly numbers.", "MCQ", 35, 45, "foundation", "Criteria-style speed baseline.", "candidate", "pilot_live", "cleared", "mental_arithmetic_two_step_v1"),
@@ -141,10 +141,10 @@ export const generalCalibrationBlueprints: GeneralCalibrationBlueprint[] = [
   b("verbal", 14, "Vocabulary synonym", "vocabulary_synonym", "Common work-relevant word; choose nearest meaning.", "Micro MCQ", 20, 30, "foundation", "Criteria-style verbal speed.", "yes", "pilot_live", "cleared", "vocabulary_synonym_v1"),
   b("verbal", 15, "Word relationship", "word_relationship", "Complete analogy between common words.", "Micro MCQ", 25, 35, "applied", "Criteria-style verbal relationship.", "yes", "pilot_live", "cleared", "word_relationship_v1"),
   b("verbal", 16, "Sentence completion", "sentence_completion", "Choose word that best completes a concise sentence.", "Micro MCQ", 25, 35, "applied", "Fast verbal reasoning.", "yes", "pilot_live", "cleared", "sentence_completion_v1"),
-  b("verbal", 17, "Claim vs evidence", "claim_vs_evidence", "Short report plus four claims; choose supported one.", "Passage MCQ", 50, 65, "applied", "Evidence discipline.", "no", "qa_review", "in_review", "claim_vs_evidence_v1"),
-  b("verbal", 18, "Ambiguous pronoun/reference", "reference_resolution", "Identify what a pronoun/phrase refers to.", "Passage MCQ", 45, 60, "applied", "Reading precision.", "no", "qa_review", "in_review", "reference_resolution_v1"),
-  b("verbal", 19, "Policy interpretation", "policy_interpretation", "Policy excerpt; choose permitted action.", "Passage MCQ", 55, 70, "applied", "Job-relevant comprehension.", "no", "qa_review", "in_review", "policy_interpretation_v1"),
-  b("verbal", 20, "Multi-paragraph synthesis", "multi_paragraph_synthesis", "Two paragraphs; choose conclusion supported by both.", "Passage MCQ", 65, 80, "stretch", "Upper-end literacy calibration.", "no", "qa_review", "in_review", "multi_paragraph_synthesis_v1"),
+  b("verbal", 17, "Claim vs evidence", "claim_vs_evidence", "Short report plus four claims; choose supported one.", "Passage MCQ", 50, 65, "applied", "Evidence discipline.", "no", "pilot_live", "cleared", "claim_vs_evidence_v1"),
+  b("verbal", 18, "Ambiguous pronoun/reference", "reference_resolution", "Identify what a pronoun/phrase refers to.", "Passage MCQ", 45, 60, "applied", "Reading precision.", "no", "pilot_live", "cleared", "reference_resolution_v1"),
+  b("verbal", 19, "Policy interpretation", "policy_interpretation", "Policy excerpt; choose permitted action.", "Passage MCQ", 55, 70, "applied", "Job-relevant comprehension.", "no", "pilot_live", "cleared", "policy_interpretation_v1"),
+  b("verbal", 20, "Multi-paragraph synthesis", "multi_paragraph_synthesis", "Two paragraphs; choose conclusion supported by both.", "Passage MCQ", 65, 80, "stretch", "Upper-end literacy calibration.", "no", "pilot_live", "cleared", "multi_paragraph_synthesis_v1"),
 ];
 
 export const generalCalibrationBlueprintById = Object.fromEntries(
@@ -178,6 +178,12 @@ export function getGeneralCalibrationSummary() {
       ...domain,
       total: items.length,
       pilotLive: items.filter((item) => item.implementationStatus === "pilot_live").length,
+      qaCleared: items.filter((item) => item.qaStatus === "cleared").length,
+      metadataComplete: items.filter((item) => Boolean(
+        item.blueprintId && item.subskill && item.archetype && item.itemBrief && item.responseFormat &&
+        item.targetTimeRangeSec.minSec > 0 && item.targetTimeRangeSec.maxSec >= item.targetTimeRangeSec.minSec &&
+        item.difficulty && item.calibrationPurpose && item.rapidRecognitionIntent && item.linkedLiveFamilyId,
+      )).length,
       inAuthoring: items.filter((item) => item.implementationStatus === "authoring").length,
       inQa: items.filter((item) => item.implementationStatus === "qa_review").length,
       blueprintOnly: items.filter((item) => item.implementationStatus === "blueprint_only").length,
