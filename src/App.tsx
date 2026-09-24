@@ -611,7 +611,7 @@ function downloadMechanicalCalibrationPilotCsv() {
   if (typeof window === "undefined" || typeof document === "undefined") return;
   const runs = loadMechanicalCalibrationPilotRuns();
   const rows: (string | number | boolean | null | undefined)[][] = [[
-    "export_version", "pilot_version", "run_id", "question_id", "blueprint_id", "family_id", "archetype", "response_format", "difficulty", "reasoning_steps", "target_min_sec", "target_max_sec", "selected_response", "correct", "selection_time_ms", "device_class", "misconception_tag", "answered_at",
+    "export_version", "pilot_version", "run_id", "question_id", "blueprint_id", "family_id", "archetype", "response_format", "difficulty", "reasoning_steps", "target_min_sec", "target_max_sec", "selected_response", "correct", "first_selection_time_ms", "selection_time_ms", "answer_change_count", "device_class", "misconception_tag", "answered_at",
   ]];
   runs.forEach((run) => run.responses.forEach((response) => {
     const item = mechanicalCalibrationPilotItems.find((candidate) => candidate.questionId === response.questionId);
@@ -1162,11 +1162,12 @@ function downloadTechnicalPilotCsv() {
 }
 
 
-type EmpiricalPilotFormId = "EP-A-20" | "EP-B-20" | "EP-C-20" | "EP-D-20";
+type EmpiricalPilotFormId = "EP-A-40" | "EP-B-40" | "EP-C-40" | "EP-D-40";
+type EmpiricalPilotBaseFormId = "EP-A-20" | "EP-B-20" | "EP-C-20" | "EP-D-20";
 type EmpiricalPilotTesterType = "target_like_candidate" | "convenience_tester" | "internal_tester";
 type EmpiricalPilotExposure = "first_exposure" | "seen_or_unsure";
 type EmpiricalPilotItemRef = TechnicalPilotItemRef & { blueprintId: string; source?: "gear_fluency" | "calibration" };
-type EmpiricalPilotResponse = TechnicalPilotResponse;
+type EmpiricalPilotResponse = TechnicalPilotResponse & { firstSelectionTimeMs: number; answerChangeCount: number };
 type EmpiricalPilotRun = {
   runId: string;
   pilotVersion: string;
@@ -1191,11 +1192,11 @@ type EmpiricalPilotResolvedItem =
   | { domain: "abstract_logical"; source: "calibration"; blueprintId: string; item: AbstractLogicalCalibrationPilotItem }
   | { domain: "verbal"; source: "calibration"; blueprintId: string; item: VerbalCalibrationPilotItem };
 
-const EMPIRICAL_PILOT_VERSION = "APTESTA_EMPIRICAL_PILOT_V0_21_2026_09";
-const EMPIRICAL_PILOT_STORAGE_KEY = "aptesta.empiricalPilot.v0_20";
-const EMPIRICAL_PILOT_FORM_IDS: EmpiricalPilotFormId[] = ["EP-A-20", "EP-B-20", "EP-C-20", "EP-D-20"];
+const EMPIRICAL_PILOT_VERSION = "APTESTA_EMPIRICAL_PILOT_V0_22_2026_09";
+const EMPIRICAL_PILOT_STORAGE_KEY = "aptesta.empiricalPilot.v0_22";
+const EMPIRICAL_PILOT_FORM_IDS: EmpiricalPilotFormId[] = ["EP-A-40", "EP-B-40", "EP-C-40", "EP-D-40"];
 
-const EMPIRICAL_PILOT_FORMS: Record<EmpiricalPilotFormId, EmpiricalPilotItemRef[]> = {
+const EMPIRICAL_PILOT_BASE_20_FORMS: Record<EmpiricalPilotBaseFormId, EmpiricalPilotItemRef[]> = {
   "EP-A-20": [
     { domain: "mechanical", blueprintId: "MECHANICAL-01", questionId: "GEAR-FL-002", source: "gear_fluency" },
     { domain: "numerical", blueprintId: "NUMERICAL-01", questionId: "NUM-CAL-01" },
@@ -1286,6 +1287,13 @@ const EMPIRICAL_PILOT_FORMS: Record<EmpiricalPilotFormId, EmpiricalPilotItemRef[
   ],
 };
 
+const EMPIRICAL_PILOT_FORMS: Record<EmpiricalPilotFormId, EmpiricalPilotItemRef[]> = {
+  "EP-A-40": [...EMPIRICAL_PILOT_BASE_20_FORMS["EP-A-20"], ...EMPIRICAL_PILOT_BASE_20_FORMS["EP-B-20"]],
+  "EP-B-40": [...EMPIRICAL_PILOT_BASE_20_FORMS["EP-B-20"], ...EMPIRICAL_PILOT_BASE_20_FORMS["EP-C-20"]],
+  "EP-C-40": [...EMPIRICAL_PILOT_BASE_20_FORMS["EP-C-20"], ...EMPIRICAL_PILOT_BASE_20_FORMS["EP-D-20"]],
+  "EP-D-40": [...EMPIRICAL_PILOT_BASE_20_FORMS["EP-D-20"], ...EMPIRICAL_PILOT_BASE_20_FORMS["EP-A-20"]],
+};
+
 function empiricalPilotFormForParticipant(participantCode: string): EmpiricalPilotFormId {
   const trimmed = participantCode.trim();
   const trailingNumber = trimmed.match(/(\d+)$/);
@@ -1342,9 +1350,9 @@ function saveEmpiricalPilotRun(run: EmpiricalPilotRun) {
   window.localStorage.setItem(EMPIRICAL_PILOT_STORAGE_KEY, JSON.stringify([...existing, run]));
 }
 
-function empiricalPilotCsvForRuns(runs: EmpiricalPilotRun[], exportVersion = "APTESTA_EMPIRICAL_PILOT_EXPORT_V0_21") {
+function empiricalPilotCsvForRuns(runs: EmpiricalPilotRun[], exportVersion = "APTESTA_EMPIRICAL_PILOT_EXPORT_V0_22") {
   const rows: (string | number | boolean | null | undefined)[][] = [[
-    "export_version", "pilot_version", "bank_version", "form_id", "run_id", "participant_code", "tester_type", "prior_exposure", "run_started_at", "run_completed_at", "sequence", "domain", "question_id", "blueprint_id", "family_id", "archetype", "difficulty", "reasoning_steps", "response_format", "target_min_sec", "target_max_sec", "selected_response", "correct", "selection_time_ms", "device_class", "viewport_width", "viewport_height", "misconception_tag", "answered_at",
+    "export_version", "pilot_version", "bank_version", "form_id", "run_id", "participant_code", "tester_type", "prior_exposure", "run_started_at", "run_completed_at", "sequence", "domain", "question_id", "blueprint_id", "family_id", "archetype", "difficulty", "reasoning_steps", "response_format", "target_min_sec", "target_max_sec", "selected_response", "correct", "first_selection_time_ms", "selection_time_ms", "answer_change_count", "device_class", "viewport_width", "viewport_height", "misconception_tag", "answered_at",
   ]];
   runs.forEach((run) => run.responses.forEach((response) => {
     const ref = EMPIRICAL_PILOT_FORMS[run.formId].find((candidate) => candidate.questionId === response.questionId);
@@ -1353,7 +1361,7 @@ function empiricalPilotCsvForRuns(runs: EmpiricalPilotRun[], exportVersion = "AP
       exportVersion, run.pilotVersion, run.bankVersion, run.formId, run.runId, run.participantCode,
       run.testerType, run.priorExposure, run.startedAt, run.completedAt, response.sequence, response.domain, response.questionId, response.blueprintId,
       metadata?.familyId, metadata?.archetype, metadata?.difficulty, metadata?.reasoningSteps, metadata?.responseFormat, metadata?.targetMinSec, metadata?.targetMaxSec,
-      response.selectedResponse, response.correct, Math.round(response.selectionTimeMs), response.deviceClass, response.viewportWidth, response.viewportHeight,
+      response.selectedResponse, response.correct, Math.round(response.firstSelectionTimeMs), Math.round(response.selectionTimeMs), response.answerChangeCount, response.deviceClass, response.viewportWidth, response.viewportHeight,
       response.misconceptionTag, response.answeredAt,
     ]);
   }));
@@ -1375,7 +1383,7 @@ function triggerCsvDownload(csv: string, filename: string) {
 
 function downloadEmpiricalPilotCsv() {
   const runs = loadEmpiricalPilotRuns();
-  triggerCsvDownload(empiricalPilotCsvForRuns(runs), `aptesta-empirical-pilot-v0-21-all-local-${new Date().toISOString().slice(0, 10)}.csv`);
+  triggerCsvDownload(empiricalPilotCsvForRuns(runs), `aptesta-empirical-pilot-v0-22-all-local-${new Date().toISOString().slice(0, 10)}.csv`);
 }
 
 function downloadEmpiricalPilotRunCsv(runId: string) {
@@ -1428,7 +1436,7 @@ type EmpiricalPilotImportedRun = {
   issues: string[];
 };
 
-const EMPIRICAL_ANALYSIS_STORAGE_KEY = "aptesta.empiricalAnalysis.v0_21";
+const EMPIRICAL_ANALYSIS_STORAGE_KEY = "aptesta.empiricalAnalysis.v0_22";
 
 function parseCsvMatrix(input: string) {
   const rows: string[][] = [];
@@ -1544,16 +1552,16 @@ function empiricalImportedRuns(rows: EmpiricalPilotImportedRow[]): EmpiricalPilo
     const forms = new Set(ordered.map((row) => row.formId));
     const participants = new Set(ordered.map((row) => row.participantCode));
     const questions = new Set(ordered.map((row) => row.questionId));
-    if (ordered.length !== 20) issues.push(`${ordered.length}/20 responses`);
-    if (questions.size !== 20) issues.push(`${questions.size}/20 unique items`);
+    if (ordered.length !== 40) issues.push(`${ordered.length}/40 responses`);
+    if (questions.size !== 40) issues.push(`${questions.size}/40 unique items`);
     if (forms.size !== 1) issues.push("mixed form IDs");
     if (participants.size !== 1) issues.push("mixed participant codes");
     if (!ordered.every((row, index) => row.sequence === index + 1)) issues.push("sequence gap/order issue");
     if (!ordered.every((row) => row.selectionTimeMs > 0 && Number.isFinite(row.selectionTimeMs))) issues.push("invalid timing");
     const domainCounts = (['mechanical', 'numerical', 'abstract_logical', 'verbal'] as TechnicalPilotDomain[]).map((domain) => ordered.filter((row) => row.domain === domain).length);
-    if (!domainCounts.every((count) => count === 5)) issues.push("domain balance issue");
+    if (!domainCounts.every((count) => count === 10)) issues.push("domain balance issue");
     const first = ordered[0];
-    return { runId, formId: first?.formId ?? "EP-A-20", participantCode: first?.participantCode ?? "", testerType: first?.testerType ?? "convenience_tester", priorExposure: first?.priorExposure ?? "seen_or_unsure", rows: ordered, clean: issues.length === 0, issues };
+    return { runId, formId: first?.formId ?? "EP-A-40", participantCode: first?.participantCode ?? "", testerType: first?.testerType ?? "convenience_tester", priorExposure: first?.priorExposure ?? "seen_or_unsure", rows: ordered, clean: issues.length === 0, issues };
   });
 }
 
@@ -1602,15 +1610,15 @@ function empiricalItemSummaries(runs: EmpiricalPilotImportedRun[], targetLikeOnl
 function downloadEmpiricalPooledRawCsv(rows: EmpiricalPilotImportedRow[]) {
   const header = ["export_version", "pilot_version", "bank_version", "form_id", "run_id", "participant_code", "tester_type", "prior_exposure", "run_started_at", "run_completed_at", "sequence", "domain", "question_id", "blueprint_id", "family_id", "archetype", "difficulty", "reasoning_steps", "response_format", "target_min_sec", "target_max_sec", "selected_response", "correct", "selection_time_ms", "device_class", "viewport_width", "viewport_height", "misconception_tag", "answered_at"];
   const matrix: (string | number | boolean | null | undefined)[][] = [header];
-  rows.forEach((row) => matrix.push(["APTESTA_EMPIRICAL_PILOT_EXPORT_V0_21_POOLED", row.pilotVersion, row.bankVersion, row.formId, row.runId, row.participantCode, row.testerType, row.priorExposure, row.runStartedAt, row.runCompletedAt, row.sequence, row.domain, row.questionId, row.blueprintId, row.familyId, row.archetype, row.difficulty, row.reasoningSteps, row.responseFormat, row.targetMinSec, row.targetMaxSec, row.selectedResponse, row.correct, Math.round(row.selectionTimeMs), row.deviceClass, row.viewportWidth, row.viewportHeight, row.misconceptionTag, row.answeredAt]));
-  triggerCsvDownload(matrix.map((row) => row.map(csvCell).join(",")).join("\n"), `aptesta-empirical-pooled-raw-v0-21-${new Date().toISOString().slice(0, 10)}.csv`);
+  rows.forEach((row) => matrix.push(["APTESTA_EMPIRICAL_PILOT_EXPORT_V0_22_POOLED", row.pilotVersion, row.bankVersion, row.formId, row.runId, row.participantCode, row.testerType, row.priorExposure, row.runStartedAt, row.runCompletedAt, row.sequence, row.domain, row.questionId, row.blueprintId, row.familyId, row.archetype, row.difficulty, row.reasoningSteps, row.responseFormat, row.targetMinSec, row.targetMaxSec, row.selectedResponse, row.correct, Math.round(row.selectionTimeMs), row.deviceClass, row.viewportWidth, row.viewportHeight, row.misconceptionTag, row.answeredAt]));
+  triggerCsvDownload(matrix.map((row) => row.map(csvCell).join(",")).join("\n"), `aptesta-empirical-pooled-raw-v0-22-${new Date().toISOString().slice(0, 10)}.csv`);
 }
 
 function downloadEmpiricalItemSummaryCsv(runs: EmpiricalPilotImportedRun[], targetLikeOnly: boolean) {
   const summaries = empiricalItemSummaries(runs, targetLikeOnly);
   const rows: (string | number | boolean | null | undefined)[][] = [["analysis_version", "cohort", "blueprint_id", "question_id", "domain", "archetype", "n", "accuracy", "median_selection_ms", "iqr_selection_ms", "target_min_sec", "target_max_sec", "common_wrong_tag"]];
-  summaries.forEach((item) => rows.push(["APTESTA_EMPIRICAL_ANALYSIS_V0_21", targetLikeOnly ? "first_exposure_target_like" : "first_exposure_all", item.blueprintId, item.questionId, item.domain, item.archetype, item.n, item.accuracy.toFixed(4), Math.round(item.medianMs), Math.round(item.iqrMs), item.targetMinSec, item.targetMaxSec, item.commonWrong]));
-  triggerCsvDownload(rows.map((row) => row.map(csvCell).join(",")).join("\n"), `aptesta-empirical-item-summary-v0-21-${new Date().toISOString().slice(0, 10)}.csv`);
+  summaries.forEach((item) => rows.push(["APTESTA_EMPIRICAL_ANALYSIS_V0_22", targetLikeOnly ? "first_exposure_target_like" : "first_exposure_all", item.blueprintId, item.questionId, item.domain, item.archetype, item.n, item.accuracy.toFixed(4), Math.round(item.medianMs), Math.round(item.iqrMs), item.targetMinSec, item.targetMaxSec, item.commonWrong]));
+  triggerCsvDownload(rows.map((row) => row.map(csvCell).join(",")).join("\n"), `aptesta-empirical-item-summary-v0-22-${new Date().toISOString().slice(0, 10)}.csv`);
 }
 
 function hasCalibrationTiming(response: AssessmentResponse) {
@@ -8621,12 +8629,14 @@ function InternalTechnicalPilotScreen({ onBack, onOpenEmpiricalPilot }: { onBack
 }
 
 
+
+
 function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () => void; onOpenAnalysis: () => void }) {
   const [phase, setPhase] = useState<"intro" | "question" | "debrief">("intro");
   const [participantCode, setParticipantCode] = useState("");
   const [testerType, setTesterType] = useState<EmpiricalPilotTesterType>("convenience_tester");
   const [priorExposure, setPriorExposure] = useState<EmpiricalPilotExposure>("seen_or_unsure");
-  const [formId, setFormId] = useState<EmpiricalPilotFormId>("EP-A-20");
+  const [formId, setFormId] = useState<EmpiricalPilotFormId>("EP-A-40");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<EmpiricalPilotResponse[]>([]);
   const [runStartedAt, setRunStartedAt] = useState<string | null>(null);
@@ -8635,6 +8645,8 @@ function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () =
   const [numericEntry, setNumericEntry] = useState("");
   const [completedRunId, setCompletedRunId] = useState<string | null>(null);
   const questionStartedAtRef = useRef(0);
+  const firstSelectionTimeMsRef = useRef<number | null>(null);
+  const answerChangeCountRef = useRef(0);
   const activeForm = EMPIRICAL_PILOT_FORMS[formId];
   const ref = activeForm[questionIndex];
   const resolved = ref ? resolveEmpiricalPilotItem(ref) : undefined;
@@ -8655,6 +8667,8 @@ function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () =
     setResponses([]);
     setSelectedResponse(null);
     setNumericEntry("");
+    firstSelectionTimeMsRef.current = null;
+    answerChangeCountRef.current = 0;
     setCompletedRunId(null);
     setRunStartedAt(now());
     setRunStartDevice({
@@ -8665,89 +8679,93 @@ function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () =
     setPhase("question");
   }
 
-  function recordResponse(responseValue: string, correct: boolean, misconceptionTag: string) {
-    if (answered || !resolved || !ref) return;
+  function noteSelection(responseValue: string) {
+    const elapsed = Math.max(0, performance.now() - questionStartedAtRef.current);
+    if (firstSelectionTimeMsRef.current === null) firstSelectionTimeMsRef.current = elapsed;
+    else if (selectedResponse !== null && selectedResponse !== responseValue) answerChangeCountRef.current += 1;
+    setSelectedResponse(responseValue);
+  }
+
+  function responseDetails(responseValue: string) {
+    if (!resolved) return { correct: false, misconceptionTag: "incorrect" };
+    if (resolved.source === "gear_fluency") {
+      const correct = responseValue === resolved.item.correctOptionId;
+      return { correct, misconceptionTag: correct ? "correct" : "incorrect" };
+    }
+    if (resolved.domain === "mechanical") {
+      const correct = responseValue === resolved.item.correctOptionId;
+      return { correct, misconceptionTag: resolved.item.misconceptionTags[responseValue as "A" | "B" | "C" | "D"] ?? (correct ? "correct" : "incorrect") };
+    }
+    if (resolved.domain === "numerical") {
+      if (resolved.item.numericAnswer) {
+        const value = Number(responseValue);
+        const correct = Number.isFinite(value) && Math.abs(value - resolved.item.numericAnswer.value) <= resolved.item.numericAnswer.tolerance;
+        return { correct, misconceptionTag: correct ? "correct" : "numeric_entry_incorrect" };
+      }
+      const correct = responseValue === resolved.item.correctOptionId;
+      return { correct, misconceptionTag: resolved.item.misconceptionTags[responseValue as "A" | "B" | "C" | "D"] ?? (correct ? "correct" : "incorrect") };
+    }
+    if (resolved.domain === "abstract_logical") {
+      const correct = responseValue === resolved.item.correctOptionId;
+      return { correct, misconceptionTag: resolved.item.misconceptionTags[responseValue as AbstractLogicalCalibrationOptionId] ?? (correct ? "correct" : "incorrect") };
+    }
+    const correct = responseValue === resolved.item.correctOptionId;
+    return { correct, misconceptionTag: resolved.item.misconceptionTags[responseValue as VerbalCalibrationOptionId] ?? (correct ? "correct" : "incorrect") };
+  }
+
+  function selectOption(optionId: string) {
+    if (!resolved) return;
+    noteSelection(optionId);
+  }
+
+  function selectNumericEntry() {
+    if (!resolved || resolved.source !== "calibration" || resolved.domain !== "numerical" || !resolved.item.numericAnswer) return;
+    const value = Number(numericEntry.trim());
+    if (!Number.isFinite(value)) return;
+    noteSelection(String(value));
+  }
+
+  function next() {
+    if (!resolved || !ref || selectedResponse === null) return;
+    const { correct, misconceptionTag } = responseDetails(selectedResponse);
     const response: EmpiricalPilotResponse = {
       sequence: questionIndex + 1,
       domain: resolved.domain,
       questionId: resolved.item.questionId,
       blueprintId: ref.blueprintId,
-      selectedResponse: responseValue,
+      selectedResponse,
       correct,
+      firstSelectionTimeMs: firstSelectionTimeMsRef.current ?? Math.max(0, performance.now() - questionStartedAtRef.current),
       selectionTimeMs: Math.max(0, performance.now() - questionStartedAtRef.current),
+      answerChangeCount: answerChangeCountRef.current,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       viewportWidth: typeof window === "undefined" ? 0 : window.innerWidth,
       viewportHeight: typeof window === "undefined" ? 0 : window.innerHeight,
       misconceptionTag,
     };
-    setSelectedResponse(responseValue);
-    setResponses((current) => [...current, response]);
-  }
-
-  function selectOption(optionId: string) {
-    if (!resolved || answered) return;
-    if (resolved.source === "gear_fluency") {
-      const correct = optionId === resolved.item.correctOptionId;
-      recordResponse(optionId, correct, correct ? "correct" : "incorrect");
-      return;
-    }
-    if (resolved.domain === "mechanical") {
-      const correct = optionId === resolved.item.correctOptionId;
-      recordResponse(optionId, correct, resolved.item.misconceptionTags[optionId as "A" | "B" | "C" | "D"] ?? (correct ? "correct" : "incorrect"));
-      return;
-    }
-    if (resolved.domain === "numerical") {
-      const correct = optionId === resolved.item.correctOptionId;
-      recordResponse(optionId, correct, resolved.item.misconceptionTags[optionId as "A" | "B" | "C" | "D"] ?? (correct ? "correct" : "incorrect"));
-      return;
-    }
-    if (resolved.domain === "abstract_logical") {
-      const correct = optionId === resolved.item.correctOptionId;
-      recordResponse(optionId, correct, resolved.item.misconceptionTags[optionId as AbstractLogicalCalibrationOptionId] ?? (correct ? "correct" : "incorrect"));
-      return;
-    }
-    const correct = optionId === resolved.item.correctOptionId;
-    recordResponse(optionId, correct, resolved.item.misconceptionTags[optionId as VerbalCalibrationOptionId] ?? (correct ? "correct" : "incorrect"));
-  }
-
-  function submitNumericEntry() {
-    if (!resolved || resolved.source !== "calibration" || resolved.domain !== "numerical" || answered || !resolved.item.numericAnswer) return;
-    const value = Number(numericEntry.trim());
-    if (!Number.isFinite(value)) return;
-    const correct = Math.abs(value - resolved.item.numericAnswer.value) <= resolved.item.numericAnswer.tolerance;
-    recordResponse(String(value), correct, correct ? "correct" : "numeric_entry_incorrect");
-  }
-
-  function next() {
-    if (!answered) return;
+    const completedResponses = [...responses, response];
     if (questionIndex === activeForm.length - 1) {
       const runId = id("empirical-pilot");
       const start = runStartDevice ?? { deviceClass: getDeviceClass(), width: typeof window === "undefined" ? 0 : window.innerWidth, height: typeof window === "undefined" ? 0 : window.innerHeight };
       const run: EmpiricalPilotRun = {
-        runId,
-        pilotVersion: EMPIRICAL_PILOT_VERSION,
-        bankVersion: GENERAL_CALIBRATION_BLUEPRINT_VERSION,
-        formId,
-        participantCode: participantCode.trim(),
-        testerType,
-        priorExposure,
-        startedAt: runStartedAt ?? now(),
-        completedAt: now(),
-        startDeviceClass: start.deviceClass,
-        startViewportWidth: start.width,
-        startViewportHeight: start.height,
-        itemIds: activeForm.map((item) => item.questionId),
-        responses,
+        runId, pilotVersion: EMPIRICAL_PILOT_VERSION, bankVersion: GENERAL_CALIBRATION_BLUEPRINT_VERSION, formId,
+        participantCode: participantCode.trim(), testerType, priorExposure, startedAt: runStartedAt ?? now(), completedAt: now(),
+        startDeviceClass: start.deviceClass, startViewportWidth: start.width, startViewportHeight: start.height,
+        itemIds: activeForm.map((item) => item.questionId), responses: completedResponses,
       };
       saveEmpiricalPilotRun(run);
+      setResponses(completedResponses);
       setCompletedRunId(runId);
       setPhase("debrief");
       return;
     }
+    setResponses(completedResponses);
     setQuestionIndex((current) => current + 1);
     setSelectedResponse(null);
     setNumericEntry("");
+    firstSelectionTimeMsRef.current = null;
+    answerChangeCountRef.current = 0;
   }
 
   if (phase === "intro") {
@@ -8756,7 +8774,7 @@ function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () =
     const manifestRefs = EMPIRICAL_PILOT_FORM_IDS.flatMap((id) => EMPIRICAL_PILOT_FORMS[id]);
     const manifestResolved = manifestRefs.filter((item) => Boolean(resolveEmpiricalPilotItem(item))).length;
     const uniqueBlueprints = new Set(manifestRefs.map((item) => item.blueprintId)).size;
-    return <Shell right="Empirical pilot"><section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12"><Card className="p-5 sm:p-8"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only · v0.21</p><h1 className="mt-3 text-4xl font-semibold">Small empirical pilot</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">Four fixed 20-item forms cover the frozen 80-item bank exactly once. Each participant completes one form. The first pass is exploratory: identify gross item difficulty, distractor and response-time problems without treating the results as norms or recruitment cut-offs.</p></div><Badge>{EMPIRICAL_PILOT_VERSION}</Badge></div><div className="mt-7 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Frozen coverage</div><div className="mt-2 text-2xl font-semibold">{manifestResolved}/80</div><div className="mt-1 text-sm text-[#9AA3B2]">manifest items resolve · {uniqueBlueprints}/80 unique blueprints</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Exploratory gate</div><div className="mt-2 text-2xl font-semibold">12 / form</div><div className="mt-1 text-sm text-[#9AA3B2]">48 first-exposure runs gives 12 observations per item</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Stored locally</div><div className="mt-2 text-2xl font-semibold">{priorRuns.length}</div><div className="mt-1 text-sm text-[#9AA3B2]">completed empirical runs on this device</div></div></div><div className="mt-5 grid gap-3 sm:grid-cols-4">{formCounts.map((entry) => <div key={entry.id} className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">{entry.id}</div><div className="mt-1 text-xl font-semibold">{entry.count}</div></div>)}</div><div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5"><div className="font-semibold text-[#D9F8FF]">Pilot rules</div><ul className="mt-3 space-y-2 pl-5 text-sm leading-relaxed text-[#B5C0CB]"><li className="list-disc">Use a non-identifying participant code. The code deterministically assigns one of four forms, so P001–P004 cycle through A–D.</li><li className="list-disc">For calibration analysis, prioritise first-exposure participants. Previously exposed/internal runs remain useful for technical QA but should be flagged.</li><li className="list-disc">Do not provide item feedback during the run and do not alter the frozen bank within a pilot batch.</li><li className="list-disc">The 12-per-form gate is only for exploratory flagging. It is not enough for validated norms, cut-offs or employer-specific claims.</li></ul><div className="mt-5"><SecondaryButton onClick={onOpenAnalysis}>Open pooled pilot analysis</SecondaryButton></div></div><div className="mt-7 grid gap-5 md:grid-cols-3"><label className="block"><span className="text-sm font-medium text-[#C8D2DD]">Participant code</span><input value={participantCode} onChange={(event) => setParticipantCode(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50" placeholder="e.g. P001" /><span className="mt-2 block text-xs text-[#6E7A88]">Required; no name or email.</span></label><label className="block"><span className="text-sm font-medium text-[#C8D2DD]">Tester type</span><select value={testerType} onChange={(event) => setTesterType(event.target.value as EmpiricalPilotTesterType)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50"><option value="target_like_candidate">Target-like candidate</option><option value="convenience_tester">Convenience tester</option><option value="internal_tester">Internal / developer tester</option></select></label><label className="block"><span className="text-sm font-medium text-[#C8D2DD]">Prior Aptesta item exposure</span><select value={priorExposure} onChange={(event) => setPriorExposure(event.target.value as EmpiricalPilotExposure)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50"><option value="first_exposure">First exposure</option><option value="seen_or_unsure">Previously seen / unsure</option></select></label></div>{assignedForm && <div className="mt-5 rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">Assigned form for <span className="font-semibold text-[#D9F8FF]">{participantCode.trim()}</span>: <span className="font-semibold text-[#5ED3F3]">{assignedForm}</span></div>}<div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={startRun}>Start assigned 20-item form</PrimaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton>{priorRuns.length > 0 && <SecondaryButton onClick={downloadEmpiricalPilotCsv}>Export {priorRuns.length} empirical run{priorRuns.length === 1 ? "" : "s"}</SecondaryButton>}</div><p className="mt-6 text-xs leading-relaxed text-[#6E7A88]">Frozen bank: {GENERAL_CALIBRATION_BLUEPRINT_VERSION}. No item wording or author timing hypotheses are changed in v0.21.</p></Card></section></Shell>;
+    return <Shell right="Empirical pilot"><section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12"><Card className="p-5 sm:p-8"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only · v0.22</p><h1 className="mt-3 text-4xl font-semibold">Small empirical pilot</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">Four balanced 40-item forms sample half of the frozen 80-item bank per participant. Across the four-form design, every blueprint appears in two forms. The first pass is exploratory: identify gross item difficulty, distractor and response-time problems without treating the results as norms or recruitment cut-offs.</p></div><Badge>{EMPIRICAL_PILOT_VERSION}</Badge></div><div className="mt-7 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Frozen coverage</div><div className="mt-2 text-2xl font-semibold">{manifestResolved}/160</div><div className="mt-1 text-sm text-[#9AA3B2]">form-manifest placements resolve · {uniqueBlueprints}/80 unique blueprints</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Exploratory gate</div><div className="mt-2 text-2xl font-semibold">20–30 total</div><div className="mt-1 text-sm text-[#9AA3B2]">aim for 20–30 first-exposure participants · about 10–15 observations per item</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Stored locally</div><div className="mt-2 text-2xl font-semibold">{priorRuns.length}</div><div className="mt-1 text-sm text-[#9AA3B2]">completed empirical runs on this device</div></div></div><div className="mt-5 grid gap-3 sm:grid-cols-4">{formCounts.map((entry) => <div key={entry.id} className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">{entry.id}</div><div className="mt-1 text-xl font-semibold">{entry.count}</div></div>)}</div><div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-5"><div className="font-semibold text-[#D9F8FF]">Pilot rules</div><ul className="mt-3 space-y-2 pl-5 text-sm leading-relaxed text-[#B5C0CB]"><li className="list-disc">Use a non-identifying participant code. The code deterministically assigns one of four balanced forms, so P001–P004 cycle through A–D.</li><li className="list-disc">For calibration analysis, prioritise first-exposure participants. Previously exposed/internal runs remain useful for technical QA but should be flagged.</li><li className="list-disc">Do not provide item feedback during the run and do not alter the frozen bank within a pilot batch.</li><li className="list-disc">The 20–30 participant target is only for exploratory calibration. It is not enough for validated norms, cut-offs or employer-specific claims.</li></ul><div className="mt-5"><SecondaryButton onClick={onOpenAnalysis}>Open pooled pilot analysis</SecondaryButton></div></div><div className="mt-7 grid gap-5 md:grid-cols-3"><label className="block"><span className="text-sm font-medium text-[#C8D2DD]">Participant code</span><input value={participantCode} onChange={(event) => setParticipantCode(event.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50" placeholder="e.g. P001" /><span className="mt-2 block text-xs text-[#6E7A88]">Required; no name or email.</span></label><label className="block"><span className="text-sm font-medium text-[#C8D2DD]">Tester type</span><select value={testerType} onChange={(event) => setTesterType(event.target.value as EmpiricalPilotTesterType)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50"><option value="target_like_candidate">Target-like candidate</option><option value="convenience_tester">Convenience tester</option><option value="internal_tester">Internal / developer tester</option></select></label><label className="block"><span className="text-sm font-medium text-[#C8D2DD]">Prior Aptesta item exposure</span><select value={priorExposure} onChange={(event) => setPriorExposure(event.target.value as EmpiricalPilotExposure)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50"><option value="first_exposure">First exposure</option><option value="seen_or_unsure">Previously seen / unsure</option></select></label></div>{assignedForm && <div className="mt-5 rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">Assigned form for <span className="font-semibold text-[#D9F8FF]">{participantCode.trim()}</span>: <span className="font-semibold text-[#5ED3F3]">{assignedForm}</span></div>}<div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={startRun}>Start assigned 40-item form</PrimaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton>{priorRuns.length > 0 && <SecondaryButton onClick={downloadEmpiricalPilotCsv}>Export {priorRuns.length} empirical run{priorRuns.length === 1 ? "" : "s"}</SecondaryButton>}</div><p className="mt-6 text-xs leading-relaxed text-[#6E7A88]">Frozen bank: {GENERAL_CALIBRATION_BLUEPRINT_VERSION}. The 80-item bank remains frozen in v0.22; only pilot form design and response telemetry change.</p></Card></section></Shell>;
   }
 
   if (!resolved || !ref) return <Shell right="Empirical pilot"><section className="mx-auto max-w-4xl px-4 py-10 sm:px-8"><Card><h1 className="text-2xl font-semibold">Empirical pilot item could not be resolved</h1><p className="mt-3 text-[#9AA3B2]">Do not collect empirical data until the manifest is repaired.</p><div className="mt-6"><PrimaryButton onClick={onBack}>Back to readiness</PrimaryButton></div></Card></section></Shell>;
@@ -8772,13 +8790,13 @@ function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () =
       {resolved.source === "calibration" && resolved.domain === "abstract_logical" && resolved.item.diagram && <AbstractLogicalCalibrationDiagramView diagram={resolved.item.diagram}/>} 
       {resolved.source === "calibration" && resolved.domain === "verbal" && <VerbalCalibrationSourceView source={resolved.item.source}/>} 
       <p className="text-lg font-medium leading-7 text-[#F4F6F8] sm:text-xl sm:leading-8">{resolved.item.stem}</p>
-      {gearItem && <div className="mt-6 grid gap-3">{(resolved.item as MvpQuestion).options.map((option) => <button key={option.optionId} type="button" disabled={answered} onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-4 text-left transition sm:p-5 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 font-semibold text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>}
-      {resolved.source === "calibration" && resolved.domain === "mechanical" && <div className="mt-6 grid gap-3">{resolved.item.options.map((option) => <button key={option.optionId} type="button" disabled={answered} onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-4 text-left transition sm:p-5 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 font-semibold text-[#5ED3F3]">{option.optionId}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>}
-      {resolved.source === "calibration" && resolved.domain === "numerical" && !numericEntryItem && <div className="mt-6 grid gap-3">{resolved.item.options.map((option) => <button key={option.optionId} type="button" disabled={answered} onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-4 text-left transition sm:p-5 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 font-semibold text-[#5ED3F3]">{option.optionId}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>}
-      {resolved.source === "calibration" && resolved.domain === "numerical" && numericEntryItem && <div className="mt-6"><label className="block text-sm font-medium text-[#C8D2DD]">Enter your answer{resolved.item.numericAnswer?.unitLabel ? ` (${resolved.item.numericAnswer.unitLabel})` : ""}</label><div className="mt-3 flex flex-col gap-3 sm:flex-row"><input inputMode="decimal" value={numericEntry} disabled={answered} onChange={(event) => setNumericEntry(event.target.value)} className="w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-4 text-lg outline-none focus:border-[#5ED3F3]/50 sm:max-w-xs"/><PrimaryButton onClick={submitNumericEntry}>Record answer</PrimaryButton></div></div>}
-      {resolved.source === "calibration" && resolved.domain === "abstract_logical" && <div className={`mt-6 grid gap-3 ${abstractTextOptions ? "grid-cols-1" : "grid-cols-2"}`}>{resolved.item.options.map((option) => <button key={option.optionId} type="button" disabled={answered} onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-3 text-left transition sm:p-4 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><div className="mb-2 text-sm font-semibold text-[#5ED3F3]">{option.optionId}</div>{option.visual ? <div className="mx-auto max-w-[150px]"><AbstractLogicalCalibrationCellView cell={option.visual}/></div> : <div className="py-1 text-base leading-relaxed text-[#E5EAF0] sm:text-lg">{option.label}</div>}</button>)}</div>}
-      {resolved.source === "calibration" && resolved.domain === "verbal" && <div className="mt-6 grid gap-3">{resolved.item.options.map((option) => <button key={option.optionId} type="button" disabled={answered} onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-4 text-left transition sm:p-5 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><div className="flex items-start gap-3"><span className="mt-0.5 shrink-0 font-semibold text-[#5ED3F3]">{option.optionId}</span><span className="text-[16px] leading-6 text-[#E5EAF0] sm:text-[17px] sm:leading-7">{option.text}</span></div></button>)}</div>}
-      {answered && <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5 sm:flex-row sm:items-center sm:justify-between"><div><div className="font-semibold text-[#D9F8FF]">Answer recorded</div><p className="mt-1 text-sm text-[#9AA3B2]">Selection time has stopped. No correctness feedback is shown during the empirical pilot.</p></div><PrimaryButton onClick={next}>{questionIndex === activeForm.length - 1 ? "Complete form" : "Next item"}</PrimaryButton></div>}
+      {gearItem && <div className="mt-6 grid gap-3">{(resolved.item as MvpQuestion).options.map((option) => <button key={option.optionId} type="button" onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-4 text-left transition sm:p-5 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 font-semibold text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>}
+      {resolved.source === "calibration" && resolved.domain === "mechanical" && <div className="mt-6 grid gap-3">{resolved.item.options.map((option) => <button key={option.optionId} type="button" onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-4 text-left transition sm:p-5 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 font-semibold text-[#5ED3F3]">{option.optionId}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>}
+      {resolved.source === "calibration" && resolved.domain === "numerical" && !numericEntryItem && <div className="mt-6 grid gap-3">{resolved.item.options.map((option) => <button key={option.optionId} type="button" onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-4 text-left transition sm:p-5 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><span className="mr-3 font-semibold text-[#5ED3F3]">{option.optionId}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>}
+      {resolved.source === "calibration" && resolved.domain === "numerical" && numericEntryItem && <div className="mt-6"><label className="block text-sm font-medium text-[#C8D2DD]">Enter your answer{resolved.item.numericAnswer?.unitLabel ? ` (${resolved.item.numericAnswer.unitLabel})` : ""}</label><div className="mt-3 flex flex-col gap-3 sm:flex-row"><input inputMode="decimal" value={numericEntry} onChange={(event) => setNumericEntry(event.target.value)} className="w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-4 text-lg outline-none focus:border-[#5ED3F3]/50 sm:max-w-xs"/><SecondaryButton onClick={selectNumericEntry}>Select answer</SecondaryButton></div></div>}
+      {resolved.source === "calibration" && resolved.domain === "abstract_logical" && <div className={`mt-6 grid gap-3 ${abstractTextOptions ? "grid-cols-1" : "grid-cols-2"}`}>{resolved.item.options.map((option) => <button key={option.optionId} type="button" onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-3 text-left transition sm:p-4 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><div className="mb-2 text-sm font-semibold text-[#5ED3F3]">{option.optionId}</div>{option.visual ? <div className="mx-auto max-w-[150px]"><AbstractLogicalCalibrationCellView cell={option.visual}/></div> : <div className="py-1 text-base leading-relaxed text-[#E5EAF0] sm:text-lg">{option.label}</div>}</button>)}</div>}
+      {resolved.source === "calibration" && resolved.domain === "verbal" && <div className="mt-6 grid gap-3">{resolved.item.options.map((option) => <button key={option.optionId} type="button" onClick={() => selectOption(option.optionId)} className={`rounded-2xl border p-4 text-left transition sm:p-5 ${selectedResponse === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#111418] hover:border-[#5ED3F3]/40"}`}><div className="flex items-start gap-3"><span className="mt-0.5 shrink-0 font-semibold text-[#5ED3F3]">{option.optionId}</span><span className="text-[16px] leading-6 text-[#E5EAF0] sm:text-[17px] sm:leading-7">{option.text}</span></div></button>)}</div>}
+      {selectedResponse !== null && <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5 sm:flex-row sm:items-center sm:justify-between"><div><div className="font-semibold text-[#D9F8FF]">Answer selected</div><p className="mt-1 text-sm text-[#9AA3B2]">You may change your answer until you press Next. No correctness feedback is shown during the empirical pilot.</p></div><PrimaryButton onClick={next}>{questionIndex === activeForm.length - 1 ? "Complete form" : "Next item"}</PrimaryButton></div>}
     </Card></section></Shell>;
   }
 
@@ -8787,14 +8805,14 @@ function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () =
   const sequenceMatches = responses.length === expectedQuestionIds.length && responses.every((response, index) => response.questionId === expectedQuestionIds[index]);
   const timingValid = responses.filter((response) => Number.isFinite(response.selectionTimeMs) && response.selectionTimeMs > 0).length;
   const domainCounts = (["mechanical", "numerical", "abstract_logical", "verbal"] as TechnicalPilotDomain[]).map((domain) => ({ domain, count: responses.filter((response) => response.domain === domain).length }));
-  const domainBalanceValid = domainCounts.every((entry) => entry.count === 5);
+  const domainBalanceValid = domainCounts.every((entry) => entry.count === 10);
   const storedRun = completedRunId ? loadEmpiricalPilotRuns().find((run) => run.runId === completedRunId) : undefined;
   const integrityChecks = [
-    { label: "Responses captured", value: `${responses.length}/20`, pass: responses.length === 20 },
-    { label: "Unique item IDs", value: `${uniqueQuestionIds.size}/20`, pass: uniqueQuestionIds.size === 20 },
-    { label: "Form order retained", value: sequenceMatches ? "20/20" : "Check", pass: sequenceMatches },
-    { label: "Positive selection times", value: `${timingValid}/20`, pass: timingValid === 20 },
-    { label: "Domain balance", value: domainBalanceValid ? "5 + 5 + 5 + 5" : "Check", pass: domainBalanceValid },
+    { label: "Responses captured", value: `${responses.length}/40`, pass: responses.length === 40 },
+    { label: "Unique item IDs", value: `${uniqueQuestionIds.size}/40`, pass: uniqueQuestionIds.size === 40 },
+    { label: "Form order retained", value: sequenceMatches ? "40/40" : "Check", pass: sequenceMatches },
+    { label: "Positive selection times", value: `${timingValid}/40`, pass: timingValid === 40 },
+    { label: "Domain balance", value: domainBalanceValid ? "10 + 10 + 10 + 10" : "Check", pass: domainBalanceValid },
     { label: "Local save verified", value: storedRun ? "Saved" : "Check", pass: Boolean(storedRun) },
   ];
   const allPass = integrityChecks.every((check) => check.pass);
@@ -8839,7 +8857,7 @@ function InternalEmpiricalAnalysisScreen({ onBack, onOpenPilot }: { onBack: () =
   }
 
   return <Shell right="Pilot analysis"><section className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-12">
-    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only · v0.21</p><h1 className="mt-3 text-4xl font-semibold">Pooled empirical pilot analysis</h1><p className="mt-4 max-w-4xl leading-relaxed text-[#9AA3B2]">Import empirical-pilot CSVs collected on multiple devices. Aptesta deduplicates response rows, checks each 20-item run, and summarises first-exposure item accuracy and selection time. These are exploratory diagnostics—not norms, cut-offs or validated timing standards.</p></div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onOpenPilot}>Open empirical pilot</SecondaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton></div></div>
+    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only · v0.22</p><h1 className="mt-3 text-4xl font-semibold">Pooled empirical pilot analysis</h1><p className="mt-4 max-w-4xl leading-relaxed text-[#9AA3B2]">Import empirical-pilot CSVs collected on multiple devices. Aptesta deduplicates response rows, checks each 40-item run, and summarises first-exposure item accuracy and selection time. These are exploratory diagnostics—not norms, cut-offs or validated timing standards.</p></div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onOpenPilot}>Open empirical pilot</SecondaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton></div></div>
 
     <Card className="mt-8"><div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Import participant files</div><p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#AAB4C0]">Select one or many CSV exports. Re-importing the same run is safe: identical run/sequence/question rows are ignored.</p></div><label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-[#5ED3F3] px-5 py-3 text-sm font-semibold text-[#081015]"><input type="file" accept=".csv,text/csv" multiple className="hidden" onChange={(event) => { void importFiles(event.target.files); event.currentTarget.value = ""; }} />Import CSV files</label></div><p className="mt-4 text-sm text-[#8D98A6]">{importMessage}</p></Card>
 
@@ -8857,7 +8875,7 @@ function InternalEmpiricalAnalysisScreen({ onBack, onOpenPilot }: { onBack: () =
       return <div key={item.blueprintId} className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"><div><div className="text-sm font-semibold text-[#D9F8FF]">{item.blueprintId} · {item.questionId}</div><div className="mt-1 text-xs text-[#6E7A88]">{item.archetype || "Authored item"}</div></div><div className="flex flex-wrap gap-2">{item.n < 12 ? <Badge>{item.n}/12 observations</Badge> : <Badge>Exploratory gate met</Badge>}{extremeAccuracy && <Badge>Accuracy review</Badge>}{timingOutside && <Badge>Timing hypothesis review</Badge>}</div></div><div className="mt-4 grid gap-3 grid-cols-2 sm:grid-cols-4"><div><div className="text-xs text-[#6E7A88]">Accuracy</div><div className="mt-1 font-semibold">{Math.round(item.accuracy * 100)}%</div></div><div><div className="text-xs text-[#6E7A88]">Median time</div><div className="mt-1 font-semibold">{formatSeconds(item.medianMs)}</div></div><div><div className="text-xs text-[#6E7A88]">IQR</div><div className="mt-1 font-semibold">{formatSeconds(item.iqrMs)}</div></div><div><div className="text-xs text-[#6E7A88]">Common wrong tag</div><div className="mt-1 break-words text-sm font-semibold">{item.commonWrong}</div></div></div></div>;
     })}</div>}</details>)}</div>
 
-    <div className="mt-8 rounded-2xl border border-[#FFB86B]/20 bg-[#211813]/40 p-5"><div className="font-semibold text-[#FFD6A8]">Interpretation boundary</div><p className="mt-2 text-sm leading-relaxed text-[#C8B5A7]">The flags on this screen are deliberately simple exploratory prompts. Do not edit an item merely because 12 observations produce an extreme percentage or a median outside the author timing range. Review the response pattern, misconception distribution, tester mix and qualitative feedback first; then change the frozen bank only between pilot batches.</p></div>
+    <div className="mt-8 rounded-2xl border border-[#FFB86B]/20 bg-[#211813]/40 p-5"><div className="font-semibold text-[#FFD6A8]">Interpretation boundary</div><p className="mt-2 text-sm leading-relaxed text-[#C8B5A7]">The flags on this screen are deliberately simple exploratory prompts. Do not edit an item merely because a small exploratory sample produces an extreme percentage or a median outside the author timing range. Review the response pattern, misconception distribution, tester mix and qualitative feedback first; then change the frozen bank only between pilot batches.</p></div>
   </section></Shell>;
 }
 
