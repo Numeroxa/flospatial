@@ -567,7 +567,9 @@ type MechanicalCalibrationPilotResponse = {
   questionId: string;
   selectedOptionId: AbstractLogicalCalibrationOptionId;
   correct: boolean;
+  firstSelectionTimeMs: number;
   selectionTimeMs: number;
+  answerChangeCount: number;
   answeredAt: string;
   deviceClass: "phone" | "tablet" | "desktop";
   misconceptionTag: string;
@@ -636,7 +638,9 @@ type NumericalCalibrationPilotResponse = {
   selectedOptionId?: "A" | "B" | "C" | "D";
   enteredValue?: number;
   correct: boolean;
+  firstSelectionTimeMs: number;
   selectionTimeMs: number;
+  answerChangeCount: number;
   answeredAt: string;
   deviceClass: "phone" | "tablet" | "desktop";
   misconceptionTag: string;
@@ -701,7 +705,9 @@ type AbstractLogicalCalibrationPilotResponse = {
   questionId: string;
   selectedOptionId: AbstractLogicalCalibrationOptionId;
   correct: boolean;
+  firstSelectionTimeMs: number;
   selectionTimeMs: number;
+  answerChangeCount: number;
   answeredAt: string;
   deviceClass: "phone" | "tablet" | "desktop";
   misconceptionTag: string;
@@ -767,7 +773,9 @@ type VerbalCalibrationPilotResponse = {
   questionId: string;
   selectedOptionId: VerbalCalibrationOptionId;
   correct: boolean;
+  firstSelectionTimeMs: number;
   selectionTimeMs: number;
+  answerChangeCount: number;
   answeredAt: string;
   deviceClass: "phone" | "tablet" | "desktop";
   misconceptionTag: string;
@@ -1025,7 +1033,9 @@ type TechnicalPilotResponse = {
   blueprintId: string;
   selectedResponse: string;
   correct: boolean;
+  firstSelectionTimeMs: number;
   selectionTimeMs: number;
+  answerChangeCount: number;
   answeredAt: string;
   deviceClass: "phone" | "tablet" | "desktop";
   viewportWidth: number;
@@ -1417,7 +1427,9 @@ type EmpiricalPilotImportedRow = {
   targetMaxSec: number | null;
   selectedResponse: string;
   correct: boolean;
+  firstSelectionTimeMs: number;
   selectionTimeMs: number;
+  answerChangeCount: number;
   deviceClass: "phone" | "tablet" | "desktop";
   viewportWidth: number;
   viewportHeight: number;
@@ -1510,7 +1522,9 @@ function parseEmpiricalPilotCsv(input: string): EmpiricalPilotImportedRow[] {
       targetMaxSec: n("target_max_sec"),
       selectedResponse: read(cells, "selected_response"),
       correct: read(cells, "correct").toLowerCase() === "true",
+      firstSelectionTimeMs: n("first_selection_time_ms") ?? selectionTimeMs,
       selectionTimeMs,
+      answerChangeCount: n("answer_change_count") ?? 0,
       deviceClass: ["phone", "tablet", "desktop"].includes(deviceClass) ? deviceClass : "desktop",
       viewportWidth: n("viewport_width") ?? 0,
       viewportHeight: n("viewport_height") ?? 0,
@@ -1587,6 +1601,8 @@ function empiricalItemSummaries(runs: EmpiricalPilotImportedRun[], targetLikeOnl
     const correctCount = itemRows.filter((row) => row.correct).length;
     const times = itemRows.map((row) => row.selectionTimeMs).filter((value) => value > 0);
     const spread = percentileRange(times);
+    const changedRows = itemRows.filter((row) => row.answerChangeCount > 0);
+    const firstTimes = itemRows.map((row) => row.firstSelectionTimeMs).filter((value) => value > 0);
     const wrongTags = itemRows.filter((row) => !row.correct && row.misconceptionTag).map((row) => row.misconceptionTag);
     const tagCounts = wrongTags.reduce<Record<string, number>>((acc, tag) => { acc[tag] = (acc[tag] ?? 0) + 1; return acc; }, {});
     const commonWrong = Object.entries(tagCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
@@ -1600,6 +1616,9 @@ function empiricalItemSummaries(runs: EmpiricalPilotImportedRun[], targetLikeOnl
       accuracy: itemRows.length ? correctCount / itemRows.length : 0,
       medianMs: median(times),
       iqrMs: spread.iqr,
+      medianFirstSelectionMs: median(firstTimes),
+      changedCount: changedRows.length,
+      changeRate: itemRows.length ? changedRows.length / itemRows.length : 0,
       targetMinSec: sample?.targetMinSec ?? null,
       targetMaxSec: sample?.targetMaxSec ?? null,
       commonWrong,
@@ -1608,17 +1627,17 @@ function empiricalItemSummaries(runs: EmpiricalPilotImportedRun[], targetLikeOnl
 }
 
 function downloadEmpiricalPooledRawCsv(rows: EmpiricalPilotImportedRow[]) {
-  const header = ["export_version", "pilot_version", "bank_version", "form_id", "run_id", "participant_code", "tester_type", "prior_exposure", "run_started_at", "run_completed_at", "sequence", "domain", "question_id", "blueprint_id", "family_id", "archetype", "difficulty", "reasoning_steps", "response_format", "target_min_sec", "target_max_sec", "selected_response", "correct", "selection_time_ms", "device_class", "viewport_width", "viewport_height", "misconception_tag", "answered_at"];
+  const header = ["export_version", "pilot_version", "bank_version", "form_id", "run_id", "participant_code", "tester_type", "prior_exposure", "run_started_at", "run_completed_at", "sequence", "domain", "question_id", "blueprint_id", "family_id", "archetype", "difficulty", "reasoning_steps", "response_format", "target_min_sec", "target_max_sec", "selected_response", "correct", "first_selection_time_ms", "selection_time_ms", "answer_change_count", "device_class", "viewport_width", "viewport_height", "misconception_tag", "answered_at"];
   const matrix: (string | number | boolean | null | undefined)[][] = [header];
-  rows.forEach((row) => matrix.push(["APTESTA_EMPIRICAL_PILOT_EXPORT_V0_22_POOLED", row.pilotVersion, row.bankVersion, row.formId, row.runId, row.participantCode, row.testerType, row.priorExposure, row.runStartedAt, row.runCompletedAt, row.sequence, row.domain, row.questionId, row.blueprintId, row.familyId, row.archetype, row.difficulty, row.reasoningSteps, row.responseFormat, row.targetMinSec, row.targetMaxSec, row.selectedResponse, row.correct, Math.round(row.selectionTimeMs), row.deviceClass, row.viewportWidth, row.viewportHeight, row.misconceptionTag, row.answeredAt]));
-  triggerCsvDownload(matrix.map((row) => row.map(csvCell).join(",")).join("\n"), `aptesta-empirical-pooled-raw-v0-22-${new Date().toISOString().slice(0, 10)}.csv`);
+  rows.forEach((row) => matrix.push(["APTESTA_EMPIRICAL_PILOT_EXPORT_V0_22_POOLED", row.pilotVersion, row.bankVersion, row.formId, row.runId, row.participantCode, row.testerType, row.priorExposure, row.runStartedAt, row.runCompletedAt, row.sequence, row.domain, row.questionId, row.blueprintId, row.familyId, row.archetype, row.difficulty, row.reasoningSteps, row.responseFormat, row.targetMinSec, row.targetMaxSec, row.selectedResponse, row.correct, Math.round(row.firstSelectionTimeMs), Math.round(row.selectionTimeMs), row.answerChangeCount, row.deviceClass, row.viewportWidth, row.viewportHeight, row.misconceptionTag, row.answeredAt]));
+  triggerCsvDownload(matrix.map((row) => row.map(csvCell).join(",")).join("\n"), `aptesta-empirical-pooled-raw-v0-25-${new Date().toISOString().slice(0, 10)}.csv`);
 }
 
 function downloadEmpiricalItemSummaryCsv(runs: EmpiricalPilotImportedRun[], targetLikeOnly: boolean) {
   const summaries = empiricalItemSummaries(runs, targetLikeOnly);
-  const rows: (string | number | boolean | null | undefined)[][] = [["analysis_version", "cohort", "blueprint_id", "question_id", "domain", "archetype", "n", "accuracy", "median_selection_ms", "iqr_selection_ms", "target_min_sec", "target_max_sec", "common_wrong_tag"]];
-  summaries.forEach((item) => rows.push(["APTESTA_EMPIRICAL_ANALYSIS_V0_22", targetLikeOnly ? "first_exposure_target_like" : "first_exposure_all", item.blueprintId, item.questionId, item.domain, item.archetype, item.n, item.accuracy.toFixed(4), Math.round(item.medianMs), Math.round(item.iqrMs), item.targetMinSec, item.targetMaxSec, item.commonWrong]));
-  triggerCsvDownload(rows.map((row) => row.map(csvCell).join(",")).join("\n"), `aptesta-empirical-item-summary-v0-22-${new Date().toISOString().slice(0, 10)}.csv`);
+  const rows: (string | number | boolean | null | undefined)[][] = [["analysis_version", "cohort", "blueprint_id", "question_id", "domain", "archetype", "n", "accuracy", "median_first_selection_ms", "median_final_selection_ms", "iqr_final_selection_ms", "changed_answer_count", "change_rate", "target_min_sec", "target_max_sec", "common_wrong_tag"]];
+  summaries.forEach((item) => rows.push(["APTESTA_EMPIRICAL_ANALYSIS_V0_25", targetLikeOnly ? "first_exposure_target_like" : "first_exposure_all", item.blueprintId, item.questionId, item.domain, item.archetype, item.n, item.accuracy.toFixed(4), Math.round(item.medianFirstSelectionMs), Math.round(item.medianMs), Math.round(item.iqrMs), item.changedCount, item.changeRate.toFixed(4), item.targetMinSec, item.targetMaxSec, item.commonWrong]));
+  triggerCsvDownload(rows.map((row) => row.map(csvCell).join(",")).join("\n"), `aptesta-empirical-item-summary-v0-25-${new Date().toISOString().slice(0, 10)}.csv`);
 }
 
 function hasCalibrationTiming(response: AssessmentResponse) {
@@ -8837,8 +8856,8 @@ function InternalEmpiricalAnalysisScreen({ onBack, onOpenPilot }: { onBack: () =
   const targetLikeRuns = empiricalEligibleRuns(runs, true);
   const summaries = useMemo(() => empiricalItemSummaries(runs, targetLikeOnly), [runs, targetLikeOnly]);
   const formCounts = EMPIRICAL_PILOT_FORM_IDS.map((formId) => ({ formId, count: firstExposureRuns.filter((run) => run.formId === formId).length, targetLike: targetLikeRuns.filter((run) => run.formId === formId).length }));
-  const itemsAtGate = summaries.filter((item) => item.n >= 12).length;
-  const cleanGate = formCounts.every((entry) => entry.count >= 12);
+  const itemsAtGate = summaries.filter((item) => item.n >= 10).length;
+  const cleanGate = firstExposureRuns.length >= 20 && EMPIRICAL_PILOT_FORM_IDS.every((formId) => firstExposureRuns.some((run) => run.formId === formId));
   const domainGroups = (["mechanical", "numerical", "abstract_logical", "verbal"] as TechnicalPilotDomain[]).map((domain) => ({ domain, items: summaries.filter((item) => item.domain === domain) }));
 
   async function importFiles(fileList: FileList | null) {
@@ -8862,11 +8881,11 @@ function InternalEmpiricalAnalysisScreen({ onBack, onOpenPilot }: { onBack: () =
   }
 
   return <Shell right="Pilot analysis"><section className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-12">
-    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only · v0.22</p><h1 className="mt-3 text-4xl font-semibold">Pooled empirical pilot analysis</h1><p className="mt-4 max-w-4xl leading-relaxed text-[#9AA3B2]">Import empirical-pilot CSVs collected on multiple devices. Aptesta deduplicates response rows, checks each 40-item run, and summarises first-exposure item accuracy and selection time. These are exploratory diagnostics—not norms, cut-offs or validated timing standards.</p></div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onOpenPilot}>Open empirical pilot</SecondaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton></div></div>
+    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Tester-only · v0.25</p><h1 className="mt-3 text-4xl font-semibold">Pilot operations & pooled analysis</h1><p className="mt-4 max-w-4xl leading-relaxed text-[#9AA3B2]">Import empirical-pilot CSVs collected on multiple devices. Aptesta deduplicates response rows, checks each 40-item run, and summarises first-exposure item accuracy, final selection time and answer-change behaviour. These are exploratory diagnostics—not norms, cut-offs or validated timing standards.</p></div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onOpenPilot}>Open empirical pilot</SecondaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton></div></div>
 
     <Card className="mt-8"><div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Import participant files</div><p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#AAB4C0]">Select one or many CSV exports. Re-importing the same run is safe: identical run/sequence/question rows are ignored.</p></div><label className="inline-flex cursor-pointer items-center justify-center rounded-xl bg-[#5ED3F3] px-5 py-3 text-sm font-semibold text-[#081015]"><input type="file" accept=".csv,text/csv" multiple className="hidden" onChange={(event) => { void importFiles(event.target.files); event.currentTarget.value = ""; }} />Import CSV files</label></div><p className="mt-4 text-sm text-[#8D98A6]">{importMessage}</p></Card>
 
-    <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Unique runs</div><div className="mt-3 text-3xl font-semibold">{runs.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{cleanRuns.length} structurally clean</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">First exposure</div><div className="mt-3 text-3xl font-semibold">{firstExposureRuns.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{targetLikeRuns.length} target-like · duplicate codes excluded</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Items at exploratory gate</div><div className="mt-3 text-3xl font-semibold">{itemsAtGate}/80</div><div className="mt-2 text-sm text-[#9AA3B2]">At least 12 observations in selected cohort</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Form gate</div><div className={`mt-3 text-3xl font-semibold ${cleanGate ? "text-[#7FE0B8]" : ""}`}>{cleanGate ? "Met" : "Collecting"}</div><div className="mt-2 text-sm text-[#9AA3B2]">12 clean first-exposure runs per form</div></Card></div>
+    <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Unique runs</div><div className="mt-3 text-3xl font-semibold">{runs.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{cleanRuns.length} structurally clean</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">First exposure</div><div className="mt-3 text-3xl font-semibold">{firstExposureRuns.length}</div><div className="mt-2 text-sm text-[#9AA3B2]">{targetLikeRuns.length} target-like · duplicate codes excluded</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Items at exploratory gate</div><div className="mt-3 text-3xl font-semibold">{itemsAtGate}/80</div><div className="mt-2 text-sm text-[#9AA3B2]">At least 10 observations in selected cohort</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Form gate</div><div className={`mt-3 text-3xl font-semibold ${cleanGate ? "text-[#7FE0B8]" : ""}`}>{cleanGate ? "Met" : "Collecting"}</div><div className="mt-2 text-sm text-[#9AA3B2]">20+ clean first-exposure runs overall, with all four forms represented</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Bank coverage</div><div className="mt-3 text-3xl font-semibold">{summaries.length}/80</div><div className="mt-2 text-sm text-[#9AA3B2]">Items represented in selected eligible cohort</div></Card></div>
 
     <Card className="mt-6"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Form balance</div><p className="mt-2 text-sm text-[#9AA3B2]">Primary count = all clean first-exposure runs. Smaller figure = target-like first-exposure runs.</p></div><div className="flex gap-2"><button type="button" onClick={() => setTargetLikeOnly(false)} className={`rounded-xl border px-4 py-2 text-sm ${!targetLikeOnly ? "border-[#5ED3F3]/50 bg-[#5ED3F3]/10 text-[#D9F8FF]" : "border-white/10 text-[#9AA3B2]"}`}>All first exposure</button><button type="button" onClick={() => setTargetLikeOnly(true)} className={`rounded-xl border px-4 py-2 text-sm ${targetLikeOnly ? "border-[#5ED3F3]/50 bg-[#5ED3F3]/10 text-[#D9F8FF]" : "border-white/10 text-[#9AA3B2]"}`}>Target-like only</button></div></div><div className="mt-5 grid gap-3 sm:grid-cols-4">{formCounts.map((entry) => <div key={entry.formId} className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">{entry.formId}</div><div className="mt-1 text-2xl font-semibold">{entry.count}<span className="ml-2 text-sm font-normal text-[#7D8997]">({entry.targetLike})</span></div></div>)}</div></Card>
 
@@ -8875,12 +8894,12 @@ function InternalEmpiricalAnalysisScreen({ onBack, onOpenPilot }: { onBack: () =
     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={() => downloadEmpiricalItemSummaryCsv(runs, targetLikeOnly)}>Export item summary CSV</PrimaryButton><SecondaryButton onClick={() => downloadEmpiricalPooledRawCsv(rows)}>Export pooled raw CSV</SecondaryButton><SecondaryButton onClick={downloadEmpiricalPilotCsv}>Export all empirical runs on this device</SecondaryButton><SecondaryButton onClick={clearPool}>Clear pooled imports</SecondaryButton></div>
 
     <div className="mt-8 space-y-5">{domainGroups.map((group) => <details key={group.domain} open={group.domain === "mechanical"} className="rounded-2xl border border-white/5 bg-[#151A21] p-5"><summary className="cursor-pointer font-semibold text-[#D9F8FF]">{group.domain === "abstract_logical" ? "Abstract / Logical" : group.domain.charAt(0).toUpperCase() + group.domain.slice(1)} — {group.items.length}/20 represented</summary>{group.items.length === 0 ? <p className="mt-4 text-sm text-[#8D98A6]">No eligible first-exposure observations imported yet.</p> : <div className="mt-4 grid gap-3">{group.items.map((item) => {
-      const timingOutside = item.n >= 12 && item.targetMinSec != null && item.targetMaxSec != null && (item.medianMs / 1000 < item.targetMinSec || item.medianMs / 1000 > item.targetMaxSec);
-      const extremeAccuracy = item.n >= 12 && (item.accuracy < 0.25 || item.accuracy > 0.95);
-      return <div key={item.blueprintId} className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"><div><div className="text-sm font-semibold text-[#D9F8FF]">{item.blueprintId} · {item.questionId}</div><div className="mt-1 text-xs text-[#6E7A88]">{item.archetype || "Authored item"}</div></div><div className="flex flex-wrap gap-2">{item.n < 12 ? <Badge>{item.n}/12 observations</Badge> : <Badge>Exploratory gate met</Badge>}{extremeAccuracy && <Badge>Accuracy review</Badge>}{timingOutside && <Badge>Timing hypothesis review</Badge>}</div></div><div className="mt-4 grid gap-3 grid-cols-2 sm:grid-cols-4"><div><div className="text-xs text-[#6E7A88]">Accuracy</div><div className="mt-1 font-semibold">{Math.round(item.accuracy * 100)}%</div></div><div><div className="text-xs text-[#6E7A88]">Median time</div><div className="mt-1 font-semibold">{formatSeconds(item.medianMs)}</div></div><div><div className="text-xs text-[#6E7A88]">IQR</div><div className="mt-1 font-semibold">{formatSeconds(item.iqrMs)}</div></div><div><div className="text-xs text-[#6E7A88]">Common wrong tag</div><div className="mt-1 break-words text-sm font-semibold">{item.commonWrong}</div></div></div></div>;
+      const timingOutside = item.n >= 10 && item.targetMinSec != null && item.targetMaxSec != null && (item.medianMs / 1000 < item.targetMinSec || item.medianMs / 1000 > item.targetMaxSec);
+      const extremeAccuracy = item.n >= 10 && (item.accuracy < 0.25 || item.accuracy > 0.95);
+      return <div key={item.blueprintId} className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between"><div><div className="text-sm font-semibold text-[#D9F8FF]">{item.blueprintId} · {item.questionId}</div><div className="mt-1 text-xs text-[#6E7A88]">{item.archetype || "Authored item"}</div></div><div className="flex flex-wrap gap-2">{item.n < 10 ? <Badge>{item.n}/10 observations</Badge> : <Badge>Exploratory gate met</Badge>}{extremeAccuracy && <Badge>Accuracy review</Badge>}{timingOutside && <Badge>Timing hypothesis review</Badge>}</div></div><div className="mt-4 grid gap-3 grid-cols-2 sm:grid-cols-5"><div><div className="text-xs text-[#6E7A88]">Accuracy</div><div className="mt-1 font-semibold">{Math.round(item.accuracy * 100)}%</div></div><div><div className="text-xs text-[#6E7A88]">Median final time</div><div className="mt-1 font-semibold">{formatSeconds(item.medianMs)}</div></div><div><div className="text-xs text-[#6E7A88]">IQR</div><div className="mt-1 font-semibold">{formatSeconds(item.iqrMs)}</div></div><div><div className="text-xs text-[#6E7A88]">Answer changed</div><div className="mt-1 font-semibold">{item.changedCount}/{item.n}</div></div><div><div className="text-xs text-[#6E7A88]">Common wrong tag</div><div className="mt-1 break-words text-sm font-semibold">{item.commonWrong}</div></div></div></div>;
     })}</div>}</details>)}</div>
 
-    <div className="mt-8 rounded-2xl border border-[#FFB86B]/20 bg-[#211813]/40 p-5"><div className="font-semibold text-[#FFD6A8]">Interpretation boundary</div><p className="mt-2 text-sm leading-relaxed text-[#C8B5A7]">The flags on this screen are deliberately simple exploratory prompts. Do not edit an item merely because a small exploratory sample produces an extreme percentage or a median outside the author timing range. Review the response pattern, misconception distribution, tester mix and qualitative feedback first; then change the frozen bank only between pilot batches.</p></div>
+    <div className="mt-8 rounded-2xl border border-[#FFB86B]/20 bg-[#211813]/40 p-5"><div className="font-semibold text-[#FFD6A8]">Interpretation boundary</div><p className="mt-2 text-sm leading-relaxed text-[#C8B5A7]">The flags on this screen are deliberately simple exploratory prompts. The 10-observation gate is a practical minimum for this small pilot, not a validation threshold. Do not edit an item merely because a small exploratory sample produces an extreme percentage or a median outside the author timing range. Review the response pattern, misconception distribution, tester mix and qualitative feedback first; then change the frozen bank only between pilot batches.</p></div>
   </section></Shell>;
 }
 
