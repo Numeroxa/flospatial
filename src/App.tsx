@@ -6777,11 +6777,13 @@ function HydraulicIndependentPracticeQuestionScreen({ journey, sessionId, questi
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [selectedAt, setSelectedAt] = useState<number | null>(null);
 
   useEffect(() => {
     setStartedAt(Date.now());
     setSelectedOptionId(null);
     setShowFeedback(false);
+    setSelectedAt(null);
     window.requestAnimationFrame(() => document.getElementById("hydraulic-independent-question")?.scrollIntoView({ behavior: "auto", block: "start" }));
   }, [questionIndex]);
 
@@ -6798,13 +6800,15 @@ function HydraulicIndependentPracticeQuestionScreen({ journey, sessionId, questi
   function select(optionId: string) {
     if (showFeedback) return;
     setSelectedOptionId(optionId);
+    setSelectedAt(Date.now());
     setShowFeedback(true);
   }
 
   function next() {
     if (!selectedOptionId) return;
+    const selectionLatencyMs = Math.max(1, (selectedAt ?? Date.now()) - startedAt);
     onAnswer(
-      createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false),
+      createAssessmentResponse(sessionId, question, selectedOptionId, selectionLatencyMs, false, { responseTimeBasis: "selection_latency", telemetryVersion: "learner-v0.24", deviceClass: getDeviceClass() }),
       questionIndex === hydraulicIndependentPracticeQuestions.length - 1
     );
   }
@@ -6816,8 +6820,14 @@ function HydraulicIndependentPracticeDebriefScreen({ journey, onWhy, onContinue,
   const debrief = getLatestDebrief(journey);
   const rec = getCurrentRecommendation(journey);
   const session = getLatestSessionOfType(journey, "hydraulic_independent_practice");
-  const incorrectCount = session ? journey.responses.filter((response) => response.sessionId === session.sessionId && !response.correct).length : 0;
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-6 py-12 sm:px-8 sm:py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Session complete</p><h1 className="mt-5 text-4xl font-semibold">{debrief?.title ?? "Hydraulic Pressure complete"}</h1><p className="mt-5 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p><div className="mt-7 grid gap-5 sm:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">You can now</div><ul className="mt-3 space-y-2 text-[#C8D2DD]"><li>✓ Identify what stays constant.</li><li>✓ Explain how piston area changes force.</li><li>✓ Apply the method in unfamiliar contexts.</li></ul></div><div className="rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Pocket principle</div><p className="mt-3 text-xl font-semibold text-[#D9F8FF]">Same pressure. Bigger area. Bigger force.</p></div></div><div className="mt-5 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">What we noticed</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="mt-5 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 leading-relaxed text-[#AAB4C0]">{rec?.summary}</p></div><AnswerReviewActions incorrectCount={incorrectCount} onReviewIncorrect={onReviewIncorrect} onReviewAll={onReviewAll} /><div className="mt-8 flex flex-col gap-3 sm:flex-row"><PrimaryButton onClick={onContinue}>Continue</PrimaryButton><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton><SecondaryButton onClick={onDashboard}>View dashboard</SecondaryButton></div></Card></section></Shell>;
+  const responses = session ? journey.responses.filter((response) => response.sessionId === session.sessionId) : [];
+  const correctCount = responses.filter((response) => response.correct).length;
+  const incorrectCount = responses.length - correctCount;
+  const accuracyPercent = responses.length ? Math.round((correctCount / responses.length) * 100) : 0;
+  const validSelectionTimes = responses.filter((response) => response.responseTimeBasis === "selection_latency" && response.responseTimeMs > 0).map((response) => response.responseTimeMs).sort((a, b) => a - b);
+  const medianSelectionMs = validSelectionTimes.length ? validSelectionTimes[Math.floor(validSelectionTimes.length / 2)] : null;
+  const accuracyLabel = accuracyPercent >= 80 ? "Independent method established" : accuracyPercent >= 60 ? "Method developing" : "Foundation needs reinforcement";
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-5 py-10 sm:px-8 sm:py-16"><Card className="p-5 sm:p-8"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Session complete</p><h1 className="mt-5 text-3xl font-semibold sm:text-4xl">{debrief?.title ?? "Hydraulic Pressure complete"}</h1><p className="mt-5 text-lg leading-relaxed text-[#9AA3B2]">{debrief?.summary}</p></div><Badge>Saved on this device</Badge></div><div className="mt-7 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Accuracy</div><div className="mt-3 text-3xl font-semibold">{correctCount}/{responses.length}</div><div className="mt-2 text-sm text-[#AAB4C0]">{accuracyPercent}% correct</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Evidence</div><div className="mt-3 text-lg font-semibold text-[#D9F8FF]">{accuracyLabel}</div><div className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Accuracy is interpreted before speed.</div></div><div className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Efficiency</div><div className="mt-3 text-lg font-semibold">{medianSelectionMs ? `Median ${formatSeconds(medianSelectionMs)}` : "Timing collected"}</div><div className="mt-2 text-sm leading-relaxed text-[#8D98A6]">Recorded silently. No speed judgement until timing evidence is stronger.</div></div></div><div className="mt-7 grid gap-5 sm:grid-cols-2"><div className="rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">You can now</div><ul className="mt-3 space-y-2 text-[#C8D2DD]"><li>✓ Identify what stays constant.</li><li>✓ Explain how piston area changes force.</li><li>✓ Apply the method in unfamiliar contexts.</li></ul></div><div className="rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Pocket principle</div><p className="mt-3 text-xl font-semibold text-[#D9F8FF]">Same pressure. Bigger area. Bigger force.</p></div></div><div className="mt-5 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">What we noticed</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{debrief?.interpretation}</p></div><div className="mt-5 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Next Best Step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 leading-relaxed text-[#AAB4C0]">{rec?.summary}</p><p className="mt-4 text-xs leading-relaxed text-[#6E7A88]">One recommendation based on this session's independent evidence. It will update as more evidence is collected.</p></div><AnswerReviewActions incorrectCount={incorrectCount} onReviewIncorrect={onReviewIncorrect} onReviewAll={onReviewAll} /><div className="mt-6 rounded-2xl border border-white/5 bg-[#111418] p-5 text-sm leading-relaxed text-[#8D98A6]">Your Hydraulic Pressure completion and performance are saved locally on this device. No account is required.</div><div className="mt-8 flex flex-col gap-3 sm:flex-row"><PrimaryButton onClick={onContinue}>Continue to Next Best Step</PrimaryButton><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton><SecondaryButton onClick={onDashboard}>View dashboard</SecondaryButton></div></Card></section></Shell>;
 }
 
 function HydraulicTransferReflectionScreen({ onContinue }: { onContinue: () => void }) {
