@@ -507,6 +507,7 @@ type MvpGuestJourney = {
   version: "mvp_v1";
   guestJourneyId: string;
   selectedPathwayId?: PathwayId;
+  employerGoal?: "frnsw" | "general_fire_service";
   preparationContext?: PreparationContext;
   sessions: AssessmentSession[];
   responses: AssessmentResponse[];
@@ -5767,7 +5768,24 @@ function AssessmentCompleteScreen({ onView }: { onView: () => void }) { return <
 function WhyModal({ why, onClose }: { why?: WhyExplanation; onClose: () => void }) { if (!why) return null; const sections = [["Observation", why.observation], ["Evidence", why.evidence], ["Interpretation", why.interpretation], ["Recommendation", why.recommendation], ["Confidence", why.confidence]]; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-[32px] border border-white/10 bg-[#171C23] p-8 shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="text-xs uppercase tracking-[0.22em] text-[#6E7A88]">Why explanation</p><h2 className="mt-3 text-3xl font-semibold">{why.title}</h2></div><button onClick={onClose} className="rounded-lg px-3 py-2 text-sm text-[#8D98A6] hover:text-white">Close</button></div><div className="mt-8 space-y-6">{sections.map(([label, text]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{label}</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{text}</p></div>)}</div><p className="mt-6 text-sm text-[#6E7A88]">Vivalsa uses this explanation to keep recommendations transparent and evidence-based.</p></div></div>; }
 function FirstAdvisorInsightScreen({ journey, onWhy, onStartRecommendation }: { journey: MvpGuestJourney; onWhy: () => void; onStartRecommendation: () => void }) {
   const timing = getAssessmentTimingLabel(journey.preparationContext);
-  return <Shell right={timing}><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-5 py-10 sm:px-8 sm:py-16"><Card className="p-5 sm:p-8"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">A useful starting point</p><h1 className="mt-5 text-3xl font-semibold leading-tight sm:text-4xl">Start with one complete learning journey.</h1><p className="mt-5 text-lg leading-relaxed text-[#AAB4C0]">You have completed the starting questions. For this prototype, everyone begins with Hydraulic Pressure so we can test the complete learning experience.</p><div className="mt-7 rounded-2xl border border-[#5ED3F3]/25 bg-[#5ED3F3]/5 p-5 sm:p-6"><p className="text-xs uppercase tracking-[0.18em] text-[#8D98A6]">Demonstration recommendation · not a personalised assessment conclusion</p><h2 className="mt-3 text-2xl font-semibold">Hydraulic Pressure</h2><p className="mt-3 leading-relaxed text-[#C8D2DD]">Learn what stays constant, practise how piston area changes force, then solve unfamiliar questions independently.</p><p className="mt-4 text-sm text-[#9AA3B2]">Learn → Guided Practice → Independent Practice → Optional review → Next Best Step</p></div><p className="mt-5 text-sm leading-relaxed text-[#9AA3B2]">Your screening responses are retained, but they are not being used to select this demonstration module. Later recommendations can use evidence from your performance.</p><div className="mt-8"><PrimaryButton onClick={onStartRecommendation}>Begin Hydraulic Pressure</PrimaryButton></div></Card></section></Shell>;
+  const recommendation = getCurrentRecommendation(journey);
+  const summary = journey.dashboardState?.startingAssessmentSummary;
+  const isFrnsw = journey.employerGoal === "frnsw";
+  const scores = summary?.domainScores;
+  const domainRows: Array<{ domain: Domain; label: string }> = [
+    { domain: "mechanical", label: "Mechanical" },
+    { domain: "numerical", label: "Numerical" },
+    { domain: "abstract_logical", label: "Abstract & logical" },
+    { domain: "verbal", label: "Verbal" },
+  ];
+  return <Shell right={timing}><section className="mx-auto flex min-h-[82vh] max-w-5xl items-center px-5 py-10 sm:px-8 sm:py-16"><Card className="w-full p-5 sm:p-8">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">A useful starting point · v0.30</p><h1 className="mt-5 text-3xl font-semibold leading-tight sm:text-4xl">{recommendation?.title ?? "Your first preparation step"}</h1></div>{isFrnsw && <Badge>FRNSW preparation</Badge>}</div>
+    <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#AAB4C0]">{recommendation?.summary ?? "Your starting assessment has identified a useful first preparation step."}</p>
+    {isFrnsw && <div className="mt-6 rounded-2xl border border-[#7FE0B8]/20 bg-[#7FE0B8]/5 p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#7FE0B8]">Why this is relevant to your goal</div><p className="mt-3 text-sm leading-relaxed text-[#C8D2DD]">FRNSW currently publishes mechanical reasoning and cognitive aptitude as assessment areas. Your FRNSW goal determines which Aptesta skills are relevant; your own screening results determine where Aptesta recommends you start.</p><p className="mt-3 text-xs leading-relaxed text-[#8D98A6]">This is preparation for underlying reasoning skills, not a Criteria test simulation or a prediction of selection outcome.</p></div>}
+    {scores && <div className="mt-7"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Your short screening</div><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{domainRows.map(({ domain, label }) => { const score = scores[domain]; return <div key={domain} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="text-sm text-[#9AA3B2]">{label}</div><div className="mt-2 text-xl font-semibold text-[#F4F6F8]">{score.correct} / {score.attempted}</div></div>; })}</div></div>}
+    <div className="mt-7 rounded-2xl border border-[#5ED3F3]/25 bg-[#5ED3F3]/5 p-5 sm:p-6"><p className="text-xs uppercase tracking-[0.18em] text-[#8D98A6]">One recommendation</p><h2 className="mt-3 text-2xl font-semibold">{recommendation?.title ?? "Begin your recommended fundamentals"}</h2><p className="mt-3 leading-relaxed text-[#C8D2DD]">{recommendation?.summary}</p><p className="mt-4 text-sm text-[#9AA3B2]">This is an early signal from a short screening. Later practice evidence can change the recommendation.</p></div>
+    <div className="mt-8 flex flex-col gap-3 sm:flex-row"><PrimaryButton onClick={onStartRecommendation}>{recommendation?.actionLabel ?? "Begin recommended step"}</PrimaryButton><SecondaryButton onClick={onWhy}>Why this recommendation?</SecondaryButton></div>
+  </Card></section></Shell>;
 }
 
 function getAssessmentTimingLabel(context?: PreparationContext) {
@@ -10943,9 +10961,9 @@ export default function VivalsaPrototype() {
   if (!accessGranted) return <PasswordGate onUnlock={() => setAccessGranted(true)} />;
 
   function updateJourney(next: MvpGuestJourney) { setJourney({ ...next, updatedAt: now() }); }
-  function selectFireService() { updateJourney({ ...journey, selectedPathwayId: "fire_service" }); setScreen("preparation-context"); }
-  function selectFrnswGoal() { updateJourney({ ...journey, selectedPathwayId: "fire_service" }); setScreen("frnsw-preparation"); }
-  function continueFrnswPreparation() { updateJourney({ ...journey, selectedPathwayId: "fire_service" }); setScreen("preparation-context"); }
+  function selectFireService() { updateJourney({ ...journey, selectedPathwayId: "fire_service", employerGoal: "general_fire_service" }); setScreen("preparation-context"); }
+  function selectFrnswGoal() { updateJourney({ ...journey, selectedPathwayId: "fire_service", employerGoal: "frnsw" }); setScreen("frnsw-preparation"); }
+  function continueFrnswPreparation() { updateJourney({ ...journey, selectedPathwayId: "fire_service", employerGoal: "frnsw" }); setScreen("preparation-context"); }
   function saveContext(context: PreparationContext) { updateJourney({ ...journey, preparationContext: context }); setScreen("mechanical-baseline-intro"); }
   function startBaseline() { const session = createMechanicalBaselineSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setScreen("mechanical-baseline-question"); }
   function handleAnswer(response: AssessmentResponse, final: boolean) {
@@ -11160,8 +11178,6 @@ export default function VivalsaPrototype() {
 
   const why = getCurrentWhy(journey);
   function openCurrentRecommendation() {
-    // v0.23 demonstration bridge: do not present a screening-derived recommendation as personalised.
-    if (screen === "first-advisor-insight") { openHydraulicFundamentals(); return; }
     const rec = getCurrentRecommendation(journey);
     switch (rec?.recommendationType) {
       case "start_hydraulic_fundamentals": openHydraulicFundamentals(); return;
