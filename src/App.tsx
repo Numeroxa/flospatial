@@ -5871,6 +5871,51 @@ function getDashboardProgress(journey: MvpGuestJourney) {
   ];
 }
 
+// v0.32: descriptive, within-learner evidence only; never a normative score.
+const IMPROVEMENT_INDEPENDENT_TYPES = [
+  ["Hydraulics", "hydraulic_independent_practice"],
+  ["Gears", "gear_independent_practice"],
+  ["Pulleys", "pulley_independent_practice"],
+  ["Levers", "lever_independent_practice"],
+  ["Numerical", "numerical_independent_practice"],
+  ["Abstract & logical", "abstract_logical_independent_practice"],
+  ["Verbal", "verbal_independent_practice"],
+] as const;
+
+function ImprovementEvidence({ journey }: { journey: MvpGuestJourney }) {
+  const rows = IMPROVEMENT_INDEPENDENT_TYPES.map(([label, type]) => ({
+    label, runs: journey.practiceSummaries.filter((item) => item.sessionType === type && item.attempted > 0)
+      .slice().sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+  }));
+  const attempted = rows.filter((row) => row.runs.length > 0);
+  const blocks = attempted.reduce((sum, row) => sum + row.runs.length, 0);
+  const strengthened = attempted.filter((row) => row.runs.length >= 2 && row.runs[row.runs.length - 1].accuracy > row.runs[0].accuracy);
+  const best = attempted.flatMap((row) => row.runs.map((run) => ({ label: row.label, run })))
+    .sort((a, b) => b.run.accuracy - a.run.accuracy)[0];
+  return <Card className="mt-8 border-[#5ED3F3]/15">
+    <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Your improvement evidence</div>
+    <h2 className="mt-3 text-2xl font-semibold">What your practice shows</h2>
+    <p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Your own completed Independent Practice blocks provide the comparison. These are early preparation signals, not a readiness score or a comparison with other candidates.</p>
+    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="min-w-0 rounded-2xl border border-white/10 p-4"><div className="text-2xl font-semibold">{attempted.length}</div><div className="mt-1 text-sm text-[#AAB4C0]">Skills attempted independently</div></div>
+      <div className="min-w-0 rounded-2xl border border-white/10 p-4"><div className="text-2xl font-semibold">{blocks}</div><div className="mt-1 text-sm text-[#AAB4C0]">Independent blocks completed</div></div>
+      <div className="min-w-0 rounded-2xl border border-white/10 p-4"><div className="text-2xl font-semibold">{best ? `${best.run.correct}/${best.run.attempted}` : "—"}</div><div className="mt-1 text-sm text-[#AAB4C0]">Strongest block{best ? ` · ${best.label}` : ""}</div></div>
+    </div>
+    {attempted.length === 0 ? <p className="mt-5 text-sm text-[#AAB4C0]">Complete an Independent Practice block to establish your first practice result. A later block in the same skill will allow a comparison.</p> :
+      <div className="mt-5 space-y-3">{attempted.map((row) => {
+        const first = row.runs[0], latest = row.runs[row.runs.length - 1];
+        const delta = latest.accuracy - first.accuracy;
+        return <div key={row.label} className="min-w-0 rounded-2xl border border-white/10 p-4">
+          <div className="font-semibold text-[#D9F8FF]">{row.label}</div>
+          <p className="mt-2 text-sm text-[#AAB4C0]">{row.runs.length} independent {row.runs.length === 1 ? "block" : "blocks"} · latest {latest.correct}/{latest.attempted} correct</p>
+          <p className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">{row.runs.length < 2 ? "First result recorded. Complete another block in this skill to compare performance." : delta > 0 ? `Accuracy strengthened from ${Math.round(first.accuracy * 100)}% to ${Math.round(latest.accuracy * 100)}% across the recorded blocks.` : delta < 0 ? `Latest accuracy is ${Math.round(latest.accuracy * 100)}%, compared with ${Math.round(first.accuracy * 100)}% in the first block. More practice will help clarify the pattern.` : `Accuracy is unchanged at ${Math.round(latest.accuracy * 100)}% between the first and latest blocks.`}</p>
+        </div>;
+      })}</div>}
+    {strengthened.length > 0 && <p className="mt-4 text-sm text-[#D9F8FF]">Accuracy improvement observed in {strengthened.length} {strengthened.length === 1 ? "skill" : "skills"} with repeat practice.</p>}
+    <p className="mt-4 text-xs leading-relaxed text-[#6E7A88]">Accuracy first · efficiency second · pressure last. This view does not infer speed improvement from uncalibrated or incomplete timing data.</p>
+  </Card>;
+}
+
 function DashboardScreen({
   journey,
   onWhy,
@@ -6056,6 +6101,8 @@ function DashboardScreen({
         {progress.map((item) => <Card key={item.name} className="p-5"><div className="text-sm font-semibold text-[#D9F8FF]">{item.name}</div><div className="mt-4 text-3xl font-semibold">{item.value}</div><div className="mt-2 text-sm text-[#AAB4C0]">{item.status}</div><p className="mt-3 text-xs leading-relaxed text-[#6E7A88]">{item.detail}</p></Card>)}
       </div>
     </div>
+
+    <ImprovementEvidence journey={journey} />
 
     {milestones.length > 0 && <Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recent progress</div><div className="mt-5 grid gap-3 sm:grid-cols-2">{milestones.slice(-4).reverse().map((milestone) => <div key={milestone.milestoneId} className="rounded-2xl border border-white/5 bg-[#111418] p-4 text-sm text-[#C8D2DD]">{milestone.label}</div>)}</div></Card>}
 
