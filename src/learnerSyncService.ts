@@ -1,6 +1,6 @@
 import { supabase } from "./supabaseClient";
 
-export const LEARNER_SYNC_SCHEMA_VERSION = "0.37";
+export const LEARNER_SYNC_SCHEMA_VERSION = "0.38";
 export type LearnerSyncResult<T> = { journey: T; remoteUpdatedAt: string | null; action: "uploaded" | "merged" };
 
 type AnyRecord = Record<string, any>;
@@ -9,6 +9,7 @@ function requireClient() { if (!supabase) throw new Error("Supabase is not confi
 function itemKey(item: any, index: number) { if (item && typeof item === "object") for (const key of ARRAY_ID_KEYS) if (item[key]) return `${key}:${item[key]}`; return `json:${JSON.stringify(item)}:${index}`; }
 function unionArray(local: any[] = [], remote: any[] = []) { const map = new Map<string, any>(); remote.forEach((v,i)=>map.set(itemKey(v,i),v)); local.forEach((v,i)=>map.set(itemKey(v,i),v)); return [...map.values()]; }
 function cleanJourney<T extends AnyRecord>(journey: T): T { const copy = { ...journey }; delete copy.prototypeAccount; return copy as T; }
+export function learnerJourneyFingerprint<T extends AnyRecord>(journey: T): string { const copy: AnyRecord = { ...cleanJourney(journey) }; delete copy.updatedAt; return JSON.stringify(copy); }
 export function mergeLearnerJourneys<T extends AnyRecord>(localInput: T, remoteInput: T): T {
   const local = cleanJourney(localInput); const remote = cleanJourney(remoteInput);
   const localNewer = String(local.updatedAt || "") >= String(remote.updatedAt || "");
