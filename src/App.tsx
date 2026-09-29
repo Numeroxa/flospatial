@@ -6109,6 +6109,28 @@ function DashboardScreen({
       <div className="mt-7 flex flex-col gap-3 sm:flex-row">{recommendationAction}<SecondaryButton onClick={onWhy}>Why this?</SecondaryButton></div>
     </Card>
 
+    <Card className="mt-6 border-white/10">
+      <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Your next focused session</div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <div className="rounded-2xl border border-white/5 bg-[#111418] p-5">
+          <div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Do one thing</div>
+          <h3 className="mt-3 text-xl font-semibold text-[#D9F8FF]">{rec?.actionLabel ?? "Complete the starting assessment"}</h3>
+          <p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Follow the Mentor recommendation rather than trying to cover every domain in one sitting.</p>
+        </div>
+        <div className="rounded-2xl border border-white/5 bg-[#111418] p-5">
+          <div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Why now</div>
+          <p className="mt-3 text-sm leading-relaxed text-[#C8D2DD]">{rec?.summary ?? "A short starting assessment gives Aptesta evidence for choosing a useful first learning step."}</p>
+        </div>
+        <div className="rounded-2xl border border-white/5 bg-[#111418] p-5">
+          <div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">What matters</div>
+          <p className="mt-3 text-sm leading-relaxed text-[#C8D2DD]">Work accurately and use the method. Timing is collected only as supporting evidence and does not override errors.</p>
+          <p className="mt-3 text-xs font-medium text-[#D9F8FF]">Accuracy first · efficiency second · pressure last</p>
+        </div>
+      </div>
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">{recommendationAction}<SecondaryButton onClick={onWhy}>Why this session?</SecondaryButton></div>
+      <p className="mt-4 text-xs leading-relaxed text-[#6E7A88]">One focused session at a time. Aptesta will update the Next Best Step when new evidence is available.</p>
+    </Card>
+
     <div className="mt-8">
       <div className="mb-4"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Your progress</div><p className="mt-2 text-sm text-[#8D98A6]">A simple view of the evidence collected so far. Scores are preparation signals, not pass/fail judgements.</p></div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
