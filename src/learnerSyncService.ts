@@ -1,6 +1,6 @@
 import { supabase } from "./supabaseClient";
 
-export const LEARNER_SYNC_SCHEMA_VERSION = "0.36";
+export const LEARNER_SYNC_SCHEMA_VERSION = "0.37";
 export type LearnerSyncResult<T> = { journey: T; remoteUpdatedAt: string | null; action: "uploaded" | "merged" };
 
 type AnyRecord = Record<string, any>;

@@ -9063,28 +9063,68 @@ function InternalAccountBackendPrototypeScreen({ journey, onApplyJourney, onBack
   const [status, setStatus] = useState("Checking session…");
   const [signedInUserId, setSignedInUserId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  useEffect(() => { let live = true; getAptestaSession().then((session) => { if (!live) return; setSignedInUserId(session?.user.id ?? null); setStatus(session ? "Signed in" : isSupabaseConfigured ? "Backend configured · not signed in" : "Backend not configured"); }); return () => { live = false; }; }, []);
+
+  async function reconcileProgress(messagePrefix = "Progress") {
+    const result = await syncLearnerJourney(journey);
+    onApplyJourney(result.journey);
+    setStatus(result.action === "uploaded"
+      ? `${messagePrefix} uploaded · this account now has a cloud learning record`
+      : `${messagePrefix} merged · local and cloud learning evidence reconciled`);
+  }
+
+  useEffect(() => {
+    let live = true;
+    getAptestaSession().then(async (session) => {
+      if (!live) return;
+      setSignedInUserId(session?.user.id ?? null);
+      if (!session) { setStatus(isSupabaseConfigured ? "Backend configured · not signed in" : "Backend not configured"); return; }
+      setStatus("Signed in · synchronising learning evidence…");
+      try {
+        const result = await syncLearnerJourney(journey);
+        if (!live) return;
+        onApplyJourney(result.journey);
+        setStatus(result.action === "uploaded" ? "Signed in · progress uploaded automatically" : "Signed in · progress reconciled automatically");
+      } catch (error) {
+        if (!live) return;
+        setStatus(error instanceof Error ? `Signed in · automatic sync needs attention: ${error.message}` : "Signed in · automatic sync needs attention");
+      }
+    });
+    return () => { live = false; };
+  }, []);
+
   async function syncProgress() {
     setBusy(true); setStatus("Synchronising learning evidence…");
-    try { const result = await syncLearnerJourney(journey); onApplyJourney(result.journey); setStatus(result.action === "uploaded" ? "Progress uploaded · this account now has a cloud learning record" : "Progress merged · local and cloud learning evidence reconciled"); }
+    try { await reconcileProgress("Progress"); }
     catch (error) { setStatus(error instanceof Error ? error.message : "Progress synchronisation failed."); }
     finally { setBusy(false); }
   }
+
   async function run(action: "create" | "signin" | "signout") {
     setBusy(true); setStatus("Working…");
     try {
-      if (action === "create") { const account = await createAptestaAccount(firstName, username, password); setSignedInUserId(account.user.id); setStatus(account.session ? `Account created · signed in as ${account.username}` : "Account created, but no session was issued. Check Supabase email-confirmation settings."); }
-      if (action === "signin") { const account = await signInAptesta(username, password); setSignedInUserId(account.user.id); setStatus(`Signed in as ${account.username}`); }
-      if (action === "signout") { await signOutAptesta(); setSignedInUserId(null); setStatus("Signed out"); }
+      if (action === "create") {
+        const account = await createAptestaAccount(firstName, username, password);
+        setSignedInUserId(account.user.id);
+        if (!account.session) { setStatus("Account created, but no session was issued. Check Supabase email-confirmation settings."); return; }
+        setStatus(`Account created · signed in as ${account.username} · synchronising…`);
+        await reconcileProgress("Account created · progress");
+      }
+      if (action === "signin") {
+        const account = await signInAptesta(username, password);
+        setSignedInUserId(account.user.id);
+        setStatus(`Signed in as ${account.username} · synchronising…`);
+        await reconcileProgress("Signed in · progress");
+      }
+      if (action === "signout") { await signOutAptesta(); setSignedInUserId(null); setStatus("Signed out · local progress remains on this device"); }
     } catch (error) { setStatus(error instanceof Error ? error.message : "Account operation failed."); }
     finally { setBusy(false); }
   }
   return <Shell right="Account backend prototype"><section className="mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
     <SecondaryButton onClick={onBack}>← Account / sync architecture</SecondaryButton>
-    <div className="mt-8 text-sm uppercase tracking-[0.2em] text-[#6E7A88]">Tester-only · v0.36</div><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Backend identity prototype</h1>
-    <p className="mt-5 max-w-2xl leading-relaxed text-[#AAB4C0]">v0.36 retains the proven account loop and adds an explicit first learner-progress sync. Local-only use still works; synchronisation happens only when the signed-in learner chooses it.</p>
-    <div className="mt-7 grid gap-3 sm:grid-cols-3"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Backend</div><div className="mt-2 font-semibold">{isSupabaseConfigured ? "Configured" : "Not configured"}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Session</div><div className="mt-2 font-semibold">{signedInUserId ? "Signed in" : "Signed out"}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Learning sync</div><div className="mt-2 font-semibold">v{LEARNER_SYNC_SCHEMA_VERSION} · explicit</div></Card></div>
-    <Card className="mt-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Prototype credentials</div><h2 className="mt-2 text-2xl font-semibold">No email address required</h2><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Use a first name, username and password. v0.35 uses a non-routable internal authentication identifier because Supabase password authentication natively expects an email or phone identity. Aptesta does not collect a learner email address here.</p><div className="mt-5 grid gap-4"><label className="text-sm text-[#AAB4C0]">First name<input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50" autoComplete="given-name" /></label><label className="text-sm text-[#AAB4C0]">Username<input value={username} onChange={(e) => setUsername(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50" autoCapitalize="none" autoComplete="username" /></label><label className="text-sm text-[#AAB4C0]">Password<input value={password} onChange={(e) => setPassword(e.target.value)} type="password" className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50" autoComplete="current-password" /></label></div><div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={() => run("create")} disabled={busy || !isSupabaseConfigured}>Create prototype account</PrimaryButton><PrimaryButton onClick={() => run("signin")} disabled={busy || !isSupabaseConfigured} className="bg-transparent">Sign in</PrimaryButton><PrimaryButton onClick={() => run("signout")} disabled={busy || !signedInUserId} className="bg-transparent">Sign out</PrimaryButton></div><div className="mt-5 rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{status}{signedInUserId && <div className="mt-2 break-all text-xs text-[#6E7A88]">Learner auth ID: {signedInUserId}</div>}</div>{signedInUserId && <div className="mt-5 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Cross-device progress test</div><p className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">Upload or merge this device&apos;s durable learner journey with the signed-in account. Completed evidence is unioned by stable IDs; newer mutable state is retained. Tester/calibration stores are not included.</p><div className="mt-4"><PrimaryButton onClick={syncProgress} disabled={busy}>Synchronise learner progress</PrimaryButton></div></div>}</Card>
+    <div className="mt-8 text-sm uppercase tracking-[0.2em] text-[#6E7A88]">Tester-only · v0.37</div><h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Automatic account sync handoff</h1>
+    <p className="mt-5 max-w-2xl leading-relaxed text-[#AAB4C0]">v0.37 removes the extra sync step from the normal account handoff. Creating an account, signing in, or returning with an active session now reconciles durable learner progress automatically. Local-only use still remains available.</p>
+    <div className="mt-7 grid gap-3 sm:grid-cols-3"><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Backend</div><div className="mt-2 font-semibold">{isSupabaseConfigured ? "Configured" : "Not configured"}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Session</div><div className="mt-2 font-semibold">{signedInUserId ? "Signed in" : "Signed out"}</div></Card><Card className="p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Learning sync</div><div className="mt-2 font-semibold">v{LEARNER_SYNC_SCHEMA_VERSION} · automatic</div></Card></div>
+    <Card className="mt-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Prototype credentials</div><h2 className="mt-2 text-2xl font-semibold">No email address required</h2><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Use a first name, username and password. Aptesta uses a non-routable internal authentication identifier because Supabase password authentication expects an email or phone identity. Aptesta does not collect a learner email address here.</p><div className="mt-5 grid gap-4"><label className="text-sm text-[#AAB4C0]">First name<input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50" autoComplete="given-name" /></label><label className="text-sm text-[#AAB4C0]">Username<input value={username} onChange={(e) => setUsername(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50" autoCapitalize="none" autoComplete="username" /></label><label className="text-sm text-[#AAB4C0]">Password<input value={password} onChange={(e) => setPassword(e.target.value)} type="password" className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8] outline-none focus:border-[#5ED3F3]/50" autoComplete="current-password" /></label></div><div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={() => run("create")} disabled={busy || !isSupabaseConfigured}>Create prototype account</PrimaryButton><PrimaryButton onClick={() => run("signin")} disabled={busy || !isSupabaseConfigured} className="bg-transparent">Sign in</PrimaryButton><PrimaryButton onClick={() => run("signout")} disabled={busy || !signedInUserId} className="bg-transparent">Sign out</PrimaryButton></div><div className="mt-5 rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{status}{signedInUserId && <div className="mt-2 break-all text-xs text-[#6E7A88]">Learner auth ID: {signedInUserId}</div>}</div>{signedInUserId && <div className="mt-5 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-sm font-semibold text-[#D9F8FF]">Automatic cross-device progress</div><p className="mt-2 text-sm leading-relaxed text-[#AAB4C0]">Progress is reconciled automatically at account handoff. The button below remains only as a tester retry control. Completed evidence is unioned by stable IDs; newer mutable state is retained. Tester/calibration stores are not included.</p><div className="mt-4"><PrimaryButton onClick={syncProgress} disabled={busy}>Retry synchronisation</PrimaryButton></div></div>}</Card>
     <Card className="mt-6 border-[#FFB86B]/20"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Prototype limitation</div><p className="mt-3 text-sm leading-relaxed text-[#C8B5A7]">There is no password-recovery channel in this no-email prototype. Do not use a valuable password. Recovery and production identity hardening must be designed before public release.</p></Card>
   </section></Shell>;
 }
