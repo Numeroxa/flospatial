@@ -2620,7 +2620,7 @@ const startingAssessmentQuestions: MvpQuestion[] = [
   makeStartingQuestion("START-ABS-001", "abstract_logical", "pattern_sequences", "rotation", "Which symbol comes next?", ["↑", "→", "↓", "←"], "A", "The arrow rotates 90° clockwise each step.", { abstractVisual: { kind: "sequence", rows: [["↑", "→", "↓", "←", "?"]] } }),
   makeStartingQuestion("START-ABS-002", "abstract_logical", "pattern_sequences", "two_rule_sequence", "What comes next?", ["▲▲▲▲▲", "○○○○○", "▲▲▲▲", "○○○○○○"], "A", "Shape alternates while the count increases by one. The fifth term is five triangles.", { abstractVisual: { kind: "sequence", rows: [["▲", "○○", "▲▲▲", "○○○○", "?"]] } }),
   makeStartingQuestion("START-ABS-003", "abstract_logical", "matrices_rules", "combination_rule", "What belongs in the missing cell?", ["■■◆", "■◆", "■■", "◆◆"], "A", "The third cell combines the symbols in the first two cells of each row.", { abstractVisual: { kind: "matrix", rows: [["▲", "○○", "▲○○"], ["■■", "◆", "?"]] } }),
-  makeStartingQuestion("START-ABS-004", "abstract_logical", "classification_relationships", "odd_one_out", "Which item is the odd one out?", ["○", "△", "□", "⬟"], "A", "The circle is the only item without straight sides and corners.", { abstractVisual: { kind: "set", rows: [["△", "□", "⬟", "○"]] } }),
+  makeStartingQuestion("START-ABS-004", "abstract_logical", "classification_relationships", "odd_one_out", "Which item is the odd one out?", ["○", "△", "□", "∠"], "D", "The angle is the only item that is not a closed shape.", { abstractVisual: { kind: "set", rows: [["○", "△", "□", "∠"]] } }),
   makeStartingQuestion("START-ABS-005", "abstract_logical", "deductive_reasoning", "syllogism", "All rescue helmets are equipment. No equipment is a living thing. What must follow?", ["No rescue helmet is a living thing", "All living things are rescue helmets", "Some equipment is a living thing", "All equipment is a rescue helmet"], "A", "Every rescue helmet is equipment, and no equipment is a living thing."),
   makeStartingQuestion("START-ABS-006", "abstract_logical", "deductive_reasoning", "ordering", "Maya finishes before Noah. Noah finishes before Omar. Who must finish last?", ["Omar", "Noah", "Maya", "Cannot be known"], "A", "The required order is Maya, then Noah, then Omar."),
 
@@ -5223,7 +5223,10 @@ function getLatestDebrief(journey: MvpGuestJourney) {
 type ResumeState = { screen: AppScreen; activeSessionId?: string; activeQuestionIndex: number };
 
 function getResumeState(journey: MvpGuestJourney): ResumeState {
-  const incompleteSession = [...journey.sessions].reverse().find((session) => !session.completedAt);
+  // v0.43: only the most recent session may control resume. An abandoned older
+  // session must never pull a learner backwards after newer work is completed.
+  const latestSession = journey.sessions[journey.sessions.length - 1];
+  const incompleteSession = latestSession && !latestSession.completedAt ? latestSession : undefined;
   if (incompleteSession) {
     const answered = journey.responses.filter((response) => response.sessionId === incompleteSession.sessionId).length;
     const screenBySessionType: Record<AssessmentSession["sessionType"], AppScreen> = {
@@ -5776,7 +5779,7 @@ function MechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer 
   function submit(optionId: string | null, notSure = false) {
     onAnswer(createAssessmentResponse(sessionId, question, optionId, Date.now() - startedAt, notSure), questionIndex === startingAssessmentQuestions.length - 1);
   }
-  return <Shell right="Starting assessment"><section className="mx-auto max-w-5xl px-6 pb-32 pt-8 sm:px-8 sm:pt-10 lg:pb-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-4 flex flex-wrap gap-2">{startingDomainOrder.map((domain, index) => <span key={domain} className={`rounded-full border px-3 py-1 text-xs ${index === domainIndex ? "border-[#5ED3F3]/35 bg-[#5ED3F3]/10 text-[#D9F8FF]" : index < domainIndex ? "border-white/10 bg-white/5 text-[#8D98A6]" : "border-white/5 text-[#596574]"}`}>{startingDomainLabels[domain]}</span>)}</div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Section {domainIndex + 1} of 4</p><h1 className="mt-3 text-3xl font-semibold">{startingDomainLabels[question.domain]}</h1><p className="mt-2 text-sm text-[#8D98A6]">Question {domainQuestionNumber} of {domainQuestionTotal} in this section</p></div><div className="text-right text-sm text-[#8D98A6]">Overall {questionIndex + 1} of {startingAssessmentQuestions.length}<br /><span className="text-xs">{answered} saved</span></div></div><div id="starting-question-card" className="scroll-mt-4"><Card className="p-5 sm:p-6">{question.dataTable && <NumericalDataTableView table={question.dataTable} />}{question.abstractVisual && <AbstractLogicalVisualPanel visual={question.abstractVisual} />}{question.verbalPassage && <VerbalPassagePanel passage={question.verbalPassage} />}<p className="text-lg leading-relaxed text-[#F4F6F8] sm:text-xl">{question.stem}</p><div className="mt-5 grid gap-3">{question.options.map((option) => <button key={option.optionId} onClick={() => setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div><div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#111418]/95 p-3 shadow-2xl backdrop-blur-xl lg:static lg:mt-6 lg:flex lg:items-center lg:justify-between lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"><div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mx-0 lg:w-full"><SecondaryButton onClick={() => submit(null, true)}>I'm not sure</SecondaryButton><PrimaryButton disabled={!selectedOptionId} onClick={() => submit(selectedOptionId, false)}>{questionIndex === startingAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question"}</PrimaryButton></div></div></Card></div></section></Shell>;
+  return <Shell right="Starting assessment"><section className="mx-auto max-w-5xl px-6 pb-32 pt-8 sm:px-8 sm:pt-10 lg:pb-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-4 flex flex-wrap gap-2">{startingDomainOrder.map((domain, index) => <span key={domain} className={`rounded-full border px-3 py-1 text-xs ${index === domainIndex ? "border-[#5ED3F3]/35 bg-[#5ED3F3]/10 text-[#D9F8FF]" : index < domainIndex ? "border-white/10 bg-white/5 text-[#8D98A6]" : "border-white/5 text-[#596574]"}`}>{startingDomainLabels[domain]}</span>)}</div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Section {domainIndex + 1} of 4</p><h1 className="mt-3 text-3xl font-semibold">{startingDomainLabels[question.domain]}</h1><p className="mt-2 text-sm text-[#8D98A6]">Question {domainQuestionNumber} of {domainQuestionTotal} in this section</p></div><div className="text-right text-sm text-[#8D98A6]">Overall {questionIndex + 1} of {startingAssessmentQuestions.length}<br /><span className="text-xs">{answered} saved</span></div></div><div id="starting-question-card" className="scroll-mt-4"><Card className="p-5 sm:p-6">{question.dataTable && <NumericalDataTableView table={question.dataTable} />}{question.abstractVisual && <AbstractLogicalVisualPanel visual={question.abstractVisual} />}{question.verbalPassage && <VerbalPassagePanel passage={question.verbalPassage} />}<p className="text-lg leading-relaxed text-[#F4F6F8] sm:text-xl">{question.stem}</p><div className="mt-5 grid gap-3">{question.options.map((option) => <button key={option.optionId} onClick={() => setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div><div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#111418]/95 p-3 shadow-2xl backdrop-blur-xl lg:static lg:mt-6 lg:flex lg:items-center lg:justify-between lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"><div className="mx-auto flex w-full max-w-5xl flex-row items-stretch gap-3 lg:mx-0"><SecondaryButton className="min-w-0 flex-1 px-3 sm:px-6" onClick={() => submit(null, true)}>I'm not sure</SecondaryButton><PrimaryButton className="min-w-0 flex-1 px-3 sm:px-6" disabled={!selectedOptionId} onClick={() => submit(selectedOptionId, false)}>{questionIndex === startingAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question"}</PrimaryButton></div></div></Card></div></section></Shell>;
 }
 function AssessmentCompleteScreen({ onView }: { onView: () => void }) { return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-6 py-16 sm:px-8"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Four domains reviewed</p><h1 className="mt-5 text-4xl font-semibold">Starting assessment complete</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">The Mentor has compared your early signals across mechanical, numerical, abstract & logical and verbal reasoning.</p><p className="mx-auto mt-4 max-w-xl text-[#C8D2DD]">Your first recommendation is ready.</p><div className="mt-10"><PrimaryButton onClick={onView}>View Mentor recommendation</PrimaryButton></div></Card></section></Shell>; }
 function WhyModal({ why, onClose }: { why?: WhyExplanation; onClose: () => void }) { if (!why) return null; const sections = [["Observation", why.observation], ["Evidence", why.evidence], ["Interpretation", why.interpretation], ["Recommendation", why.recommendation], ["Confidence", why.confidence]]; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-[32px] border border-white/10 bg-[#171C23] p-8 shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="text-xs uppercase tracking-[0.22em] text-[#6E7A88]">Why explanation</p><h2 className="mt-3 text-3xl font-semibold">{why.title}</h2></div><button onClick={onClose} className="rounded-lg px-3 py-2 text-sm text-[#8D98A6] hover:text-white">Close</button></div><div className="mt-8 space-y-6">{sections.map(([label, text]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{label}</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{text}</p></div>)}</div><p className="mt-6 text-sm text-[#6E7A88]">Vivalsa uses this explanation to keep recommendations transparent and evidence-based.</p></div></div>; }
@@ -11322,18 +11325,45 @@ export default function VivalsaPrototype() {
   function openGuidedPracticeIntro() { setShowWhy(false); setScreen("guided-hydraulic-practice-intro"); }
   function startGuidedPractice() { const session = createGuidedHydraulicPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("guided-hydraulic-practice-question"); }
   function handleGuidedAnswer(response: AssessmentResponse, final: boolean) {
-    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
-    if (final && activeSessionId) { const completed = completeGuidedHydraulicPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("guided-hydraulic-practice-debrief"); return; }
-    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+    // v0.43: make guided progression deterministic. Replace (rather than duplicate)
+    // any response for the same session/question, then derive the next question from
+    // saved responses. This prevents stale/double events from moving the UI backwards.
+    const retainedResponses = journey.responses.filter((item) => !(item.sessionId === response.sessionId && item.questionId === response.questionId));
+    const nextResponses = [...retainedResponses, response];
+    const withResponse: MvpGuestJourney = { ...journey, responses: nextResponses, updatedAt: now() };
+    if (final) {
+      const completed = completeGuidedHydraulicPractice(withResponse, response.sessionId);
+      updateJourney(completed);
+      setActiveSessionId(undefined);
+      setActiveQuestionIndex(0);
+      setScreen("guided-hydraulic-practice-debrief");
+      return;
+    }
+    updateJourney(withResponse);
+    const answeredInSession = nextResponses.filter((item) => item.sessionId === response.sessionId).length;
+    setActiveSessionId(response.sessionId);
+    setActiveQuestionIndex(Math.min(answeredInSession, guidedHydraulicPracticeQuestions.length - 1));
   }
   function continueAfterGuidedHydraulics() {
     setScreen("hydraulic-independent-practice-intro");
   }
   function startHydraulicIndependentPractice() { const session = createHydraulicIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("hydraulic-independent-practice-question"); }
   function handleHydraulicIndependentAnswer(response: AssessmentResponse, final: boolean) {
-    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
-    if (final && activeSessionId) { const completed = completeHydraulicIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("hydraulic-independent-practice-debrief"); return; }
-    updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
+    const retainedResponses = journey.responses.filter((item) => !(item.sessionId === response.sessionId && item.questionId === response.questionId));
+    const nextResponses = [...retainedResponses, response];
+    const withResponse: MvpGuestJourney = { ...journey, responses: nextResponses, updatedAt: now() };
+    if (final) {
+      const completed = completeHydraulicIndependentPractice(withResponse, response.sessionId);
+      updateJourney(completed);
+      setActiveSessionId(undefined);
+      setActiveQuestionIndex(0);
+      setScreen("hydraulic-independent-practice-debrief");
+      return;
+    }
+    updateJourney(withResponse);
+    const answeredInSession = nextResponses.filter((item) => item.sessionId === response.sessionId).length;
+    setActiveSessionId(response.sessionId);
+    setActiveQuestionIndex(Math.min(answeredInSession, hydraulicIndependentPracticeQuestions.length - 1));
   }
   function createPrototypeAccount(firstName: string, username: string) {
     const dashboardState = journey.dashboardState ? { ...journey.dashboardState, saveStatus: "username_account" as const, updatedAt: now() } : journey.dashboardState;
