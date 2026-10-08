@@ -6536,6 +6536,144 @@ function GearRatioWorkedExampleDiagram() {
   );
 }
 
+function LeverFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
+  const existingProgress = getCurrentLeverProgress(journey);
+  const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "lever_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const sectionTopRef = useRef<HTMLDivElement | null>(null);
+  const section = leverFundamentalsModule.sections[progress.currentSectionIndex];
+  const miniCheck = section.miniCheck;
+  const selectedCorrect = Boolean(miniCheck && selectedOptionId === miniCheck.correctOptionId);
+  const isFinalSection = progress.currentSectionIndex === leverFundamentalsModule.sections.length - 1;
+
+  useEffect(() => {
+    setSelectedOptionId(null);
+    setShowFeedback(false);
+    const frame = window.requestAnimationFrame(() => sectionTopRef.current?.scrollIntoView({ behavior: "auto", block: "start" }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [progress.currentSectionIndex]);
+
+  function persistProgress(nextProgress: ModuleProgress) {
+    const nextJourney = journey.moduleProgress.some((item) => item.moduleProgressId === nextProgress.moduleProgressId)
+      ? updateLeverProgress(journey, nextProgress)
+      : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() };
+    onSaveJourney(nextJourney);
+  }
+
+  function answerMiniCheck(optionId: string) {
+    if (!miniCheck || showFeedback) return;
+    setSelectedOptionId(optionId);
+    setShowFeedback(true);
+    const response: ModuleMiniCheckResponse = { questionId: miniCheck.questionId, selectedOptionId: optionId, correct: optionId === miniCheck.correctOptionId, answeredAt: now() };
+    persistProgress({ ...progress, miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response], updatedAt: now() });
+  }
+
+  function goNext() {
+    if (miniCheck && !showFeedback) return;
+    if (isFinalSection) { onComplete(); return; }
+    persistProgress({ ...progress, currentSectionIndex: Math.min(progress.currentSectionIndex + 1, leverFundamentalsModule.sections.length - 1), updatedAt: now() });
+  }
+
+  function goBack() {
+    persistProgress({ ...progress, currentSectionIndex: Math.max(progress.currentSectionIndex - 1, 0), updatedAt: now() });
+  }
+
+  const visibleOptions = miniCheck
+    ? (showFeedback ? miniCheck.options.filter((option) => option.optionId === selectedOptionId) : miniCheck.options)
+    : [];
+
+  return (
+    <Shell>
+      <section className="mx-auto max-w-5xl px-5 pb-24 pt-7 sm:px-8 sm:pb-12 sm:pt-12">
+        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5">
+          <div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / leverFundamentalsModule.sections.length) * 100}%` }} />
+        </div>
+
+        <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Lever Reasoning</p>
+            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{leverFundamentalsModule.title}</h1>
+            <p className="mt-2 text-sm text-[#9AA3B2] sm:text-base">{leverFundamentalsModule.subtitle}</p>
+          </div>
+          <Badge>Section {progress.currentSectionIndex + 1} of {leverFundamentalsModule.sections.length}</Badge>
+        </div>
+
+        <div ref={sectionTopRef} className="scroll-mt-4">
+          <Card className="p-5 sm:p-8">
+            <h2 className="text-2xl font-semibold sm:text-3xl">{section.title}</h2>
+            <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[#C8D2DD] sm:text-lg">{section.body}</p>
+
+
+            {section.keyPoint && (
+              <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5">
+                <p className="mt-3 text-lg font-medium text-[#D9F8FF]">{section.keyPoint}</p>
+              </div>
+            )}
+
+            {miniCheck && (
+              <div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5 sm:p-6">
+                <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div>
+                <p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p>
+                <div className="mt-5 grid gap-3">
+                  {visibleOptions.map((option) => {
+                    const selected = selectedOptionId === option.optionId;
+                    return (
+                      <button
+                        key={option.optionId}
+                        type="button"
+                        onClick={() => answerMiniCheck(option.optionId)}
+                        disabled={showFeedback}
+                        className={`rounded-xl border p-4 text-left transition ${selected ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"} ${showFeedback ? "cursor-default" : ""}`}
+                      >
+                        <span className="font-semibold text-[#D9F8FF]">{option.label}.</span>{" "}
+                        <span className="text-[#C8D2DD]">{option.text}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {showFeedback && (
+                  <div className={`mt-4 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}>
+                    <p className="font-medium">{selectedCorrect ? "Exactly" : "Not quite"}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p>
+                    <div className="mt-4 sm:hidden">
+                      <PrimaryButton className="w-full" onClick={goNext}>{isFinalSection ? "Complete module" : "Continue"}</PrimaryButton>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        </div>
+
+        <div className={`mt-5 rounded-2xl border border-white/10 bg-[#111418] p-3 sm:mt-7 sm:block sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 ${miniCheck ? "hidden" : "block"}`}>
+          <div className="mx-auto flex max-w-5xl gap-3">
+            <SecondaryButton className="flex-1 sm:flex-none" onClick={goBack}>Back</SecondaryButton>
+            <PrimaryButton className={`flex-1 sm:ml-auto sm:flex-none ${miniCheck && !showFeedback ? "cursor-not-allowed opacity-40" : ""}`} onClick={goNext} disabled={Boolean(miniCheck && !showFeedback)}>
+              {isFinalSection ? "Complete module" : "Continue"}
+            </PrimaryButton>
+          </div>
+        </div>
+
+      </section>
+    </Shell>
+  );
+}
+
+function LeverFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuidedLeverPractice }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuidedLeverPractice: () => void }) {
+  const rec = getCurrentRecommendation(journey);
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Lever Fundamentals complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">Vivalsa has updated your preparation journey. The next planned step is to check whether these lever concepts transfer into guided practice.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "high" ? "High confidence" : "Moderate confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuidedLeverPractice}>Begin lever practice</PrimaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+}
+
+
+
+function SaveProgressScreen({ journey, onCreateAccount, onContinue }: { journey: MvpGuestJourney; onCreateAccount: (firstName: string, username: string) => void; onContinue: () => void }) {
+  const [firstName, setFirstName] = useState("");
+  const [username, setUsername] = useState("");
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-5 py-10 sm:px-8 sm:py-16"><Card className="p-5 sm:p-8"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Progress saved</p><h1 className="mt-5 text-3xl font-semibold sm:text-4xl">Keep your progress on this device — or add cross-device continuity.</h1><p className="mt-5 leading-relaxed text-[#AAB4C0]">Your Aptesta progress is already saved locally. Creating an account is optional and lets you continue across devices.</p><div className="mt-5 inline-flex rounded-full border border-[#5ED3F3]/25 bg-[#5ED3F3]/10 px-4 py-2 text-sm font-medium text-[#D9F8FF]">No email address required</div><div className="mt-7 grid gap-4"><label className="text-sm text-[#AAB4C0]">First name<input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8]" /></label><label className="text-sm text-[#AAB4C0]">Username<input value={username} onChange={(e) => setUsername(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8]" autoCapitalize="none" /></label></div><div className="mt-7 flex flex-col gap-3 sm:flex-row"><PrimaryButton onClick={() => onCreateAccount(firstName, username)} disabled={!firstName.trim() || !username.trim()}>Create free account</PrimaryButton><SecondaryButton onClick={onContinue}>Continue without account</SecondaryButton></div></Card></section></Shell>;
+}
+
 function GearFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
   const existingProgress = getCurrentGearProgress(journey);
   const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "gear_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
