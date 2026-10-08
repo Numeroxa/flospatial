@@ -409,7 +409,8 @@ type Milestone = {
     | "guided_verbal_practice_completed"
     | "verbal_independent_practice_completed"
     | "verbal_assessment_completed"
-    | "verbal_pathway_completed";
+    | "verbal_pathway_completed"
+    | "core_pathways_completed";
   label: string;
   createdAt: string;
 };
@@ -3618,7 +3619,7 @@ function completePulleyAssessment(journey: MvpGuestJourney, sessionId: string): 
   const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — pulley pathway completed" : "Developing evidence — pulley pathway continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
   const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "pulley_assessment_completed", label: "Pulley Check completed", createdAt: now() };
   const pathwayMilestone: Milestone | undefined = summary.accuracy >= 0.8 ? { milestoneId: id("milestone"), type: "pulley_pathway_completed", label: "Pulley pathway completed", createdAt: now() } : undefined;
-  const newMilestones = [completedMilestone, ...(pathwayMilestone ? [pathwayMilestone] : []), ...(coreMilestone ? [coreMilestone] : [])];
+  const newMilestones = [completedMilestone, ...(pathwayMilestone ? [pathwayMilestone] : [])];
   const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Pulley Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Pulley Check: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
   const evidence: CompetencyEvidence = { evidenceId: id("evidence"), domain: "mechanical", subcompetency: "pulleys", attempted: summary.attempted, correct: summary.correct, accuracy: summary.accuracy, evidenceStrength: evidenceStrength(summary.attempted), sourceSessionId: sessionId, updatedAt: now() };
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
@@ -3739,7 +3740,7 @@ function completeLeverAssessment(journey: MvpGuestJourney, sessionId: string): M
   const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — lever pathway completed" : "Developing evidence — lever pathway continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
   const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "lever_assessment_completed", label: "Lever Check completed", createdAt: now() };
   const pathwayMilestone: Milestone | undefined = summary.accuracy >= 0.8 ? { milestoneId: id("milestone"), type: "lever_pathway_completed", label: "Lever pathway completed", createdAt: now() } : undefined;
-  const newMilestones = pathwayMilestone ? [completedMilestone, pathwayMilestone] : [completedMilestone];
+  const newMilestones = [completedMilestone, ...(pathwayMilestone ? [pathwayMilestone] : [])];
   const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Lever Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Lever Check: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
   const evidence: CompetencyEvidence = { evidenceId: id("evidence"), domain: "mechanical", subcompetency: "levers", attempted: summary.attempted, correct: summary.correct, accuracy: summary.accuracy, evidenceStrength: evidenceStrength(summary.attempted), sourceSessionId: sessionId, updatedAt: now() };
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
@@ -4284,7 +4285,7 @@ function completeVerbalAssessment(journey: MvpGuestJourney, sessionId: string): 
   const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "verbal_assessment_completed", label: "Verbal Comprehension Check completed", createdAt: now() };
   const pathwayMilestone: Milestone | undefined = balancedStrong ? { milestoneId: id("milestone"), type: "verbal_pathway_completed", label: "Verbal comprehension pathway completed", createdAt: now() } : undefined;
   const coreMilestone: Milestone | undefined = coreJourneyComplete ? { milestoneId: id("milestone"), type: "core_pathways_completed", label: "Four core aptitude pathways completed", createdAt: now() } : undefined;
-  const newMilestones = pathwayMilestone ? [completedMilestone, pathwayMilestone] : [completedMilestone];
+  const newMilestones = [completedMilestone, ...(pathwayMilestone ? [pathwayMilestone] : []), ...(coreMilestone ? [coreMilestone] : [])];
   const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Verbal Comprehension Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: evidenceText, interpretation: `${recommendationKind === "progression" ? "Progression recommendation" : "Strengthening recommendation"}: ${interpretation}`, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
   const evidence = verbalEvidenceFromSummary(summary, sessionId);
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
@@ -8263,7 +8264,9 @@ function InternalMechanicalCalibrationPilotScreen({ onBack }: { onBack: () => vo
       questionId: item.questionId,
       selectedOptionId: optionId,
       correct: optionId === item.correctOptionId,
+      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
+      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: item.misconceptionTags[optionId],
@@ -8422,7 +8425,9 @@ function InternalNumericalCalibrationPilotScreen({ onBack }: { onBack: () => voi
       questionId: item.questionId,
       selectedOptionId: optionId,
       correct,
+      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
+      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: item.misconceptionTags[optionId] ?? (correct ? "correct" : "incorrect"),
@@ -8441,7 +8446,9 @@ function InternalNumericalCalibrationPilotScreen({ onBack }: { onBack: () => voi
       questionId: item.questionId,
       enteredValue: value,
       correct,
+      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
+      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: correct ? "correct" : "numeric_entry_incorrect",
@@ -8585,7 +8592,9 @@ function InternalAbstractLogicalCalibrationPilotScreen({ onBack }: { onBack: () 
       questionId: item.questionId,
       selectedOptionId: optionId,
       correct,
+      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
+      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: item.misconceptionTags[optionId] ?? (correct ? "correct" : "incorrect"),
@@ -8682,7 +8691,9 @@ function InternalVerbalCalibrationPilotScreen({ onBack }: { onBack: () => void }
       questionId: item.questionId,
       selectedOptionId: optionId,
       correct,
+      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
+      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: item.misconceptionTags[optionId] ?? (correct ? "correct" : "incorrect"),
@@ -8772,7 +8783,9 @@ function InternalTechnicalPilotScreen({ onBack, onOpenEmpiricalPilot }: { onBack
       blueprintId: item.blueprintId,
       selectedResponse: responseValue,
       correct,
+      firstSelectionTimeMs: Math.max(0, performance.now() - questionStartedAtRef.current),
       selectionTimeMs: Math.max(0, performance.now() - questionStartedAtRef.current),
+      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       viewportWidth: typeof window === "undefined" ? 0 : window.innerWidth,
@@ -9076,7 +9089,7 @@ function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () =
     { label: "Local save verified", value: storedRun ? "Saved" : "Check", pass: Boolean(storedRun) },
   ];
   const allPass = integrityChecks.every((check) => check.pass);
-  return <Shell right="Empirical pilot debrief"><section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Empirical pilot · completed</p><h1 className="mt-3 text-4xl font-semibold">{allPass ? "Empirical run captured cleanly" : "Review data-capture checks"}</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">No score is displayed here. A single participant is one observation per item on this form; empirical interpretation should occur only after pooled, first-exposure data are available.</p></div><Badge>{formId}</Badge></div><Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Integrity checks</div><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{integrityChecks.map((check) => <div key={check.label} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="flex items-start justify-between gap-3"><div className="text-sm text-[#AAB4C0]">{check.label}</div><div className={check.pass ? "text-[#7FE0B8]" : "text-[#FFB3B3]"}>{check.pass ? "Pass" : "Check"}</div></div><div className="mt-2 text-xl font-semibold">{check.value}</div></div>)}</div></Card><Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Run classification</div><div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Participant</div><div className="mt-1 font-semibold">{participantCode.trim()}</div></div><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Tester type</div><div className="mt-1 font-semibold">{testerType.replaceAll("_", " ")}</div></div><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Exposure</div><div className="mt-1 font-semibold">{priorExposure === "first_exposure" ? "First exposure" : "Seen / unsure"}</div></div></div><p className="mt-5 text-sm leading-relaxed text-[#AAB4C0]">For the first exploratory analysis, prioritise clean first-exposure runs and analyse target-like candidates separately from convenience or internal testers. Do not mix repeated exposure into response-time estimates.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">{completedRunId && <PrimaryButton onClick={() => downloadEmpiricalPilotRunCsv(completedRunId)}>Export this run CSV</PrimaryButton>}<SecondaryButton onClick={downloadEmpiricalPilotCsv}>Export all local runs</SecondaryButton><SecondaryButton onClick={onOpenAnalysis}>Open pooled analysis</SecondaryButton><SecondaryButton onClick={() => setPhase("intro")}>Back to pilot start</SecondaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton></div></Card></section></Shell>;
+  return <Shell right="Empirical pilot debrief"><section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Empirical pilot · completed</p><h1 className="mt-3 text-4xl font-semibold">{allPass ? "Empirical run captured cleanly" : "Review data-capture checks"}</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">No score is displayed here. A single participant is one observation per item on this form; empirical interpretation should occur only after pooled, first-exposure data are available.</p></div><Badge>{formId}</Badge></div><Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Integrity checks</div><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{integrityChecks.map((check) => <div key={check.label} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="flex items-start justify-between gap-3"><div className="text-sm text-[#AAB4C0]">{check.label}</div><div className={check.pass ? "text-[#7FE0B8]" : "text-[#FFB3B3]"}>{check.pass ? "Pass" : "Check"}</div></div><div className="mt-2 text-xl font-semibold">{check.value}</div></div>)}</div></Card><Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Run classification</div><div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Participant</div><div className="mt-1 font-semibold">{participantCode.trim()}</div></div><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Tester type</div><div className="mt-1 font-semibold">{testerType.split("_").join(" ")}</div></div><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Exposure</div><div className="mt-1 font-semibold">{priorExposure === "first_exposure" ? "First exposure" : "Seen / unsure"}</div></div></div><p className="mt-5 text-sm leading-relaxed text-[#AAB4C0]">For the first exploratory analysis, prioritise clean first-exposure runs and analyse target-like candidates separately from convenience or internal testers. Do not mix repeated exposure into response-time estimates.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">{completedRunId && <PrimaryButton onClick={() => downloadEmpiricalPilotRunCsv(completedRunId)}>Export this run CSV</PrimaryButton>}<SecondaryButton onClick={downloadEmpiricalPilotCsv}>Export all local runs</SecondaryButton><SecondaryButton onClick={onOpenAnalysis}>Open pooled analysis</SecondaryButton><SecondaryButton onClick={() => setPhase("intro")}>Back to pilot start</SecondaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton></div></Card></section></Shell>;
 }
 
 
