@@ -409,8 +409,7 @@ type Milestone = {
     | "guided_verbal_practice_completed"
     | "verbal_independent_practice_completed"
     | "verbal_assessment_completed"
-    | "verbal_pathway_completed"
-    | "core_pathways_completed";
+    | "verbal_pathway_completed";
   label: string;
   createdAt: string;
 };
@@ -538,7 +537,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Aptesta v0.44 Content & Fidelity";
+const BUILD_LABEL = "Aptesta Mechanical Calibration v0.7.3";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -2201,29 +2200,28 @@ const mixedMechanicalAssessmentQuestionPool: MvpQuestion[] = [
   makeMixedAssessmentQuestion("MMA-GEAR-005", "gears", "idler_ratio", "A 20-tooth driver turns through an idler and drives a 60-tooth output gear. Compared with the driver, the output turns:", ["In the same direction at one-third the speed", "In the opposite direction at three times the speed", "In the same direction at three times the speed", "In the opposite direction at the same speed"], "A", "Two contacts make the output turn in the same direction as the driver. The 60-tooth output turns at one-third the driver speed."),
   makeMixedAssessmentQuestion("MMA-PULL-005", "pulleys", "distance_tradeoff", "The load rises 0.5 m in an ideal system with four supporting rope sections. How much rope must be pulled?", ["2 m", "0.5 m", "0.125 m", "4 m"], "A", "A four-to-one force advantage requires four times the rope movement distance: 2 m."),
   makeMixedAssessmentQuestion("MMA-HYD-005", "hydraulics", "distance_tradeoff", "A hydraulic system provides a four-to-one force advantage. Ideally, how far must the input piston move compared with the output piston?", ["Four times as far", "One-quarter as far", "The same distance", "Distance is unrelated to force advantage"], "A", "A four-to-one force advantage requires the input side to move about four times the output distance."),
-  makeMixedAssessmentQuestion("MMA-PULL-006", "pulleys", "support_relationship", "Study the pulley arrangement shown. What determines the ideal mechanical advantage of this system?", ["The three supporting rope sections", "The angle of the drawing", "The colour of the rope", "The number of fixed supports above"], "A", "Ideal mechanical advantage depends on the rope sections directly supporting the moving load, not the diagram orientation."),
+  makeMixedAssessmentQuestion("MMA-PULL-006", "pulleys", "support_relationship", "The diagram is unfamiliar, but three rope sections directly support the moving block. What determines the ideal mechanical advantage?", ["The three supporting rope sections", "The angle of the drawing", "The colour of the rope", "The number of fixed supports above"], "A", "Ideal mechanical advantage depends on the rope sections directly supporting the moving load, not the diagram orientation."),
   makeMixedAssessmentQuestion("MMA-LEV-006", "levers", "integrated", "A 400 N load acts 0.75 m from the fulcrum. A 100 N effort is used on the other side. How far from the fulcrum must the effort act to balance?", ["3 m", "1.5 m", "0.75 m", "4 m"], "A", "The load moment is 400 × 0.75 = 300 N·m. A 100 N effort therefore needs a 3 m arm."),
   makeMixedAssessmentQuestion("MMA-HYD-006", "hydraulics", "equal_area", "The two pistons have equal area in an ideal sealed hydraulic system. If the input force is 300 N, what output force is expected?", ["300 N", "600 N", "150 N", "Zero"], "A", "Equal piston areas at the same pressure produce equal forces."),
   makeMixedAssessmentQuestion("MMA-GEAR-006", "gears", "integrated", "A 15-tooth gear drives two idlers and then a 45-tooth output gear. Compared with the driver, the output turns:", ["In the opposite direction at one-third the speed", "In the same direction at three times the speed", "In the same direction at one-third the speed", "In the opposite direction at three times the speed"], "A", "Three direct contacts reverse the final direction. The 45-tooth output turns at one-third the speed of the 15-tooth driver."),
 ];
 
 const mixedMechanicalAssessmentCoreQuestionIds = new Set([
-  // v0.44: preserve foundation anchors but increase the proportion of multi-step items.
   "MMA-HYD-001",
-  "MMA-HYD-003",
+  "MMA-HYD-002",
   "MMA-HYD-004",
   "MMA-HYD-005",
   "MMA-GEAR-001",
+  "MMA-GEAR-003",
   "MMA-GEAR-004",
   "MMA-GEAR-005",
-  "MMA-GEAR-006",
+  "MMA-PULL-001",
+  "MMA-PULL-002",
   "MMA-PULL-003",
-  "MMA-PULL-004",
   "MMA-PULL-005",
-  "MMA-PULL-006",
   "MMA-LEV-001",
+  "MMA-LEV-002",
   "MMA-LEV-004",
-  "MMA-LEV-005",
   "MMA-LEV-006",
 ]);
 
@@ -2336,19 +2334,18 @@ const numericalIndependentCoreQuestionIds = new Set([
 const numericalIndependentPracticeQuestions: MvpQuestion[] = numericalIndependentPracticeQuestionPool.filter((question) => numericalIndependentCoreQuestionIds.has(question.questionId));
 
 const numericalAssessmentQuestions: MvpQuestion[] = [
-  // v0.44 assessment mix: foundation anchors + interpretation + multi-stage reasoning.
   makeNumericalQuestion("NUM-A-001", "numerical_assessment", "tables_data", "table_percentage", "Which station had the highest completion rate?", ["Station C", "Station A", "Station B", "Station D"], "A", "A = 42/50 = 84%; B = 54/72 = 75%; C = 38/40 = 95%; D = 63/75 = 84%.", "applied", undefined, {"headers": ["Station", "Assigned", "Completed"], "rows": [["A", "50", "42"], ["B", "72", "54"], ["C", "40", "38"], ["D", "75", "63"]]}),
-  makeNumericalQuestion("NUM-A-003", "numerical_assessment", "rates_proportion", "unit_rate", "A vehicle travels 270 km in 4.5 hours. What is its average speed?", ["60 km/h", "55 km/h", "65 km/h", "75 km/h"], "A", "270 ÷ 4.5 = 60 km/h.", "applied"),
-  makeNumericalQuestion("NUM-A-007", "numerical_assessment", "percentages_ratios", "percentage_decrease", "A value of 150 is reduced by 20%. What remains?", ["120", "130", "125", "100"], "A", "20% of 150 is 30, leaving 120.", "applied"),
-  makeNumericalQuestion("NUM-A-010", "numerical_assessment", "percentages_ratios", "ratio_sharing", "Two quantities are in the ratio 4:7 and total 99. What is the smaller quantity?", ["36", "63", "44", "55"], "A", "There are 11 parts, each worth 9. The smaller quantity is 4 × 9 = 36.", "applied"),
-  makeNumericalQuestion("NUM-A-011", "numerical_assessment", "rates_proportion", "work_rate", "Three workers complete a job in 10 hours. At the same productivity, how long would five workers take?", ["6 hours", "5 hours", "8 hours", "15 hours"], "A", "The job is 30 worker-hours. 30 ÷ 5 = 6 hours.", "applied"),
+  makeNumericalQuestion("NUM-A-002", "numerical_assessment", "arithmetic_estimation", "basic_arithmetic", "What is 725 + 386?", ["1,111", "1,101", "1,121", "1,211"], "A", "725 + 386 = 1,111.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-003", "numerical_assessment", "rates_proportion", "unit_rate", "A vehicle travels 270 km in 4.5 hours. What is its average speed?", ["60 km/h", "55 km/h", "65 km/h", "75 km/h"], "A", "270 ÷ 4.5 = 60 km/h.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-004", "numerical_assessment", "percentages_ratios", "percentage_of_amount", "What is 18% of 250?", ["45", "40", "50", "36"], "A", "10% is 25, 8% is 20, total 45.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-005", "numerical_assessment", "arithmetic_estimation", "division", "What is 1,440 ÷ 16?", ["90", "80", "96", "100"], "A", "16 × 90 = 1,440.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-006", "numerical_assessment", "tables_data", "table_difference", "How many more units were available than required for Item B?", ["18", "12", "24", "102"], "A", "120 − 102 = 18.", "applied", undefined, {"headers": ["Item", "Required", "Available"], "rows": [["A", "84", "96"], ["B", "102", "120"], ["C", "75", "81"], ["D", "110", "104"]]}),
+  makeNumericalQuestion("NUM-A-007", "numerical_assessment", "percentages_ratios", "percentage_decrease", "A value of 150 is reduced by 20%. What remains?", ["120", "130", "125", "100"], "A", "20% of 150 is 30, leaving 120.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-008", "numerical_assessment", "rates_proportion", "direct_proportion", "Eight inspections take 5 minutes. At the same rate, how long do 24 inspections take?", ["15 min", "10 min", "12 min", "18 min"], "A", "24 is three times 8, so the time is three times 5 = 15 minutes.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-009", "numerical_assessment", "arithmetic_estimation", "estimation", "Which is the closest estimate for 31.2 × 9.8?", ["300", "200", "400", "30"], "A", "31.2 is about 30 and 9.8 is about 10, giving about 300.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-010", "numerical_assessment", "percentages_ratios", "ratio_sharing", "Two quantities are in the ratio 4:7 and total 99. What is the smaller quantity?", ["36", "63", "44", "55"], "A", "There are 11 parts, each worth 9. The smaller quantity is 4 × 9 = 36.", "applied", undefined, undefined),
+  makeNumericalQuestion("NUM-A-011", "numerical_assessment", "rates_proportion", "work_rate", "Three workers complete a job in 10 hours. At the same productivity, how long would five workers take?", ["6 hours", "5 hours", "8 hours", "15 hours"], "A", "The job is 30 worker-hours. 30 ÷ 5 = 6 hours.", "applied", undefined, undefined),
   makeNumericalQuestion("NUM-A-012", "numerical_assessment", "tables_data", "table_average", "What is the average of the four recorded values?", ["24", "23", "25", "26"], "A", "(18 + 22 + 26 + 30) ÷ 4 = 24.", "applied", undefined, {"headers": ["Record", "Value"], "rows": [["1", "18"], ["2", "22"], ["3", "26"], ["4", "30"]]}),
-  makeNumericalQuestion("NUM-A-013", "numerical_assessment", "percentages_ratios", "discount_then_tax", "A tool is marked at $240. It is discounted by 15%, then 10% GST is added to the discounted price. What is the final price?", ["$224.40", "$204.00", "$228.00", "$249.60"], "A", "After the discount: $240 × 0.85 = $204. Then $204 × 1.10 = $224.40.", "applied"),
-  makeNumericalQuestion("NUM-A-014", "numerical_assessment", "arithmetic_estimation", "missing_value_average", "Five inspection times have an average of 18 minutes. Four times are 14, 16, 19 and 19 minutes. What is the fifth time?", ["22 min", "18 min", "20 min", "24 min"], "A", "Five values averaging 18 total 90. The known four total 68, leaving 22.", "applied"),
-  makeNumericalQuestion("NUM-A-015", "numerical_assessment", "tables_data", "two_way_table", "Of all staff who have NOT completed the training, what percentage work the night shift?", ["40%", "20%", "30%", "60%"], "A", "There are 15 staff who have not completed training; 6 are night shift. 6 ÷ 15 = 40%.", "applied", undefined, {"headers": ["Shift", "Completed", "Not completed"], "rows": [["Day", "36", "9"], ["Night", "24", "6"]]}),
-  makeNumericalQuestion("NUM-A-016", "numerical_assessment", "rates_proportion", "flow_rate", "A pump transfers 840 litres in 7 minutes at a constant rate. What is the average flow rate?", ["120 L/min", "140 L/min", "117 L/min", "6,720 L/min"], "A", "840 ÷ 7 = 120 L/min.", "applied"),
-  makeNumericalQuestion("NUM-A-017", "numerical_assessment", "tables_data", "comparative_percentage", "Team B completed what percentage more inspections than Team C?", ["25%", "12%", "20%", "80%"], "A", "The difference is 12. Relative to Team C, 12 ÷ 48 = 25%.", "applied", undefined, {"headers": ["Team", "Inspections"], "rows": [["A", "40"], ["B", "60"], ["C", "48"]]}),
-  makeNumericalQuestion("NUM-A-018", "numerical_assessment", "percentages_ratios", "measurement_conversion", "A hose is 2.4 m long and an extension adds 65 cm. What is the total length in centimetres?", ["305 cm", "89 cm", "240 cm", "6,500 cm"], "A", "2.4 m = 240 cm; 240 + 65 = 305 cm.", "applied"),
 ];
 
 
@@ -2444,16 +2441,16 @@ const abstractLogicalIndependentPracticeQuestions: MvpQuestion[] =
 const abstractLogicalAssessmentQuestions: MvpQuestion[] = [
   makeAbstractLogicalQuestion("ABS-A-001", "pattern_sequences", "rotation", "Which symbol comes next?", ["→", "↓", "←", "↑"], "A", "The arrow rotates 90° clockwise each step.", undefined, {"kind": "sequence", "rows": [["→", "↓", "←", "↑", "?"]]}),
   makeAbstractLogicalQuestion("ABS-A-002", "matrices_rules", "combination_rule", "What belongs in the missing cell?", ["■○", "■■", "○○", "■"], "A", "The third cell combines the first two cells in each row.", undefined, {"kind": "matrix", "rows": [["▲", "◆", "▲◆"], ["■", "○", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-A-003", "classification_relationships", "relationship_exception", "Which pair follows a different transformation from the other three?", ["▲ becomes △", "■ becomes □", "● becomes ○", "◆ becomes ◆"], "D", "In the first three pairs a filled shape becomes its outline; the fourth remains filled."),
-  makeAbstractLogicalQuestion("ABS-A-004", "deductive_reasoning", "syllogism", "All breathing apparatus units are equipment. No equipment is a person. What must follow?", ["No breathing apparatus unit is a person", "All people are equipment", "Some equipment is a person", "All equipment is breathing apparatus"], "A", "Every breathing apparatus unit is equipment, and no equipment is a person."),
+  makeAbstractLogicalQuestion("ABS-A-003", "classification_relationships", "relationship_exception", "Which pair follows a different transformation from the other three?", ["▲ becomes △", "■ becomes □", "● becomes ○", "◆ becomes ◆"], "D", "In the first three pairs, a filled shape becomes the outline version of the same shape. In the fourth pair, the shape remains filled.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-A-004", "deductive_reasoning", "syllogism", "All breathing apparatus units are equipment. No equipment is a person. What must follow?", ["No breathing apparatus unit is a person", "All people are equipment", "Some equipment is a person", "All equipment is breathing apparatus"], "A", "Every breathing apparatus unit is equipment, and no equipment is a person.", undefined, undefined),
+  makeAbstractLogicalQuestion("ABS-A-005", "pattern_sequences", "count_progression", "What comes next?", ["●●●●●", "●●●●", "●●●●●●", "●"], "A", "The count increases by one each step.", undefined, {"kind": "sequence", "rows": [["●", "●●", "●●●", "●●●●", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-006", "matrices_rules", "row_progression", "What belongs in the missing cell?", ["◇◇◇", "◇◇", "◇◇◇◇", "◆◆◆"], "A", "Each row progresses from one to two to three of the same symbol.", undefined, {"kind": "matrix", "rows": [["▲", "▲▲", "▲▲▲"], ["◇", "◇◇", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-007", "classification_relationships", "analogy", "The example changes a filled shape to the outline version of the same shape. Apply the same rule to ◆.", ["◇", "■", "▲", "◆"], "A", "The rule changes filled to outline, so ◆ becomes ◇.", undefined, {"kind": "matrix", "caption": "Example on the first row. Apply the same transformation on the second row.", "rows": [["●", "becomes", "○"], ["◆", "becomes", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-008", "deductive_reasoning", "ordering", "Rina is before Sam. Tariq is after Sam. Who must be last?", ["Tariq", "Sam", "Rina", "Cannot be known"], "A", "The order must be Rina, Sam, Tariq.", undefined, undefined),
   makeAbstractLogicalQuestion("ABS-A-009", "pattern_sequences", "two_rule_sequence", "What comes next?", ["○○○○○○", "▲▲▲▲▲▲", "○○○○○", "▲▲▲▲▲"], "A", "Shape alternates and count increases by one, so the sixth term is six circles.", undefined, {"kind": "sequence", "rows": [["▲", "○○", "▲▲▲", "○○○○", "▲▲▲▲▲", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-A-012", "deductive_reasoning", "conditional", "If a test is complete, a result is recorded. No result has been recorded. What must follow?", ["The test is not complete", "The test is complete", "The result was deleted", "Nothing can be concluded"], "A", "A completed test would produce a result; no result means the test is not complete."),
-  makeAbstractLogicalQuestion("ABS-A-013", "pattern_sequences", "alternating_rotation", "Which symbol comes next?", ["↑", "←", "↓", "→"], "A", "The direction changes by +90°, then +180°, repeating: ↑ → ↓ → ← → ↑.", undefined, {"kind": "sequence", "rows": [["↑", "→", "←", "↓", "↑", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-A-014", "matrices_rules", "dual_feature_matrix", "Each row follows the same two rules. What belongs in the missing cell?", ["↑ ●●", "→ ●●", "↑ ●●●", "← ●●"], "A", "Across each row the arrow rotates 90° clockwise while the dot count increases by one.", undefined, {"kind": "matrix", "rows": [["→ ●", "↓ ●●", "← ●●●"], ["↓ ●●●", "← ●", "↑ ●●"], ["← ●", "↑ ●●", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-A-015", "classification_relationships", "analogy_discovery", "A changes to B. Apply the same relationship to C.", ["◇", "■", "▲", "◆"], "A", "The relationship changes a filled shape to the outline version of the same shape.", undefined, {"kind": "matrix", "rows": [["●", "→", "○"], ["◆", "→", "?"]]}),
-  makeAbstractLogicalQuestion("ABS-A-016", "deductive_reasoning", "multi_constraint_ordering", "Four candidates—J, K, L and M—finish in different positions. J is before K. L is after K. M is before J. Who must finish last?", ["L", "K", "J", "M"], "A", "The constraints force M before J before K before L."),
-  makeAbstractLogicalQuestion("ABS-A-017", "deductive_reasoning", "must_could_cannot", "Every red token is square. Some square tokens are large. Which statement must be true?", ["Every red token is square", "Some red tokens are large", "Every large token is red", "No square token is small"], "A", "Only the first statement is guaranteed by the information given."),
-  makeAbstractLogicalQuestion("ABS-A-018", "matrices_rules", "integrated_matrix", "Two features change across the matrix. What belongs in the missing cell?", ["↑ ●●", "→ ●●", "↑ ●●●", "↓ ●"], "A", "Across rows and columns the arrow advances 90° and the dot count cycles 1, 2, 3.", undefined, {"kind": "matrix", "rows": [["→ ●", "↓ ●●", "← ●●●"], ["↓ ●●", "← ●●●", "↑ ●"], ["← ●●●", "↑ ●", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-010", "matrices_rules", "column_progression", "What belongs in the missing cell?", ["■■■", "■■", "■■■■", "□□□"], "A", "Each column increases from one to two to three symbols.", undefined, {"kind": "matrix", "rows": [["○", "■"], ["○○", "■■"], ["○○○", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-011", "classification_relationships", "shared_property", "Which option belongs with the group?", ["⬡", "○", "△", "□"], "A", "The displayed group contains shapes with six sides, so the hexagon belongs.", undefined, {"kind": "set", "rows": [["⬢", "⬡", "⌬", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-A-012", "deductive_reasoning", "conditional", "If a test is complete, a result is recorded. No result has been recorded. What must follow?", ["The test is not complete", "The test is complete", "The result was deleted", "Nothing can be concluded"], "A", "Under the stated rule, a completed test would produce a recorded result. No result means the test is not complete.", undefined, undefined),
 ].map((question) => ({ ...question, sessionType: "abstract_logical_assessment" as const }));
 
 
@@ -2551,18 +2548,18 @@ const verbalIndependentPracticeQuestions: MvpQuestion[] =
   });
 
 const verbalAssessmentQuestions: MvpQuestion[] = [
+  makeVerbalQuestion("VER-A-001", "explicit_information", "stated_detail", { title: "Assessment notice", text: "Candidates must bring photo identification and arrive by 07:45. Lockers are available for phones and bags. The written assessment begins at 08:15." }, "What time must candidates arrive by?", ["07:45", "08:15", "07:15", "08:45"], "A", "The passage explicitly states an arrival time of 07:45.", undefined, "verbal_assessment"),
   makeVerbalQuestion("VER-A-002", "inference_context", "meaning_in_context", { title: "Review", text: "The instructions were concise: they covered every essential step without unnecessary detail." }, "What does concise most nearly mean?", ["Brief but complete", "Confusing and incomplete", "Highly technical", "Repeated several times"], "A", "The context defines concise as covering what matters without unnecessary detail.", undefined, "verbal_assessment"),
   makeVerbalQuestion("VER-A-003", "instructions_sequence", "conditional_instruction", { title: "Entry procedure", text: "Use the east entrance before 18:00. After 18:00, the east entrance is locked and all visitors must use the staffed west entrance." }, "A visitor arrives at 18:20. Which entrance should they use?", ["The west entrance", "The east entrance", "Either entrance", "No entrance is available"], "A", "After 18:00 all visitors must use the staffed west entrance.", undefined, "verbal_assessment"),
   makeVerbalQuestion("VER-A-004", "assumptions_conclusions", "must_follow", { title: "Training rule", text: "Everyone who operates the lifting platform has completed platform training. Luca operates the lifting platform." }, "What must follow?", ["Luca completed platform training", "Luca trains all other operators", "Luca has never made an error", "Platform training guarantees promotion"], "A", "The universal rule applies directly to Luca.", undefined, "verbal_assessment"),
   makeVerbalQuestion("VER-A-005", "explicit_information", "main_point", { title: "Service update", text: "The online practice system will be unavailable from 22:00 Saturday until 02:00 Sunday for maintenance. Saved progress will not be affected." }, "What is the main purpose of the update?", ["To warn of a temporary service interruption", "To say all progress will be deleted", "To announce a new assessment", "To change candidate passwords"], "A", "The update mainly announces a temporary maintenance outage.", undefined, "verbal_assessment"),
   makeVerbalQuestion("VER-A-006", "inference_context", "supported_inference", { title: "Equipment record", text: "A pressure gauge failed its morning check and was marked out of service. A second gauge passed the same check and was fitted to the unit before training began." }, "What can reasonably be inferred?", ["The failed gauge was not used for the training session", "Both gauges failed the check", "Training began before any gauge was fitted", "The second gauge was also marked out of service"], "A", "A passing replacement was fitted before training, supporting that the failed gauge was not used.", undefined, "verbal_assessment"),
+  makeVerbalQuestion("VER-A-007", "instructions_sequence", "ordered_steps", { title: "Sample procedure", text: "Label the container before collecting the sample. Seal it immediately after collection. Then record the time on the form." }, "What should happen immediately after the sample is collected?", ["Seal the container", "Label the container", "Record the time before sealing", "Discard the form"], "A", "The instruction says to seal the container immediately after collection.", undefined, "verbal_assessment"),
   makeVerbalQuestion("VER-A-008", "assumptions_conclusions", "scope_limit", { title: "Pilot study", text: "In a pilot involving 25 candidates, 19 completed more questions after the interface was simplified." }, "Which conclusion is best supported?", ["Most candidates in the pilot completed more questions after the change", "The change will help every future candidate", "The interface was the only factor affecting performance", "All 25 candidates improved"], "A", "The evidence supports a statement about most participants in this pilot only.", undefined, "verbal_assessment"),
+  makeVerbalQuestion("VER-A-009", "explicit_information", "stated_exception", { title: "Access hours", text: "The practice room closes at 20:00 Monday to Thursday and at 18:00 on Friday. It is closed on public holidays." }, "When does the room close on Friday?", ["18:00", "20:00", "It is always closed", "22:00"], "A", "Friday has a stated closing time of 18:00.", undefined, "verbal_assessment"),
+  makeVerbalQuestion("VER-A-010", "inference_context", "author_attitude", { title: "Manager note", text: "The revised briefing is clearer than the old one, but candidates still miss the final reporting instruction. That section should be rewritten before the next intake." }, "Which statement best reflects the manager's view?", ["The revision is an improvement but one section still needs work", "The old briefing should be restored unchanged", "The revised briefing has no problems", "The final reporting instruction should be removed"], "A", "The writer sees improvement but identifies one remaining problem.", undefined, "verbal_assessment"),
   makeVerbalQuestion("VER-A-011", "instructions_sequence", "priority_rule", { title: "Fault response", text: "If the warning light appears, stop the machine. If there is also smoke or a burning smell, move away and raise the alarm rather than attempting a restart." }, "The warning light appears and smoke is visible. What should the operator do?", ["Move away and raise the alarm", "Restart the machine immediately", "Ignore the smoke and continue", "Wait beside the machine for ten minutes"], "A", "The smoke condition triggers the stronger instruction to move away and raise the alarm.", undefined, "verbal_assessment"),
   makeVerbalQuestion("VER-A-012", "assumptions_conclusions", "unsupported_assumption", { title: "Result summary", text: "Candidates who attended the optional workshop had a higher average score than candidates who did not attend." }, "Which conclusion is not justified by this information alone?", ["The workshop caused the higher scores", "The workshop group had a higher average score", "The two groups had different average scores", "Attendance was optional"], "A", "An observed difference does not by itself prove that the workshop caused it.", undefined, "verbal_assessment"),
-  makeVerbalQuestion("VER-A-013", "assumptions_conclusions", "claim_vs_evidence", { title: "Daily inspection reminders", text: "A depot introduced an automated reminder for four weeks. In the four weeks before the reminder, 46 daily vehicle inspections were recorded as late. During the four-week trial, 29 were late. Vehicle and inspection numbers were similar, but no other changes were formally tracked." }, "Which claim is supported by the information?", ["Late inspections were less common during the trial than in the preceding four weeks", "The reminder caused the reduction", "The reminder will work at every depot", "No other factor could have affected the result"], "A", "The observed periods can be compared, but the information does not establish causation or generalisability.", undefined, "verbal_assessment"),
-  makeVerbalQuestion("VER-A-014", "instructions_sequence", "policy_interpretation", { title: "Private vehicles in the loading yard", text: "Private vehicles may enter only to load or unload work equipment. The driver must remain with the vehicle. The stay may not exceed 10 minutes. Between 07:00 and 09:00 the yard is restricted to fleet vehicles only." }, "Which action is permitted?", ["At 13:30, collect work equipment, remain with the vehicle and leave after seven minutes", "At 08:15, collect equipment for five minutes while remaining with the vehicle", "At 14:00, park for eight minutes while attending a meeting inside", "At 16:00, unload equipment and remain for 15 minutes"], "A", "Only the first option satisfies purpose, time-of-day, driver-presence and duration requirements.", undefined, "verbal_assessment"),
-  makeVerbalQuestion("VER-A-015", "inference_context", "reference_resolution", { title: "Incident note", text: "The mechanic inspected the portable generator after it failed to start. The generator was then tagged out of service until a replacement fuel line could be fitted. This action prevented crews from using the generator during the afternoon exercise." }, "What does ‘This action’ refer to?", ["Tagging the generator out of service", "Inspecting the generator", "The generator failing to start", "Fitting the replacement fuel line"], "A", "The phrase refers to the immediately preceding action: tagging the generator out of service.", undefined, "verbal_assessment"),
-  makeVerbalQuestion("VER-A-016", "assumptions_conclusions", "multi_paragraph_synthesis", { title: "Training attendance review", text: "District attendance rose from 68% to 86% after monthly safety briefings moved to the 15-minute overlap between day and night shifts. Most stations exceeded 80%, but Station 4 remained at 61%. Station 4's roster provides day/night overlap on only two days each week, so it will trial a different briefing time next month." }, "Which conclusion is best supported?", ["The overlap-time approach was associated with higher district attendance, but Station 4 may need timing better suited to its roster", "The change improved attendance at every station", "Station 4 staff are less interested in safety briefings", "Station 4 should stop using shift overlap for all training"], "A", "The evidence supports overall improvement plus a specific roster-related limitation at Station 4, not the broader claims.", undefined, "verbal_assessment"),
 ];
 
 
@@ -2710,7 +2707,7 @@ For movement questions, trace the input movement through the fluid to the output
     {
       sectionId: "hyd-fund-008",
       title: "Take this with you",
-      body: "You now have a method for recognising and solving basic hydraulic pressure questions. Next, Vivalsa will coach you through three examples before asking you to apply the method independently.",
+      body: "You now have a method for recognising and solving basic hydraulic pressure questions. Next, Aptesta will coach you through three examples before asking you to apply the method independently.",
       keyPoint: "Same pressure. Bigger area. Bigger force.",
     },
   ],
@@ -2790,7 +2787,7 @@ const gearFundamentalsModule: LearningModule = {
     {
       sectionId: "gear-fund-010",
       title: "Take this with you",
-      body: "You now have the complete method needed for the first Vivalsa gear practice sets. Guided Practice will change the layouts and add distractions, but the reasoning stays the same.",
+      body: "You now have the complete method needed for the first Aptesta gear practice sets. Guided Practice will change the layouts and add distractions, but the reasoning stays the same.",
       keyPoint: "Find the driver → count the meshes → solve direction → compare tooth counts.",
     },
   ],
@@ -3248,10 +3245,10 @@ function runStartingAssessmentAdvisorRules(responses: AssessmentResponse[], evid
     observation: observation.summary,
     evidence: `Starting assessment: ${domainEvidence}.`,
     interpretation: strongAcrossDomains
-      ? "All four domains produced strong early signals. Vivalsa is deliberately not treating that short assessment as enough evidence to skip directly through the pathway. A deeper assessment-style check is a better way to confirm whether mechanical reasoning is genuinely stable."
+      ? "All four domains produced strong early signals. Aptesta is deliberately not treating that short assessment as enough evidence to skip directly through the pathway. A deeper assessment-style check is a better way to confirm whether mechanical reasoning is genuinely stable."
       : clearFocus
         ? `${startingDomainLabels[weakest.domain]} was the lowest-scoring domain in this short starting assessment. That is enough to choose a useful first focus, but not enough to label a fixed weakness or judge overall readiness.`
-        : `The four domain results were close. Rather than over-interpreting small differences, Vivalsa is using the lowest early signal to choose a practical first step in the structured pathway.`,
+        : `The four domain results were close. Rather than over-interpreting small differences, Aptesta is using the lowest early signal to choose a practical first step in the structured pathway.`,
     recommendation: strongAcrossDomains
       ? "The Mixed Mechanical Assessment is recommended next. It provides stronger evidence without making you repeat fundamentals that the starting assessment did not clearly indicate you need."
       : `${target.title} is recommended as the first preparation step. Later practice and Checks will provide stronger evidence and can change the recommendation.`,
@@ -3429,7 +3426,7 @@ function completeHydraulicFundamentals(journey: MvpGuestJourney): MvpGuestJourne
   const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType: "begin_guided_hydraulic_practice", title: "Begin Guided Hydraulic Practice", summary: "Check whether the hydraulic foundation concepts are beginning to transfer into practice.", actionLabel: "Begin Guided Practice", confidence: "high", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
   const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
   const updatedConstraints = journey.constraints.map((constraint) => constraint.subcompetency === "hydraulics" && constraint.status === "identified" ? { ...constraint, status: "under_review" as const, updatedAt: now() } : constraint);
-  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: "early_evidence", label: "Early evidence — improvement not yet confirmed", explanation: "Hydraulic Fundamentals has been completed, but Vivalsa still needs practice evidence before judging whether the earlier constraint is improving.", confidence: "high", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: "early_evidence", label: "Early evidence — improvement not yet confirmed", explanation: "Hydraulic Fundamentals has been completed, but Aptesta still needs practice evidence before judging whether the earlier constraint is improving.", confidence: "high", createdAt: now() };
   const milestone: Milestone = { milestoneId: id("milestone"), type: "first_learning_action_completed", label: "Hydraulic Pressure learning completed", createdAt: now() };
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), milestone.milestoneId].slice(-5);
   return {
@@ -3483,7 +3480,7 @@ function completeGearFundamentals(journey: MvpGuestJourney): MvpGuestJourney {
   const recommendation: Recommendation = { recommendationId: id("rec"), recommendationType: "begin_guided_gear_practice", title: "Begin Guided Gear Practice", summary: "Check whether gear direction, idler and gear-size concepts transfer into practice.", actionLabel: "Begin Guided Gear Practice", confidence: "high", whyExplanationId: why.whyExplanationId, status: "active", createdAt: now() };
   const updatedRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
   const milestone: Milestone = { milestoneId: id("milestone"), type: "first_learning_action_completed", label: "Gear Fundamentals completed", createdAt: now() };
-  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: "developing_evidence", label: "Developing evidence — gear practice not yet checked", explanation: "Gear Fundamentals has been completed, but Vivalsa still needs practice evidence before judging whether the gear focus is improving.", confidence: "high", createdAt: now() };
+  const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: "developing_evidence", label: "Developing evidence — gear practice not yet checked", explanation: "Gear Fundamentals has been completed, but Aptesta still needs practice evidence before judging whether the gear focus is improving.", confidence: "high", createdAt: now() };
   return {
     ...journey,
     moduleProgress: completedProgress ? journey.moduleProgress.map((progress) => progress.moduleProgressId === completedProgress.moduleProgressId ? completedProgress : progress) : journey.moduleProgress,
@@ -3619,7 +3616,7 @@ function completePulleyAssessment(journey: MvpGuestJourney, sessionId: string): 
   const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — pulley pathway completed" : "Developing evidence — pulley pathway continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
   const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "pulley_assessment_completed", label: "Pulley Check completed", createdAt: now() };
   const pathwayMilestone: Milestone | undefined = summary.accuracy >= 0.8 ? { milestoneId: id("milestone"), type: "pulley_pathway_completed", label: "Pulley pathway completed", createdAt: now() } : undefined;
-  const newMilestones = [completedMilestone, ...(pathwayMilestone ? [pathwayMilestone] : [])];
+  const newMilestones = [completedMilestone, ...(pathwayMilestone ? [pathwayMilestone] : []), ...(coreMilestone ? [coreMilestone] : [])];
   const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Pulley Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Pulley Check: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
   const evidence: CompetencyEvidence = { evidenceId: id("evidence"), domain: "mechanical", subcompetency: "pulleys", attempted: summary.attempted, correct: summary.correct, accuracy: summary.accuracy, evidenceStrength: evidenceStrength(summary.attempted), sourceSessionId: sessionId, updatedAt: now() };
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
@@ -3740,7 +3737,7 @@ function completeLeverAssessment(journey: MvpGuestJourney, sessionId: string): M
   const readiness: ReadinessSnapshot = { readinessSnapshotId: id("readiness"), state: summary.accuracy >= 0.6 ? "developing_evidence" : "early_evidence", label: summary.accuracy >= 0.8 ? "Developing evidence — lever pathway completed" : "Developing evidence — lever pathway continuing", explanation: interpretation, confidence: "moderate", createdAt: now() };
   const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "lever_assessment_completed", label: "Lever Check completed", createdAt: now() };
   const pathwayMilestone: Milestone | undefined = summary.accuracy >= 0.8 ? { milestoneId: id("milestone"), type: "lever_pathway_completed", label: "Lever pathway completed", createdAt: now() } : undefined;
-  const newMilestones = [completedMilestone, ...(pathwayMilestone ? [pathwayMilestone] : [])];
+  const newMilestones = pathwayMilestone ? [completedMilestone, pathwayMilestone] : [completedMilestone];
   const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Lever Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: `Lever Check: ${Math.round(summary.accuracy * 100)}%.`, interpretation, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
   const evidence: CompetencyEvidence = { evidenceId: id("evidence"), domain: "mechanical", subcompetency: "levers", attempted: summary.attempted, correct: summary.correct, accuracy: summary.accuracy, evidenceStrength: evidenceStrength(summary.attempted), sourceSessionId: sessionId, updatedAt: now() };
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
@@ -4269,7 +4266,7 @@ function completeVerbalAssessment(journey: MvpGuestJourney, sessionId: string): 
   let recommendationType: Recommendation["recommendationType"] = "review_core_progress";
   let title = coreJourneyComplete ? "Core aptitude pathways complete" : "Review your core preparation";
   let summaryText = coreJourneyComplete
-    ? "You have completed the core Vivalsa pathway across mechanical, numerical, abstract & logical, and verbal reasoning. Review the evidence collected across all four domains and choose any area you want to revisit."
+    ? "You have completed the core Aptesta pathway across mechanical, numerical, abstract & logical, and verbal reasoning. Review the evidence collected across all four domains and choose any area you want to revisit."
     : "Your Verbal Check is strong. Review your preparation plan to see which other core domain checks still need completion or reinforcement.";
   let actionLabel = "Review core progress";
   let interpretation = coreJourneyComplete
@@ -4285,7 +4282,7 @@ function completeVerbalAssessment(journey: MvpGuestJourney, sessionId: string): 
   const completedMilestone: Milestone = { milestoneId: id("milestone"), type: "verbal_assessment_completed", label: "Verbal Comprehension Check completed", createdAt: now() };
   const pathwayMilestone: Milestone | undefined = balancedStrong ? { milestoneId: id("milestone"), type: "verbal_pathway_completed", label: "Verbal comprehension pathway completed", createdAt: now() } : undefined;
   const coreMilestone: Milestone | undefined = coreJourneyComplete ? { milestoneId: id("milestone"), type: "core_pathways_completed", label: "Four core aptitude pathways completed", createdAt: now() } : undefined;
-  const newMilestones = [completedMilestone, ...(pathwayMilestone ? [pathwayMilestone] : []), ...(coreMilestone ? [coreMilestone] : [])];
+  const newMilestones = pathwayMilestone ? [completedMilestone, pathwayMilestone] : [completedMilestone];
   const debrief: Debrief = { debriefId: id("debrief"), sessionId, title: "Verbal Comprehension Check complete", summary: `${summary.correct} of ${summary.attempted} correct.`, comparison: evidenceText, interpretation: `${recommendationKind === "progression" ? "Progression recommendation" : "Strengthening recommendation"}: ${interpretation}`, recommendationId: recommendation.recommendationId, confidence: "moderate", whyExplanationId: why.whyExplanationId, createdAt: now() };
   const evidence = verbalEvidenceFromSummary(summary, sessionId);
   const recentMilestoneIds = [...(journey.dashboardState?.recentMilestoneIds ?? []), ...newMilestones.map((m) => m.milestoneId)].slice(-7);
@@ -4591,14 +4588,14 @@ function completeGuidedGearPractice(journey: MvpGuestJourney, sessionId: string)
   const previousRecommendations = journey.recommendations.map((rec) => rec.recommendationId === previousRecommendation?.recommendationId ? { ...rec, status: "completed" as const } : rec);
   let title = "Guided Gear Practice complete";
   let debriefSummary = "Gear practice evidence has been added to your preparation journey.";
-  let interpretation = "Vivalsa has enough early gear-practice evidence to update your next step.";
+  let interpretation = "Aptesta has enough early gear-practice evidence to update your next step.";
   let recommendationType: Recommendation["recommendationType"] = "return_to_mixed_mechanical_practice";
   let recommendationTitle = "Return to Mixed Mechanical Practice";
   let recommendationSummary = "Recheck whether gear reasoning remains stable when mixed with hydraulics, pulleys and levers.";
   let actionLabel = "Start mixed practice";
   let currentFocus = "Mechanical reasoning integration";
   let readinessLabel = "Developing evidence — gear practice checked";
-  let readinessExplanation = "Gear Fundamentals has now been followed by guided practice. Vivalsa can start checking whether gear reasoning remains stable in mixed mechanical practice.";
+  let readinessExplanation = "Gear Fundamentals has now been followed by guided practice. Aptesta can start checking whether gear reasoning remains stable in mixed mechanical practice.";
   let whyObservation = "Guided Gear Practice showed consistent gear reasoning.";
   let whyInterpretation = "This suggests the gear foundation concepts are beginning to transfer into practice. The next useful evidence check is mixed mechanical practice.";
 
@@ -5708,7 +5705,7 @@ function PrimaryButton({ children, onClick, disabled = false, className = "" }: 
 }
 function SecondaryButton({ children, onClick, className = "" }: { children: React.ReactNode; onClick?: () => void; className?: string }) { return <button type="button" onClick={onClick} className={`rounded-xl border border-white/10 px-6 py-4 font-medium text-[#C4CEDA] transition hover:text-[#F4F6F8] ${className}`}>{children}</button>; }
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) { return <div className={`rounded-[28px] border border-white/5 bg-[#171C23] p-7 shadow-2xl shadow-black/10 ${className}`}>{children}</div>; }
-function Shell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) { return <main className="min-h-screen bg-[#111418] text-[#F4F6F8]"><header className="border-b border-white/5"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 sm:px-8 sm:py-6"><div><div className="text-xl font-semibold tracking-wide">Vivalsa</div><div className="mt-1 text-xs tracking-[0.18em] text-[#6E7A88]">Aptitude test preparation</div></div><div className="text-right text-sm text-[#8D98A6]">{right ?? "Progress saved on this device"}</div></div></header>{children}</main>; }
+function Shell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) { return <main className="min-h-screen bg-[#111418] text-[#F4F6F8]"><header className="border-b border-white/5"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 sm:px-8 sm:py-6"><div><div className="text-xl font-semibold tracking-wide">Aptesta</div><div className="mt-1 text-xs tracking-[0.18em] text-[#6E7A88]">Aptitude test preparation</div></div><div className="text-right text-sm text-[#8D98A6]">{right ?? "Progress saved on this device"}</div></div></header>{children}</main>; }
 function Badge({ children }: { children: React.ReactNode }) { return <span className="rounded-full border border-[#5ED3F3]/20 bg-[#5ED3F3]/10 px-3 py-1 text-xs font-medium text-[#BFF3FF]">{children}</span>; }
 
 function hasMeaningfulLearnerProgress(journey: MvpGuestJourney) {
@@ -5757,7 +5754,7 @@ function PreparationContextScreen({ onSave }: { onSave: (context: PreparationCon
   const [weeklyPrepTime, setWeeklyPrepTime] = useState<PreparationContext["weeklyPrepTime"]>();
   const [previousAttempt, setPreviousAttempt] = useState<PreparationContext["previousAttempt"]>();
   const [error, setError] = useState(false);
-  return <Shell><section className="mx-auto max-w-3xl px-8 py-16"><Card><h1 className="text-4xl font-semibold">Tell us about your preparation</h1><p className="mt-5 text-[#9AA3B2]">This helps Vivalsa choose a realistic next step. You can begin without entering your name or email.</p><div className="mt-10 space-y-8"><OptionGroup label="When is your assessment?" value={assessmentTiming} onChange={setAssessmentTiming} options={[{ label: "I do not know yet", value: "unknown" }, { label: "Within 2 weeks", value: "within_2_weeks" }, { label: "2–6 weeks", value: "two_to_six_weeks" }, { label: "6–12 weeks", value: "six_to_twelve_weeks" }, { label: "More than 12 weeks", value: "more_than_twelve_weeks" }]} /><OptionGroup label="How much time can you usually prepare each week?" value={weeklyPrepTime} onChange={setWeeklyPrepTime} options={[{ label: "Less than 1 hour", value: "less_than_one_hour" }, { label: "1–2 hours", value: "one_to_two_hours" }, { label: "3–5 hours", value: "three_to_five_hours" }, { label: "More than 5 hours", value: "more_than_five_hours" }, { label: "Not sure", value: "not_sure" }]} /><OptionGroup label="Have you attempted a similar assessment before?" value={previousAttempt} onChange={setPreviousAttempt} options={[{ label: "No", value: "no" }, { label: "Yes", value: "yes" }, { label: "Prefer not to say", value: "prefer_not_to_say" }]} /></div>{error && <p className="mt-6 text-sm text-[#FFB3B3]">Please choose an option for each question before continuing.</p>}<div className="mt-10"><PrimaryButton onClick={() => { if (!assessmentTiming || !weeklyPrepTime || !previousAttempt) { setError(true); return; } onSave({ assessmentTiming, weeklyPrepTime, previousAttempt, createdAt: now() }); }}>Continue</PrimaryButton></div></Card></section></Shell>;
+  return <Shell><section className="mx-auto max-w-3xl px-8 py-16"><Card><h1 className="text-4xl font-semibold">Tell us about your preparation</h1><p className="mt-5 text-[#9AA3B2]">This helps Aptesta choose a realistic next step. You can begin without entering your name or email.</p><div className="mt-10 space-y-8"><OptionGroup label="When is your assessment?" value={assessmentTiming} onChange={setAssessmentTiming} options={[{ label: "I do not know yet", value: "unknown" }, { label: "Within 2 weeks", value: "within_2_weeks" }, { label: "2–6 weeks", value: "two_to_six_weeks" }, { label: "6–12 weeks", value: "six_to_twelve_weeks" }, { label: "More than 12 weeks", value: "more_than_twelve_weeks" }]} /><OptionGroup label="How much time can you usually prepare each week?" value={weeklyPrepTime} onChange={setWeeklyPrepTime} options={[{ label: "Less than 1 hour", value: "less_than_one_hour" }, { label: "1–2 hours", value: "one_to_two_hours" }, { label: "3–5 hours", value: "three_to_five_hours" }, { label: "More than 5 hours", value: "more_than_five_hours" }, { label: "Not sure", value: "not_sure" }]} /><OptionGroup label="Have you attempted a similar assessment before?" value={previousAttempt} onChange={setPreviousAttempt} options={[{ label: "No", value: "no" }, { label: "Yes", value: "yes" }, { label: "Prefer not to say", value: "prefer_not_to_say" }]} /></div>{error && <p className="mt-6 text-sm text-[#FFB3B3]">Please choose an option for each question before continuing.</p>}<div className="mt-10"><PrimaryButton onClick={() => { if (!assessmentTiming || !weeklyPrepTime || !previousAttempt) { setError(true); return; } onSave({ assessmentTiming, weeklyPrepTime, previousAttempt, createdAt: now() }); }}>Continue</PrimaryButton></div></Card></section></Shell>;
 }
 function BaselineIntroScreen({ onStart }: { onStart: () => void }) {
   const domains = [
@@ -5804,7 +5801,7 @@ function MechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer 
   </Shell>;
 }
 function AssessmentCompleteScreen({ onView }: { onView: () => void }) { return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-6 py-16 sm:px-8"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Four domains reviewed</p><h1 className="mt-5 text-4xl font-semibold">Starting assessment complete</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">The Mentor has compared your early signals across mechanical, numerical, abstract & logical and verbal reasoning.</p><p className="mx-auto mt-4 max-w-xl text-[#C8D2DD]">Your first recommendation is ready.</p><div className="mt-10"><PrimaryButton onClick={onView}>View Mentor recommendation</PrimaryButton></div></Card></section></Shell>; }
-function WhyModal({ why, onClose }: { why?: WhyExplanation; onClose: () => void }) { if (!why) return null; const sections = [["Observation", why.observation], ["Evidence", why.evidence], ["Interpretation", why.interpretation], ["Recommendation", why.recommendation], ["Confidence", why.confidence]]; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-[32px] border border-white/10 bg-[#171C23] p-8 shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="text-xs uppercase tracking-[0.22em] text-[#6E7A88]">Why explanation</p><h2 className="mt-3 text-3xl font-semibold">{why.title}</h2></div><button onClick={onClose} className="rounded-lg px-3 py-2 text-sm text-[#8D98A6] hover:text-white">Close</button></div><div className="mt-8 space-y-6">{sections.map(([label, text]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{label}</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{text}</p></div>)}</div><p className="mt-6 text-sm text-[#6E7A88]">Vivalsa uses this explanation to keep recommendations transparent and evidence-based.</p></div></div>; }
+function WhyModal({ why, onClose }: { why?: WhyExplanation; onClose: () => void }) { if (!why) return null; const sections = [["Observation", why.observation], ["Evidence", why.evidence], ["Interpretation", why.interpretation], ["Recommendation", why.recommendation], ["Confidence", why.confidence]]; return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-3xl overflow-auto rounded-[32px] border border-white/10 bg-[#171C23] p-8 shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="text-xs uppercase tracking-[0.22em] text-[#6E7A88]">Why explanation</p><h2 className="mt-3 text-3xl font-semibold">{why.title}</h2></div><button onClick={onClose} className="rounded-lg px-3 py-2 text-sm text-[#8D98A6] hover:text-white">Close</button></div><div className="mt-8 space-y-6">{sections.map(([label, text]) => <div key={label} className="rounded-2xl border border-white/5 bg-[#111418] p-5"><div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{label}</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{text}</p></div>)}</div><p className="mt-6 text-sm text-[#6E7A88]">Aptesta uses this explanation to keep recommendations transparent and evidence-based.</p></div></div>; }
 function FirstAdvisorInsightScreen({ journey, onWhy, onStartRecommendation }: { journey: MvpGuestJourney; onWhy: () => void; onStartRecommendation: () => void }) {
   const timing = getAssessmentTimingLabel(journey.preparationContext);
   const recommendation = getCurrentRecommendation(journey);
@@ -6536,144 +6533,6 @@ function GearRatioWorkedExampleDiagram() {
   );
 }
 
-function LeverFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
-  const existingProgress = getCurrentLeverProgress(journey);
-  const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "lever_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const sectionTopRef = useRef<HTMLDivElement | null>(null);
-  const section = leverFundamentalsModule.sections[progress.currentSectionIndex];
-  const miniCheck = section.miniCheck;
-  const selectedCorrect = Boolean(miniCheck && selectedOptionId === miniCheck.correctOptionId);
-  const isFinalSection = progress.currentSectionIndex === leverFundamentalsModule.sections.length - 1;
-
-  useEffect(() => {
-    setSelectedOptionId(null);
-    setShowFeedback(false);
-    const frame = window.requestAnimationFrame(() => sectionTopRef.current?.scrollIntoView({ behavior: "auto", block: "start" }));
-    return () => window.cancelAnimationFrame(frame);
-  }, [progress.currentSectionIndex]);
-
-  function persistProgress(nextProgress: ModuleProgress) {
-    const nextJourney = journey.moduleProgress.some((item) => item.moduleProgressId === nextProgress.moduleProgressId)
-      ? updateLeverProgress(journey, nextProgress)
-      : { ...journey, moduleProgress: [...journey.moduleProgress, nextProgress], updatedAt: now() };
-    onSaveJourney(nextJourney);
-  }
-
-  function answerMiniCheck(optionId: string) {
-    if (!miniCheck || showFeedback) return;
-    setSelectedOptionId(optionId);
-    setShowFeedback(true);
-    const response: ModuleMiniCheckResponse = { questionId: miniCheck.questionId, selectedOptionId: optionId, correct: optionId === miniCheck.correctOptionId, answeredAt: now() };
-    persistProgress({ ...progress, miniCheckResponses: [...progress.miniCheckResponses.filter((item) => item.questionId !== miniCheck.questionId), response], updatedAt: now() });
-  }
-
-  function goNext() {
-    if (miniCheck && !showFeedback) return;
-    if (isFinalSection) { onComplete(); return; }
-    persistProgress({ ...progress, currentSectionIndex: Math.min(progress.currentSectionIndex + 1, leverFundamentalsModule.sections.length - 1), updatedAt: now() });
-  }
-
-  function goBack() {
-    persistProgress({ ...progress, currentSectionIndex: Math.max(progress.currentSectionIndex - 1, 0), updatedAt: now() });
-  }
-
-  const visibleOptions = miniCheck
-    ? (showFeedback ? miniCheck.options.filter((option) => option.optionId === selectedOptionId) : miniCheck.options)
-    : [];
-
-  return (
-    <Shell>
-      <section className="mx-auto max-w-5xl px-5 pb-24 pt-7 sm:px-8 sm:pb-12 sm:pt-12">
-        <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5">
-          <div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${((progress.currentSectionIndex + 1) / leverFundamentalsModule.sections.length) * 100}%` }} />
-        </div>
-
-        <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-          <div>
-            <p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Lever Reasoning</p>
-            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{leverFundamentalsModule.title}</h1>
-            <p className="mt-2 text-sm text-[#9AA3B2] sm:text-base">{leverFundamentalsModule.subtitle}</p>
-          </div>
-          <Badge>Section {progress.currentSectionIndex + 1} of {leverFundamentalsModule.sections.length}</Badge>
-        </div>
-
-        <div ref={sectionTopRef} className="scroll-mt-4">
-          <Card className="p-5 sm:p-8">
-            <h2 className="text-2xl font-semibold sm:text-3xl">{section.title}</h2>
-            <p className="mt-5 whitespace-pre-line text-base leading-relaxed text-[#C8D2DD] sm:text-lg">{section.body}</p>
-
-
-            {section.keyPoint && (
-              <div className="mt-7 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-5">
-                <p className="mt-3 text-lg font-medium text-[#D9F8FF]">{section.keyPoint}</p>
-              </div>
-            )}
-
-            {miniCheck && (
-              <div className="mt-7 rounded-2xl border border-white/5 bg-[#111418] p-5 sm:p-6">
-                <div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Quick check</div>
-                <p className="mt-3 text-lg font-medium text-[#F4F6F8]">{miniCheck.stem}</p>
-                <div className="mt-5 grid gap-3">
-                  {visibleOptions.map((option) => {
-                    const selected = selectedOptionId === option.optionId;
-                    return (
-                      <button
-                        key={option.optionId}
-                        type="button"
-                        onClick={() => answerMiniCheck(option.optionId)}
-                        disabled={showFeedback}
-                        className={`rounded-xl border p-4 text-left transition ${selected ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 bg-[#171C23] hover:border-white/20"} ${showFeedback ? "cursor-default" : ""}`}
-                      >
-                        <span className="font-semibold text-[#D9F8FF]">{option.label}.</span>{" "}
-                        <span className="text-[#C8D2DD]">{option.text}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {showFeedback && (
-                  <div className={`mt-4 rounded-xl border p-4 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#38D39F]/10" : "border-[#FFB86B]/40 bg-[#FFB86B]/10"}`}>
-                    <p className="font-medium">{selectedCorrect ? "Exactly" : "Not quite"}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">{miniCheck.explanation}</p>
-                    <div className="mt-4 sm:hidden">
-                      <PrimaryButton className="w-full" onClick={goNext}>{isFinalSection ? "Complete module" : "Continue"}</PrimaryButton>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </Card>
-        </div>
-
-        <div className={`mt-5 rounded-2xl border border-white/10 bg-[#111418] p-3 sm:mt-7 sm:block sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 ${miniCheck ? "hidden" : "block"}`}>
-          <div className="mx-auto flex max-w-5xl gap-3">
-            <SecondaryButton className="flex-1 sm:flex-none" onClick={goBack}>Back</SecondaryButton>
-            <PrimaryButton className={`flex-1 sm:ml-auto sm:flex-none ${miniCheck && !showFeedback ? "cursor-not-allowed opacity-40" : ""}`} onClick={goNext} disabled={Boolean(miniCheck && !showFeedback)}>
-              {isFinalSection ? "Complete module" : "Continue"}
-            </PrimaryButton>
-          </div>
-        </div>
-
-      </section>
-    </Shell>
-  );
-}
-
-function LeverFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuidedLeverPractice }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuidedLeverPractice: () => void }) {
-  const rec = getCurrentRecommendation(journey);
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Lever Fundamentals complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">Vivalsa has updated your preparation journey. The next planned step is to check whether these lever concepts transfer into guided practice.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "high" ? "High confidence" : "Moderate confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuidedLeverPractice}>Begin lever practice</PrimaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
-}
-
-
-
-function SaveProgressScreen({ journey, onCreateAccount, onContinue }: { journey: MvpGuestJourney; onCreateAccount: (firstName: string, username: string) => void; onContinue: () => void }) {
-  const [firstName, setFirstName] = useState("");
-  const [username, setUsername] = useState("");
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-5 py-10 sm:px-8 sm:py-16"><Card className="p-5 sm:p-8"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Progress saved</p><h1 className="mt-5 text-3xl font-semibold sm:text-4xl">Keep your progress on this device — or add cross-device continuity.</h1><p className="mt-5 leading-relaxed text-[#AAB4C0]">Your Aptesta progress is already saved locally. Creating an account is optional and lets you continue across devices.</p><div className="mt-5 inline-flex rounded-full border border-[#5ED3F3]/25 bg-[#5ED3F3]/10 px-4 py-2 text-sm font-medium text-[#D9F8FF]">No email address required</div><div className="mt-7 grid gap-4"><label className="text-sm text-[#AAB4C0]">First name<input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8]" /></label><label className="text-sm text-[#AAB4C0]">Username<input value={username} onChange={(e) => setUsername(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-3 text-[#F4F6F8]" autoCapitalize="none" /></label></div><div className="mt-7 flex flex-col gap-3 sm:flex-row"><PrimaryButton onClick={() => onCreateAccount(firstName, username)} disabled={!firstName.trim() || !username.trim()}>Create free account</PrimaryButton><SecondaryButton onClick={onContinue}>Continue without account</SecondaryButton></div></Card></section></Shell>;
-}
-
 function GearFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
   const existingProgress = getCurrentGearProgress(journey);
   const progress = existingProgress ?? { moduleProgressId: id("module-progress"), moduleId: "gear_fundamentals" as const, currentSectionIndex: 0, miniCheckResponses: [], startedAt: now(), updatedAt: now() };
@@ -6808,7 +6667,7 @@ function GearFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journe
 
 function GearFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuidedGearPractice }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuidedGearPractice: () => void }) {
   const rec = getCurrentRecommendation(journey);
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Gear Fundamentals complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">Vivalsa has updated your preparation journey. The next planned step is to check whether these gear concepts transfer into guided practice.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "high" ? "High confidence" : "Moderate confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuidedGearPractice}>Begin gear practice</PrimaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Gear Fundamentals complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">Aptesta has updated your preparation journey. The next planned step is to check whether these gear concepts transfer into guided practice.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "high" ? "High confidence" : "Moderate confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuidedGearPractice}>Begin gear practice</PrimaryButton><PrimaryButton onClick={onDashboard}>View dashboard</PrimaryButton></div></Card></section></Shell>;
 }
 
 function HydraulicFundamentalsScreen({ journey, onSaveJourney, onComplete }: { journey: MvpGuestJourney; onSaveJourney: (journey: MvpGuestJourney) => void; onComplete: () => void }) {
@@ -6868,7 +6727,7 @@ function HydraulicFundamentalsScreen({ journey, onSaveJourney, onComplete }: { j
 
 function HydraulicFundamentalsCompleteScreen({ journey, onWhy, onDashboard, onStartGuidedPractice }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onStartGuidedPractice: () => void }) {
   const rec = getCurrentRecommendation(journey);
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Hydraulic Pressure learning complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">Vivalsa has updated your preparation journey. The next step is to check whether these concepts transfer into practice.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "high" ? "High confidence" : "Moderate confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton><SecondaryButton onClick={onDashboard}>View dashboard</SecondaryButton></div></Card></section></Shell>;
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-4xl items-center px-8 py-16"><Card><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Learning action complete</p><h1 className="mt-6 text-4xl font-semibold leading-tight">Hydraulic Pressure learning complete</h1><p className="mt-6 text-lg leading-relaxed text-[#9AA3B2]">Aptesta has updated your preparation journey. The next step is to check whether these concepts transfer into practice.</p><div className="mt-8 rounded-2xl border border-white/5 bg-[#111418] p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Recommended next step</div><h2 className="mt-3 text-2xl font-semibold">{rec?.title}</h2><p className="mt-3 text-[#AAB4C0]">{rec?.summary}</p><div className="mt-5"><Badge>{rec?.confidence === "high" ? "High confidence" : "Moderate confidence"}</Badge></div></div><div className="mt-9 flex flex-col gap-3 sm:flex-row"><SecondaryButton onClick={onWhy}>Why this next step?</SecondaryButton><PrimaryButton onClick={onStartGuidedPractice}>Begin practice</PrimaryButton><SecondaryButton onClick={onDashboard}>View dashboard</SecondaryButton></div></Card></section></Shell>;
 }
 
 function GuidedHydraulicPracticeIntroScreen({ onStart }: { onStart: () => void }) {
@@ -7247,7 +7106,7 @@ function MixedMechanicalPracticeIntroScreen({ onStart }: { onStart: () => void }
             ))}
           </div>
           <p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">
-            After each answer, Vivalsa will name the method that applied. The aim is to practise choosing the right tool, not merely remembering four separate topics.
+            After each answer, Aptesta will name the method that applied. The aim is to practise choosing the right tool, not merely remembering four separate topics.
           </p>
           <div className="mt-10"><PrimaryButton onClick={onStart}>Start mixed practice</PrimaryButton></div>
         </Card>
@@ -7431,7 +7290,7 @@ function MixedMechanicalPracticeDebriefScreen({ journey, onWhy, onDashboard, onS
 }
 
 function GuidedGearPracticeIntroScreen({ onStart }: { onStart: () => void }) {
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Evidence check</p><h1 className="mt-5 text-4xl font-semibold">Guided Gear Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">This practice checks whether gear direction, idler and gear-size concepts are beginning to transfer into problem-solving.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["10 questions", "Immediate feedback", "Diagram-first reasoning"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Vivalsa will use this result to decide whether to return to mixed mechanical practice or continue reinforcing gear reasoning.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Begin gear practice</PrimaryButton></div></Card></section></Shell>;
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Evidence check</p><h1 className="mt-5 text-4xl font-semibold">Guided Gear Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">This practice checks whether gear direction, idler and gear-size concepts are beginning to transfer into problem-solving.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["10 questions", "Immediate feedback", "Diagram-first reasoning"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Aptesta will use this result to decide whether to return to mixed mechanical practice or continue reinforcing gear reasoning.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Begin gear practice</PrimaryButton></div></Card></section></Shell>;
 }
 
 function GearReasoningReminder() {
@@ -8402,9 +8261,7 @@ function InternalMechanicalCalibrationPilotScreen({ onBack }: { onBack: () => vo
       questionId: item.questionId,
       selectedOptionId: optionId,
       correct: optionId === item.correctOptionId,
-      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
-      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: item.misconceptionTags[optionId],
@@ -8563,9 +8420,7 @@ function InternalNumericalCalibrationPilotScreen({ onBack }: { onBack: () => voi
       questionId: item.questionId,
       selectedOptionId: optionId,
       correct,
-      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
-      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: item.misconceptionTags[optionId] ?? (correct ? "correct" : "incorrect"),
@@ -8584,9 +8439,7 @@ function InternalNumericalCalibrationPilotScreen({ onBack }: { onBack: () => voi
       questionId: item.questionId,
       enteredValue: value,
       correct,
-      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
-      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: correct ? "correct" : "numeric_entry_incorrect",
@@ -8730,9 +8583,7 @@ function InternalAbstractLogicalCalibrationPilotScreen({ onBack }: { onBack: () 
       questionId: item.questionId,
       selectedOptionId: optionId,
       correct,
-      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
-      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: item.misconceptionTags[optionId] ?? (correct ? "correct" : "incorrect"),
@@ -8829,9 +8680,7 @@ function InternalVerbalCalibrationPilotScreen({ onBack }: { onBack: () => void }
       questionId: item.questionId,
       selectedOptionId: optionId,
       correct,
-      firstSelectionTimeMs: selectionTimeMs,
       selectionTimeMs,
-      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       misconceptionTag: item.misconceptionTags[optionId] ?? (correct ? "correct" : "incorrect"),
@@ -8921,9 +8770,7 @@ function InternalTechnicalPilotScreen({ onBack, onOpenEmpiricalPilot }: { onBack
       blueprintId: item.blueprintId,
       selectedResponse: responseValue,
       correct,
-      firstSelectionTimeMs: Math.max(0, performance.now() - questionStartedAtRef.current),
       selectionTimeMs: Math.max(0, performance.now() - questionStartedAtRef.current),
-      answerChangeCount: 0,
       answeredAt: now(),
       deviceClass: getDeviceClass(),
       viewportWidth: typeof window === "undefined" ? 0 : window.innerWidth,
@@ -9227,7 +9074,7 @@ function InternalEmpiricalPilotScreen({ onBack, onOpenAnalysis }: { onBack: () =
     { label: "Local save verified", value: storedRun ? "Saved" : "Check", pass: Boolean(storedRun) },
   ];
   const allPass = integrityChecks.every((check) => check.pass);
-  return <Shell right="Empirical pilot debrief"><section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Empirical pilot · completed</p><h1 className="mt-3 text-4xl font-semibold">{allPass ? "Empirical run captured cleanly" : "Review data-capture checks"}</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">No score is displayed here. A single participant is one observation per item on this form; empirical interpretation should occur only after pooled, first-exposure data are available.</p></div><Badge>{formId}</Badge></div><Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Integrity checks</div><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{integrityChecks.map((check) => <div key={check.label} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="flex items-start justify-between gap-3"><div className="text-sm text-[#AAB4C0]">{check.label}</div><div className={check.pass ? "text-[#7FE0B8]" : "text-[#FFB3B3]"}>{check.pass ? "Pass" : "Check"}</div></div><div className="mt-2 text-xl font-semibold">{check.value}</div></div>)}</div></Card><Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Run classification</div><div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Participant</div><div className="mt-1 font-semibold">{participantCode.trim()}</div></div><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Tester type</div><div className="mt-1 font-semibold">{testerType.split("_").join(" ")}</div></div><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Exposure</div><div className="mt-1 font-semibold">{priorExposure === "first_exposure" ? "First exposure" : "Seen / unsure"}</div></div></div><p className="mt-5 text-sm leading-relaxed text-[#AAB4C0]">For the first exploratory analysis, prioritise clean first-exposure runs and analyse target-like candidates separately from convenience or internal testers. Do not mix repeated exposure into response-time estimates.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">{completedRunId && <PrimaryButton onClick={() => downloadEmpiricalPilotRunCsv(completedRunId)}>Export this run CSV</PrimaryButton>}<SecondaryButton onClick={downloadEmpiricalPilotCsv}>Export all local runs</SecondaryButton><SecondaryButton onClick={onOpenAnalysis}>Open pooled analysis</SecondaryButton><SecondaryButton onClick={() => setPhase("intro")}>Back to pilot start</SecondaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton></div></Card></section></Shell>;
+  return <Shell right="Empirical pilot debrief"><section className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Empirical pilot · completed</p><h1 className="mt-3 text-4xl font-semibold">{allPass ? "Empirical run captured cleanly" : "Review data-capture checks"}</h1><p className="mt-4 max-w-3xl leading-relaxed text-[#9AA3B2]">No score is displayed here. A single participant is one observation per item on this form; empirical interpretation should occur only after pooled, first-exposure data are available.</p></div><Badge>{formId}</Badge></div><Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Integrity checks</div><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{integrityChecks.map((check) => <div key={check.label} className="rounded-2xl border border-white/5 bg-[#111418] p-4"><div className="flex items-start justify-between gap-3"><div className="text-sm text-[#AAB4C0]">{check.label}</div><div className={check.pass ? "text-[#7FE0B8]" : "text-[#FFB3B3]"}>{check.pass ? "Pass" : "Check"}</div></div><div className="mt-2 text-xl font-semibold">{check.value}</div></div>)}</div></Card><Card className="mt-8"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Run classification</div><div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Participant</div><div className="mt-1 font-semibold">{participantCode.trim()}</div></div><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Tester type</div><div className="mt-1 font-semibold">{testerType.replaceAll("_", " ")}</div></div><div className="rounded-xl border border-white/5 bg-[#111418] p-4"><div className="text-xs text-[#6E7A88]">Exposure</div><div className="mt-1 font-semibold">{priorExposure === "first_exposure" ? "First exposure" : "Seen / unsure"}</div></div></div><p className="mt-5 text-sm leading-relaxed text-[#AAB4C0]">For the first exploratory analysis, prioritise clean first-exposure runs and analyse target-like candidates separately from convenience or internal testers. Do not mix repeated exposure into response-time estimates.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">{completedRunId && <PrimaryButton onClick={() => downloadEmpiricalPilotRunCsv(completedRunId)}>Export this run CSV</PrimaryButton>}<SecondaryButton onClick={downloadEmpiricalPilotCsv}>Export all local runs</SecondaryButton><SecondaryButton onClick={onOpenAnalysis}>Open pooled analysis</SecondaryButton><SecondaryButton onClick={() => setPhase("intro")}>Back to pilot start</SecondaryButton><SecondaryButton onClick={onBack}>Back to readiness</SecondaryButton></div></Card></section></Shell>;
 }
 
 
@@ -11353,7 +11200,7 @@ function CorePathwaysCompleteScreen({ journey, onDashboard }: { journey: MvpGues
             {allChecksPresent ? "You have completed the four core aptitude pathways." : "Review your progress across the four core pathways."}
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-relaxed text-[#9AA3B2]">
-            Vivalsa uses your latest practice and check results to show where preparation is strongest and where another short block of work may help. These are preparation signals, not pass/fail judgements.
+            Aptesta uses your latest practice and check results to show where preparation is strongest and where another short block of work may help. These are preparation signals, not pass/fail judgements.
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -11385,9 +11232,9 @@ function CorePathwaysCompleteScreen({ journey, onDashboard }: { journey: MvpGues
   );
 }
 
-function PasswordGate({ onUnlock }: { onUnlock: () => void }) { const [password, setPassword] = useState(""); const [error, setError] = useState(false); return <main className="flex min-h-screen items-center justify-center bg-[#111418] p-8 text-[#F4F6F8]"><section className="w-full max-w-md rounded-[32px] border border-white/5 bg-[#171C23] p-10 shadow-2xl"><div className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Vivalsa</div><h1 className="mt-6 text-4xl font-semibold">Private testing access</h1><p className="mt-5 text-[#9AA3B2]">Enter the shared testing password to continue.</p><form onSubmit={(e) => { e.preventDefault(); if (password.trim() === TEST_ACCESS_PASSWORD) { window.localStorage.setItem("flospatial.accessGranted.v1", "true"); onUnlock(); } else setError(true); }} className="mt-8"><input value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} type="password" autoFocus className="w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-4 outline-none focus:border-[#5ED3F3]/50" placeholder="Password" />{error && <p className="mt-3 text-sm text-[#FF9A9A]">That password did not match.</p>}<button className="mt-6 w-full rounded-xl border border-[#5ED3F3]/30 bg-[#5ED3F3]/10 px-7 py-4 font-medium text-[#D9F8FF]">Enter</button></form></section></main>; }
+function PasswordGate({ onUnlock }: { onUnlock: () => void }) { const [password, setPassword] = useState(""); const [error, setError] = useState(false); return <main className="flex min-h-screen items-center justify-center bg-[#111418] p-8 text-[#F4F6F8]"><section className="w-full max-w-md rounded-[32px] border border-white/5 bg-[#171C23] p-10 shadow-2xl"><div className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Aptesta</div><h1 className="mt-6 text-4xl font-semibold">Private testing access</h1><p className="mt-5 text-[#9AA3B2]">Enter the shared testing password to continue.</p><form onSubmit={(e) => { e.preventDefault(); if (password.trim() === TEST_ACCESS_PASSWORD) { window.localStorage.setItem("flospatial.accessGranted.v1", "true"); onUnlock(); } else setError(true); }} className="mt-8"><input value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} type="password" autoFocus className="w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-4 outline-none focus:border-[#5ED3F3]/50" placeholder="Password" />{error && <p className="mt-3 text-sm text-[#FF9A9A]">That password did not match.</p>}<button className="mt-6 w-full rounded-xl border border-[#5ED3F3]/30 bg-[#5ED3F3]/10 px-7 py-4 font-medium text-[#D9F8FF]">Enter</button></form></section></main>; }
 
-export default function VivalsaPrototype() {
+export default function AptestaPrototype() {
   const [accessGranted, setAccessGranted] = useState(() => !ENABLE_PASSWORD_GATE || (typeof window !== "undefined" && window.localStorage.getItem("flospatial.accessGranted.v1") === "true"));
   const [journey, setJourney] = useState<MvpGuestJourney>(() => loadMvpGuestJourney());
   const [screen, setScreen] = useState<AppScreen>("landing");
