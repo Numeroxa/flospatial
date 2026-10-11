@@ -2189,7 +2189,7 @@ const mixedMechanicalAssessmentQuestionPool: MvpQuestion[] = [
   makeMixedAssessmentQuestion("MMA-GEAR-002", "gears", "driver_position", "The middle gear is the driver and turns clockwise. Which way does Gear C turn?", ["Clockwise", "Anticlockwise", "It cannot turn", "It depends only on gear size"], "B", "Gear C meshes directly with the clockwise driver, so it turns anticlockwise."),
   makeMixedAssessmentQuestion("MMA-LEV-002", "levers", "mechanical_advantage", "Which setup gives the greatest mechanical advantage?", ["The load close to the fulcrum and the effort far away", "The effort close to the fulcrum and the load far away", "Load and effort both at the fulcrum", "No fulcrum"], "A", "A short load arm and long effort arm give the greatest force advantage."),
   makeMixedAssessmentQuestion("MMA-HYD-002", "hydraulics", "movement_direction", "The left piston is pushed downward in the sealed system. What will the right piston usually do?", ["Move upward", "Move downward", "Remain fixed", "Move only if air enters"], "A", "The input piston displaces fluid, which drives the other piston upward."),
-  makeMixedAssessmentQuestion("MMA-HYD-003", "hydraulics", "pressure_force", "The fluid pressure is 50 kPa and the piston area is 0.02 m². What force is produced?", ["1000 N", "2500 N", "100 N", "25 N"], "A", "50,000 Pa × 0.02 m² = 1000 N."),
+  makeMixedAssessmentQuestion("MMA-HYD-003", "hydraulics", "pressure_force", "The fluid pressure is 50 kPa and the piston area is 0.02 m². What force is produced?", ["1000 N", "2500 N", "100 N", "25 N"], "A", "Pressure × area = force. First convert 50 kPa to 50,000 Pa. Then F = P × A = 50,000 × 0.02 = 1000 N. When pressure is in pascals and area is in m², the result is force in newtons."),
   makeMixedAssessmentQuestion("MMA-LEV-003", "levers", "movement_direction", "The effort end of this first-class lever moves downward. What happens to the load end?", ["It moves upward", "It also moves downward", "It stays fixed", "It moves toward the fulcrum only"], "A", "The two ends of a first-class lever move in opposite directions around the fulcrum."),
   makeMixedAssessmentQuestion("MMA-GEAR-003", "gears", "speed_ratio", "A 12-tooth gear drives a 36-tooth gear. How fast does the 36-tooth gear turn compared with the driver?", ["One-third as fast", "Three times as fast", "At the same speed", "It does not turn"], "A", "The driven gear has three times as many teeth, so it turns at one-third the speed."),
   makeMixedAssessmentQuestion("MMA-PULL-003", "pulleys", "force", "A 600 N load is ideally supported by three rope sections. Approximately what effort is needed?", ["200 N", "300 N", "600 N", "1800 N"], "A", "The ideal effort is 600 ÷ 3 = 200 N."),
@@ -5708,7 +5708,7 @@ function PrimaryButton({ children, onClick, disabled = false, className = "" }: 
 }
 function SecondaryButton({ children, onClick, className = "" }: { children: React.ReactNode; onClick?: () => void; className?: string }) { return <button type="button" onClick={onClick} className={`rounded-xl border border-white/10 px-6 py-4 font-medium text-[#C4CEDA] transition hover:text-[#F4F6F8] ${className}`}>{children}</button>; }
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) { return <div className={`rounded-[28px] border border-white/5 bg-[#171C23] p-7 shadow-2xl shadow-black/10 ${className}`}>{children}</div>; }
-function Shell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) { return <main className="min-h-screen bg-[#111418] text-[#F4F6F8]"><header className="border-b border-white/5"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 sm:px-8 sm:py-6"><div><div className="text-xl font-semibold tracking-wide">Aptesta</div><div className="mt-1 text-xs tracking-[0.18em] text-[#6E7A88]">Aptitude test preparation</div></div><div className="text-right text-sm text-[#8D98A6]">{right ?? "Progress saved on this device"}</div></div></header>{children}</main>; }
+function Shell({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) { return <main className="min-h-screen bg-[#111418] pb-[calc(6.5rem+env(safe-area-inset-bottom))] text-[#F4F6F8] sm:pb-0"><header className="border-b border-white/5"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 sm:px-8 sm:py-6"><div><div className="text-xl font-semibold tracking-wide">Aptesta</div><div className="mt-1 text-xs tracking-[0.18em] text-[#6E7A88]">Aptitude test preparation</div></div><div className="text-right text-sm text-[#8D98A6]">{right ?? "Progress saved on this device"}</div></div></header>{children}</main>; }
 function Badge({ children }: { children: React.ReactNode }) { return <span className="rounded-full border border-[#5ED3F3]/20 bg-[#5ED3F3]/10 px-3 py-1 text-xs font-medium text-[#BFF3FF]">{children}</span>; }
 
 function hasMeaningfulLearnerProgress(journey: MvpGuestJourney) {
@@ -6247,7 +6247,7 @@ function HydraulicWorkedExampleDiagram() {
       <div className="mb-4 px-2 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Worked example diagram</div>
       <svg viewBox="0 0 680 255" role="img" aria-label="A small input piston transmits the same pressure through fluid to a larger output piston, producing greater force" className="h-auto w-full">
         <defs>
-          <marker id="arrowCyan" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" /></marker>
+          <marker id="arrowCyan" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 7 3.5 L 0 7 z" fill="#5ED3F3" /></marker>
           <marker id="arrowSoft" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D9F8FF" /></marker>
         </defs>
         <rect x="52" y="78" width="125" height="142" rx="15" fill="#171C23" stroke="rgba(255,255,255,0.18)" strokeWidth="3" />
@@ -6465,7 +6465,7 @@ function GearTrainDiagram() {
         <text x="210" y="156" textAnchor="middle" fill="#F4F6F8" fontSize="24" fontWeight="700">A</text>
         <text x="380" y="156" textAnchor="middle" fill="#F4F6F8" fontSize="24" fontWeight="700">B</text>
         <text x="550" y="156" textAnchor="middle" fill="#F4F6F8" fontSize="24" fontWeight="700">C</text>
-        <path d="M 160 80 C 120 125 120 175 160 220" fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd="url(#gearArrow)" />
+        <path d="M 160 80 C 120 125 120 175 160 220" fill="none" stroke="#5ED3F3" strokeWidth="5" markerEnd="url(#gearArrow)" />
         <path d="M 430 220 C 470 175 470 125 430 80" fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd="url(#gearArrow)" />
         <path d="M 500 80 C 460 125 460 175 500 220" fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd="url(#gearArrow)" />
         <text x="210" y="260" textAnchor="middle" fill="#AAB4C0" fontSize="17">Clockwise</text>
@@ -9821,7 +9821,7 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
       <div className="mb-3 flex items-center justify-between gap-4">
         {!hideContextLabel && <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{mode === "guided" ? "Guided diagram" : mode === "practice" ? "Practice diagram" : "Gear diagram"}</div>}
         {mode === "practice" && <div className="text-xs text-[#6E7A88]">No guided cues</div>}
-        {mode === "assessment" && <div className={`text-xs text-[#6E7A88] ${hideContextLabel ? "ml-auto" : ""}`}>No hints</div>}
+        
       </div>
       <svg viewBox={`${centeredMinX} 0 ${diagramWidth} 315`} role="img" aria-label={aria} className="h-auto w-full">
         <defs>
@@ -9840,13 +9840,13 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
                 const angle = (toothIndex * (360 / toothCount) * Math.PI) / 180;
                 return <line key={`${node.label}-${toothIndex}`} x1={node.cx + Math.cos(angle) * toothInner} y1={node.cy + Math.sin(angle) * toothInner} x2={node.cx + Math.cos(angle) * toothOuter} y2={node.cy + Math.sin(angle) * toothOuter} stroke="rgba(255,255,255,0.24)" strokeWidth="4" strokeLinecap="round" />;
               })}
-              <text x={node.cx} y={node.cy + (spec.showTeeth ? -4 : 7)} textAnchor="middle" fill="#F4F6F8" fontSize="24" fontWeight="700">{node.label}</text>
-              {spec.showTeeth && <text x={node.cx} y={node.cy + 23} textAnchor="middle" fill="#9AA3B2" fontSize="15">{node.teeth} teeth</text>}
+              <text x={node.cx} y={node.cy + (spec.showTeeth ? -4 : 7)} textAnchor="middle" fill="#F4F6F8" fontSize="30" fontWeight="700">{node.label}</text>
+              {spec.showTeeth && <text x={node.cx} y={node.cy + 23} textAnchor="middle" fill="#9AA3B2" fontSize="18">{node.teeth} teeth</text>}
             </g>
           );
         })}
         <path d={spec.driverDirection === "clockwise" ? clockwisePath : anticlockwisePath} fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd={`url(#${markerId})`} />
-        <text x={driver.cx} y="292" textAnchor="middle" fill="#D9F8FF" fontSize="17">Gear {driver.label}: {spec.driverDirection === "clockwise" ? "Clockwise" : "Anticlockwise"}</text>
+        <text x={driver.cx} y="292" textAnchor="middle" fill="#D9F8FF" fontSize="21" fontWeight="600">Gear {driver.label}: {spec.driverDirection === "clockwise" ? "Clockwise" : "Anticlockwise"}</text>
       </svg>
       {mode === "guided" && spec.helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{spec.helper}</p>}
     </div>
@@ -9874,7 +9874,7 @@ function GearAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAns
 
   return (
     <Shell right="Gear Check">
-      <section className="mx-auto max-w-5xl px-8 py-12">
+      <section className="mx-auto max-w-5xl px-6 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-10 sm:px-8 sm:py-12">
         <div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div>
         <div className="mb-8 flex items-end justify-between gap-4">
           <div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Gear Check</p><h1 className="mt-3 text-3xl font-semibold">Assessment-style gear reasoning</h1></div>
@@ -10262,25 +10262,25 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-6">
       <svg viewBox="45 0 670 330" role="img" aria-label="Lever diagram showing load arm and effort arm measured from the fulcrum" className="h-auto w-full">
         <defs>
-          <marker id={downArrowId} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-            <path d="M0 0 L10 5 L0 10 z" fill="#5ED3F3" />
+          <marker id={downArrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" />
           </marker>
-          <marker id={armArrowId} markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse">
-            <path d="M0 0 L8 4 L0 8 z" fill="#5ED3F3" />
+          <marker id={armArrowId} markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse">
+            <path d="M0 0 L6 3 L0 6 z" fill="#5ED3F3" />
           </marker>
         </defs>
 
         <line x1="80" y1="150" x2="690" y2="150" stroke="#DDE3EA" strokeWidth="16" strokeLinecap="round" />
 
         <polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-42},235 ${spec.fulcrumX+42},235`} fill="#5ED3F3" opacity="0.52" />
-        <text x={spec.fulcrumX} y="272" textAnchor="middle" fill="#DCE3EA" fontSize="16" fontWeight="600">Fulcrum</text>
-        <text x={spec.fulcrumX} y="292" textAnchor="middle" fill="#6E7A88" fontSize="14">(pivot)</text>
+        <text x={spec.fulcrumX} y="272" textAnchor="middle" fill="#DCE3EA" fontSize="20" fontWeight="600">Fulcrum</text>
+        {guided && <text x={spec.fulcrumX} y="292" textAnchor="middle" fill="#6E7A88" fontSize="14">(pivot)</text>}
 
         <rect x={spec.loadX-38} y="68" width="76" height="52" rx="9" fill="#2A313A" stroke="rgba(255,255,255,0.18)" />
         <path d={`M ${spec.loadX} 34 V 124`} stroke="#FFB86B" strokeWidth="5" markerEnd={`url(#${downArrowId})`} />
         <path d={`M ${spec.effortX} 34 V 124`} stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${downArrowId})`} />
-        <text x={spec.loadX} y="99" textAnchor="middle" fill="#F4F6F8" fontSize="18" fontWeight="600">Load</text>
-        <text x={spec.effortX} y="28" textAnchor="middle" fill="#D9F8FF" fontSize="18" fontWeight="600">Effort</text>
+        <text x={spec.loadX} y="99" textAnchor="middle" fill="#F4F6F8" fontSize="21" fontWeight="600">Load</text>
+        <text x={spec.effortX} y="28" textAnchor="middle" fill="#D9F8FF" fontSize="21" fontWeight="600">Effort</text>
 
         {numericArms && (
           <>
@@ -10291,16 +10291,16 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
             {spec.loadLabel && (
               <>
                 <line x1={loadLeft + 10} y1={armY} x2={loadRight - 10} y2={armY} stroke="#FFB86B" strokeWidth="4" markerStart={`url(#${armArrowId})`} markerEnd={`url(#${armArrowId})`} />
-                <text x={(spec.loadX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="17" fontWeight="700">{spec.loadLabel}</text>
-                <text x={(spec.loadX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#FFB86B" fontSize="14">Load arm</text>
+                <text x={(spec.loadX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="21" fontWeight="700">{spec.loadLabel}</text>
+                {guided && <text x={(spec.loadX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#FFB86B" fontSize="14">Load arm</text>}
               </>
             )}
 
             {spec.effortLabel && (
               <>
                 <line x1={effortLeft + 10} y1={armY} x2={effortRight - 10} y2={armY} stroke="#5ED3F3" strokeWidth="4" markerStart={`url(#${armArrowId})`} markerEnd={`url(#${armArrowId})`} />
-                <text x={(spec.effortX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="17" fontWeight="700">{spec.effortLabel}</text>
-                <text x={(spec.effortX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#5ED3F3" fontSize="14">Effort arm</text>
+                <text x={(spec.effortX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="21" fontWeight="700">{spec.effortLabel}</text>
+                {guided && <text x={(spec.effortX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#5ED3F3" fontSize="14">Effort arm</text>}
               </>
             )}
           </>
@@ -11257,9 +11257,8 @@ function AnswerReviewScreen({ journey, context, onModeChange, onBack }: { journe
             const isCorrect = option.optionId === current.question.correctOptionId;
             const isSelected = option.optionId === current.response.selectedOptionId;
             const optionClass = isCorrect ? "border-[#38D39F]/45 bg-[#38D39F]/10" : isSelected ? "border-[#FFB86B]/45 bg-[#FFB86B]/10" : "border-white/8 bg-[#111418]";
-            return <div key={option.optionId} className={`rounded-2xl border p-5 ${optionClass}`}><div className="flex items-start justify-between gap-4"><div><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></div><div className="shrink-0 text-xs uppercase tracking-[0.12em]">{isCorrect ? <span className="text-[#8FE7C8]">Correct answer</span> : isSelected ? <span className="text-[#FFD0A0]">Your answer</span> : null}</div></div></div>;
+            return <div key={option.optionId} className={`rounded-2xl border p-5 ${optionClass}`}><div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4"><div className="min-w-0"><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="whitespace-nowrap text-[#DCE3EA]">{option.text}</span></div><div className="shrink-0 text-xs uppercase tracking-[0.12em]">{isCorrect ? <span className="text-[#8FE7C8]">Correct answer</span> : isSelected ? <span className="text-[#FFD0A0]">Your answer</span> : null}</div></div></div>;
           })}</div>
-          <div className="mt-7 grid gap-4 sm:grid-cols-2"><div className={`rounded-2xl border p-5 ${current.response.correct ? "border-[#38D39F]/30 bg-[#38D39F]/8" : "border-[#FFB86B]/30 bg-[#FFB86B]/8"}`}><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Your answer</div><p className="mt-3 text-[#DCE3EA]">{selectedOption ? `${selectedOption.label}. ${selectedOption.text}` : "No answer recorded"}</p></div><div className="rounded-2xl border border-[#38D39F]/30 bg-[#38D39F]/8 p-5"><div className="text-xs uppercase tracking-[0.16em] text-[#6E7A88]">Correct answer</div><p className="mt-3 text-[#DCE3EA]">{correctOption ? `${correctOption.label}. ${correctOption.text}` : "Correct answer unavailable"}</p></div></div>
           <div className="mt-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/5 p-6"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Why</div><p className="mt-3 leading-relaxed text-[#C8D2DD]">{current.question.explanation}</p></div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><SecondaryButton onClick={onBack}>Back to results</SecondaryButton><div className="flex gap-3"><button disabled={reviewIndex === 0} onClick={goPrevious} className="rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-[#C8D2DD] transition hover:border-[#5ED3F3]/35 hover:text-[#D9F8FF] disabled:cursor-not-allowed disabled:opacity-35">Previous</button><PrimaryButton disabled={reviewIndex === total - 1} onClick={goNext}>Next explanation</PrimaryButton></div></div>
         </Card>
@@ -11281,7 +11280,7 @@ function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
   const inputX = 170 - spec.inputWidth / 2;
   const outputX = 590 - spec.outputWidth / 2;
   const arrowId = `hyd-assess-arrow-${question.questionId}`;
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Hydraulic system with two connected pistons" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#5ED3F3" /></marker></defs><rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/><path d={`M ${inputX+spec.inputWidth} 225 H ${outputX}`} stroke="#5ED3F3" strokeWidth="32" strokeLinecap="round" opacity="0.24"/><path d={`M ${inputX+spec.inputWidth+8} 225 H ${outputX-8}`} stroke="#5ED3F3" strokeWidth="5" strokeDasharray="12 12" opacity="0.85"/><text x="380" y="210" textAnchor="middle" fill="#D9F8FF" fontSize="17">sealed fluid</text><text x="170" y="300" textAnchor="middle" fill="#AAB4C0" fontSize="17">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#AAB4C0" fontSize="17">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="20" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="17">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Hydraulic system with two connected pistons" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" /></marker></defs><rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/><path d={`M ${inputX+spec.inputWidth} 225 H ${outputX}`} stroke="#5ED3F3" strokeWidth="32" strokeLinecap="round" opacity="0.24"/><path d={`M ${inputX+spec.inputWidth+8} 225 H ${outputX-8}`} stroke="#5ED3F3" strokeWidth="5" strokeDasharray="12 12" opacity="0.85"/><text x="170" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="21" fontWeight="600">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="21" fontWeight="600">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="24" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="17">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
 }
 
 function MixedMechanicalAssessmentDiagram({ question }: { question: MvpQuestion }) {
@@ -11325,7 +11324,7 @@ function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionI
   const progress = ((questionIndex + 1) / mixedMechanicalAssessmentQuestions.length) * 100;
   const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
   function next() { if (!selectedOptionId) return; onAnswer(createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false), questionIndex === mixedMechanicalAssessmentQuestions.length - 1); }
-  return <Shell right="Mixed Mechanical Assessment"><section className="mx-auto max-w-5xl px-6 py-8 sm:px-8 sm:py-12"><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div><div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question"}</PrimaryButton></div></Card></section></Shell>;
+  return <Shell right="Mixed Mechanical Assessment"><section className="mx-auto max-w-5xl px-6 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-8 sm:px-8 sm:py-12"><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div><div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question"}</PrimaryButton></div></Card></section></Shell>;
 }
 
 function MixedMechanicalAssessmentDebriefScreen({ journey, onWhy, onDashboard, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onReviewIncorrect: () => void; onReviewAll: () => void }) {
