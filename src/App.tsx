@@ -6226,7 +6226,7 @@ function HydraulicPressureDiagram() {
 function HydraulicAreaForceDiagram() {
   return <div className="hydraulic-visual mt-7" role="img" aria-label="The same pressure acting on a larger piston area produces greater force">
     <svg viewBox="0 0 720 285" className="h-auto w-full">
-      <defs><marker id="forceArrowV1" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#D9F8FF"/></marker></defs>
+      <defs><marker id="forceArrowV1" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto"><path d="M0 0L10 5L0 10z" fill="#D9F8FF"/></marker></defs>
       <rect x="85" y="100" width="130" height="135" rx="16" fill="#171C23" stroke="rgba(255,255,255,.2)" strokeWidth="3" />
       <rect x="118" y="125" width="64" height="27" rx="6" fill="#DDE3EA" />
       <rect x="475" y="70" width="175" height="165" rx="18" fill="#171C23" stroke="rgba(255,255,255,.2)" strokeWidth="3" />
@@ -6248,7 +6248,7 @@ function HydraulicWorkedExampleDiagram() {
       <svg viewBox="0 0 680 255" role="img" aria-label="A small input piston transmits the same pressure through fluid to a larger output piston, producing greater force" className="h-auto w-full">
         <defs>
           <marker id="arrowCyan" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 7 3.5 L 0 7 z" fill="#5ED3F3" /></marker>
-          <marker id="arrowSoft" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D9F8FF" /></marker>
+          <marker id="arrowSoft" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 5 L 0 10 z" fill="#D9F8FF" /></marker>
         </defs>
         <rect x="52" y="78" width="125" height="142" rx="15" fill="#171C23" stroke="rgba(255,255,255,0.18)" strokeWidth="3" />
         <rect x="80" y="108" width="69" height="30" rx="6" fill="#DDE3EA" />
@@ -6288,8 +6288,8 @@ function HydraulicSolvingMethodDiagram() {
       <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
         <svg viewBox="0 0 680 300" role="img" aria-label="Hydraulic solving method diagram with numbered callouts" className="h-auto w-full">
           <defs>
-            <marker id="arrowMethod" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" />
+            <marker id="arrowMethod" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M 0 0 L 6 3 L 0 6 z" fill="#5ED3F3" />
             </marker>
           </defs>
 
@@ -6344,7 +6344,7 @@ function GearPairDirectionDiagram() {
   return (
     <div className="mt-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] px-3 py-5 sm:p-7">
       <svg viewBox="0 0 620 260" role="img" aria-label="Two meshed gears rotating in opposite directions" className="h-auto w-full">
-        <defs><marker id="pairArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5ED3F3" /></marker></defs>
+        <defs><marker id="pairArrow" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5ED3F3" /></marker></defs>
         <circle cx="210" cy="125" r="70" fill="#171C23" stroke="rgba(255,255,255,.22)" strokeWidth="4" />
         <circle cx="395" cy="125" r="70" fill="#171C23" stroke="rgba(255,255,255,.22)" strokeWidth="4" />
         {teeth(210,125,70,12,"a")}{teeth(395,125,70,12,"b")}
@@ -6410,7 +6410,7 @@ function GearIdlerDiagram() {
         className="h-auto w-full"
       >
         <defs>
-          <marker id="idlerArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <marker id="idlerArrow" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto">
             <path d="M0 0L10 5L0 10z" fill="#5ED3F3" />
           </marker>
         </defs>
@@ -6453,7 +6453,7 @@ function GearTrainDiagram() {
       <div className="mb-5 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Gear train diagram</div>
       <svg viewBox="0 0 760 300" role="img" aria-label="Three meshed gears showing alternating rotation direction" className="h-auto w-full">
         <defs>
-          <marker id="gearArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" /></marker>
+          <marker id="gearArrow" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 6 3 L 0 6 z" fill="#5ED3F3" /></marker>
         </defs>
         <circle cx="210" cy="150" r="72" fill="#171C23" stroke="rgba(255,255,255,0.22)" strokeWidth="4" />
         <circle cx="380" cy="150" r="72" fill="#171C23" stroke="rgba(255,255,255,0.22)" strokeWidth="4" />
@@ -6466,7 +6466,7 @@ function GearTrainDiagram() {
         <text x="380" y="156" textAnchor="middle" fill="#F4F6F8" fontSize="24" fontWeight="700">B</text>
         <text x="550" y="156" textAnchor="middle" fill="#F4F6F8" fontSize="24" fontWeight="700">C</text>
         <path d="M 160 80 C 120 125 120 175 160 220" fill="none" stroke="#5ED3F3" strokeWidth="5" markerEnd="url(#gearArrow)" />
-        <path d="M 430 220 C 470 175 470 125 430 80" fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd="url(#gearArrow)" />
+        <path d="M 430 220 C 470 175 470 125 430 80" fill="none" stroke="#5ED3F3" strokeWidth="4" markerEnd="url(#gearArrow)" />
         <path d="M 500 80 C 460 125 460 175 500 220" fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd="url(#gearArrow)" />
         <text x="210" y="260" textAnchor="middle" fill="#AAB4C0" fontSize="17">Clockwise</text>
         <text x="380" y="260" textAnchor="middle" fill="#AAB4C0" fontSize="17">Anticlockwise</text>
@@ -6483,7 +6483,7 @@ function GearSizeDiagram() {
       <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Gear size diagram</div>
       <svg viewBox="80 20 500 275" role="img" aria-label="A small 10-tooth driver gear meshing with a larger 20-tooth driven gear" className="h-auto w-full">
         <defs>
-          <marker id="gearSizeArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <marker id="gearSizeArrow" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto">
             <path d="M0 0L10 5L0 10z" fill="#5ED3F3" />
           </marker>
         </defs>
@@ -9805,7 +9805,7 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
   const nodes = buildGearDiagramNodes(spec);
   const driver = nodes[spec.driverIndex];
   const markerId = `gear-arrow-${question.questionId}`;
-  const arrowRadius = driver.radius + 25;
+  const arrowRadius = driver.radius + 38;
   const clockwisePath = `M ${driver.cx - arrowRadius * 0.72} ${driver.cy - arrowRadius * 0.68} A ${arrowRadius} ${arrowRadius} 0 1 1 ${driver.cx + arrowRadius * 0.76} ${driver.cy + arrowRadius * 0.62}`;
   const anticlockwisePath = `M ${driver.cx + arrowRadius * 0.72} ${driver.cy - arrowRadius * 0.68} A ${arrowRadius} ${arrowRadius} 0 1 0 ${driver.cx - arrowRadius * 0.76} ${driver.cy + arrowRadius * 0.62}`;
   const aria = `${nodes.length}-gear diagram. Gear ${driver.label} turns ${spec.driverDirection}.`;
@@ -9825,8 +9825,8 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
       </div>
       <svg viewBox={`${centeredMinX} 0 ${diagramWidth} 315`} role="img" aria-label={aria} className="h-auto w-full">
         <defs>
-          <marker id={markerId} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#5ED3F3" />
+          <marker id={markerId} markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M 0 0 L 6 3 L 0 6 z" fill="#5ED3F3" />
           </marker>
         </defs>
         {nodes.map((node) => {
@@ -10046,11 +10046,21 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
   const count = pulleySupportCounts[question.questionId] ?? 2;
   const fixedOnly = count === 1;
   const helper = mode === "guided" ? question.feedbackCue : undefined;
-  if (fixedOnly) return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 330" role="img" aria-label="Single fixed pulley with a load on one side and a free end on the other" className="h-auto w-full"><line x1="170" y1="52" x2="590" y2="52" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/><circle cx="380" cy="100" r="48" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="5"/><path d="M 285 260 L 285 100 Q 285 52 333 52 L 427 52 Q 475 52 475 100 L 475 275" fill="none" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/><rect x="230" y="245" width="110" height="55" rx="12" fill="#252C35"/><text x="285" y="278" textAnchor="middle" fill="#F4F6F8" fontSize="28">Load</text><path d="M 475 210 L 475 285" stroke="#D9F8FF" strokeWidth="5"/><path d="M 460 268 L 475 292 L 490 268" fill="#D9F8FF"/><text x="525" y="265" fill="#AAB4C0" fontSize="25">Pull down</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
-  const xs = Array.from({ length: count }, (_, i) => 250 + (i * 260) / Math.max(count - 1, 1));
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 350" role="img" aria-label={`Moving pulley block supported by ${count} rope sections`} className="h-auto w-full"><line x1="100" y1="55" x2="650" y2="55" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/>{xs.map((x,i)=><g key={x}><line x1={x} y1="70" x2={x} y2="220" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/>{mode === "guided" && <text x={x} y="135" textAnchor="middle" fill="#D9F8FF" fontSize="24">{i+1}</text>}</g>)}<rect x="205" y="215" width="350" height="62" rx="20" fill="#171C23" stroke="rgba(255,255,255,0.24)" strokeWidth="4"/><circle cx="300" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><circle cx="460" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><text x="380" y="256" textAnchor="middle" fill="#F4F6F8" fontSize="28" fontWeight="700">Moving block</text><rect x="300" y="280" width="160" height="48" rx="12" fill="#252C35"/><text x="380" y="311" textAnchor="middle" fill="#C8D2DD" fontSize="26">Load</text><line x1="600" y1="70" x2="600" y2="270" stroke="#8D98A6" strokeWidth="5" strokeDasharray="10 9"/><path d="M 586 252 L 600 276 L 614 252" fill="#8D98A6"/>{mode === "guided" && <text x="620" y="185" fill="#8D98A6" fontSize="16">Free end</text>}</svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
-}
+  const arrowId = `pulley-effort-${question.questionId}`;
+  if (fixedOnly) return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 350" role="img" aria-label="Single fixed pulley with one continuous rope, a load and a free effort end" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#D9F8FF"/></marker></defs><line x1="160" y1="48" x2="600" y2="48" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/><line x1="380" y1="48" x2="380" y2="82" stroke="rgba(255,255,255,0.30)" strokeWidth="7"/><circle cx="380" cy="125" r="43" fill="#171C23" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/><path d="M337 125 V270 M423 125 V285" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round"/><path d="M337 125 A43 43 0 0 1 423 125" fill="none" stroke="#5ED3F3" strokeWidth="8"/><rect x="282" y="260" width="110" height="58" rx="12" fill="#252C35"/><text x="337" y="297" textAnchor="middle" fill="#F4F6F8" fontSize="28" fontWeight="600">Load</text><path d="M423 205 V286" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="470" y="250" fill="#D9F8FF" fontSize="25" fontWeight="600">Effort</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
 
+  const strandXs = Array.from({ length: count }, (_, i) => 205 + (i * 300) / Math.max(count - 1, 1));
+  const movingPulleyXs = strandXs.slice(0, -1).map((x, i) => (x + strandXs[i + 1]) / 2).filter((_, i) => i % 2 === 0);
+  const fixedPulleyXs = strandXs.slice(0, -1).map((x, i) => (x + strandXs[i + 1]) / 2).filter((_, i) => i % 2 === 1);
+  const ropeParts: string[] = [`M ${strandXs[0]} 62 V 220`];
+  for (let i = 0; i < strandXs.length - 1; i += 1) {
+    const x1 = strandXs[i], x2 = strandXs[i + 1], mid = (x1 + x2) / 2;
+    if (i % 2 === 0) ropeParts.push(`Q ${mid} 292 ${x2} 220`);
+    else ropeParts.push(`Q ${mid} 82 ${x2} 220`);
+  }
+  ropeParts.push(`V 286`);
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 390" role="img" aria-label={`Continuous rope system with ${count} supporting rope sections`} className="h-auto w-full"><defs><marker id={arrowId} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#D9F8FF"/></marker></defs><line x1="115" y1="52" x2="645" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/><circle cx={strandXs[0]} cy="62" r="8" fill="#DCE3EA"/><text x={strandXs[0]} y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>{fixedPulleyXs.map((x)=><g key={`fixed-${x}`}><line x1={x} y1="52" x2={x} y2="105" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx={x} cy="130" r="28" fill="#20262F" stroke="rgba(255,255,255,0.28)" strokeWidth="4"/></g>)}{movingPulleyXs.map((x)=><circle key={`moving-${x}`} cx={x} cy="250" r="30" fill="#20262F" stroke="rgba(255,255,255,0.28)" strokeWidth="4"/>)}<path d={ropeParts.join(" ")} fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>{mode === "guided" && strandXs.map((x,i)=><text key={`strand-${x}`} x={x-13} y="185" textAnchor="end" fill="#D9F8FF" fontSize="21">{i+1}</text>)}<rect x="270" y="286" width="220" height="48" rx="12" fill="#252C35"/><line x1="380" y1="270" x2="380" y2="286" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="380" y="318" textAnchor="middle" fill="#F4F6F8" fontSize="26" fontWeight="600">Moving load</text><path d={`M ${strandXs[strandXs.length - 1]} 225 V 292`} stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x={strandXs[strandXs.length - 1]+28} y="306" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+}
 function PulleyPracticeIntroScreen({ stage, onStart }: { stage: "guided" | "independent" | "assessment"; onStart: () => void }) {
   const config = stage === "guided" ? { eyebrow: "Guided practice", title: "Guided Pulley Practice", body: "Ten diagram-based questions with immediate feedback. The diagrams help you apply the supporting-strand method.", items: ["10 questions", "Immediate feedback", "Guided diagrams"], button: "Begin guided practice" } : stage === "independent" ? { eyebrow: "Independent practice", title: "Independent Pulley Practice", body: "Twelve less-supported questions covering recognition, strand counting, force calculations and the distance tradeoff.", items: ["12 questions", "Immediate feedback", "Less support"], button: "Begin independent practice" } : { eyebrow: "Assessment-style check", title: "Pulley Check", body: "Ten questions with no immediate feedback. This gives a cleaner picture of what remains available independently.", items: ["10 questions", "No immediate feedback", "Untimed"], button: "Start Pulley Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item)=><div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
@@ -10252,7 +10262,7 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
   const armArrowId = `lever-arm-arrow-${question.questionId}`;
   const numericArms = Boolean(spec.loadLabel || spec.effortLabel);
 
-  const armY = 205;
+  const armY = 282;
   const loadLeft = Math.min(spec.loadX, spec.fulcrumX);
   const loadRight = Math.max(spec.loadX, spec.fulcrumX);
   const effortLeft = Math.min(spec.effortX, spec.fulcrumX);
@@ -10260,7 +10270,7 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
 
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-2 sm:p-6">
-      <svg viewBox="45 0 670 330" role="img" aria-label="Lever diagram showing load arm and effort arm measured from the fulcrum" className="h-auto w-full">
+      <svg viewBox="45 0 670 405" role="img" aria-label="Lever diagram showing load arm and effort arm measured from the fulcrum" className="h-auto w-full">
         <defs>
           <marker id={downArrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
             <path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" />
@@ -10273,13 +10283,13 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
         <line x1="80" y1="150" x2="690" y2="150" stroke="#DDE3EA" strokeWidth="16" strokeLinecap="round" />
 
         <polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-42},235 ${spec.fulcrumX+42},235`} fill="#5ED3F3" opacity="0.52" />
-        <text x={spec.fulcrumX} y="272" textAnchor="middle" fill="#DCE3EA" fontSize="28" fontWeight="600">Fulcrum</text>
-        {guided && <text x={spec.fulcrumX} y="292" textAnchor="middle" fill="#6E7A88" fontSize="20">(pivot)</text>}
+        <text x={spec.fulcrumX} y="252" textAnchor="middle" fill="#DCE3EA" fontSize="28" fontWeight="600">Fulcrum</text>
+        {guided && <text x={spec.fulcrumX} y="273" textAnchor="middle" fill="#6E7A88" fontSize="20">(pivot)</text>}
 
         <rect x={spec.loadX-38} y="68" width="76" height="52" rx="9" fill="#2A313A" stroke="rgba(255,255,255,0.18)" />
         <path d={`M ${spec.loadX} 34 V 124`} stroke="#FFB86B" strokeWidth="5" markerEnd={`url(#${downArrowId})`} />
         <path d={`M ${spec.effortX} 34 V 124`} stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${downArrowId})`} />
-        <text x={spec.loadX} y="99" textAnchor="middle" fill="#F4F6F8" fontSize="29" fontWeight="600">Load</text>
+        <text x={spec.loadX} y="27" textAnchor="middle" fill="#F4F6F8" fontSize="27" fontWeight="600">Load</text>
         <text x={spec.effortX} y="28" textAnchor="middle" fill="#D9F8FF" fontSize="29" fontWeight="600">Effort</text>
 
         {numericArms && (
@@ -10291,16 +10301,16 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
             {spec.loadLabel && (
               <>
                 <line x1={loadLeft + 10} y1={armY} x2={loadRight - 10} y2={armY} stroke="#FFB86B" strokeWidth="4" markerStart={`url(#${armArrowId})`} markerEnd={`url(#${armArrowId})`} />
-                <text x={(spec.loadX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="29" fontWeight="700">{spec.loadLabel}</text>
-                {guided && <text x={(spec.loadX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#FFB86B" fontSize="20">Load arm</text>}
+                <text x={(spec.loadX + spec.fulcrumX)/2} y="322" textAnchor="middle" fill="#F4F6F8" fontSize="29" fontWeight="700">{spec.loadLabel}</text>
+                {guided && <text x={(spec.loadX + spec.fulcrumX)/2} y="345" textAnchor="middle" fill="#FFB86B" fontSize="20">Load arm</text>}
               </>
             )}
 
             {spec.effortLabel && (
               <>
                 <line x1={effortLeft + 10} y1={armY} x2={effortRight - 10} y2={armY} stroke="#5ED3F3" strokeWidth="4" markerStart={`url(#${armArrowId})`} markerEnd={`url(#${armArrowId})`} />
-                <text x={(spec.effortX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="29" fontWeight="700">{spec.effortLabel}</text>
-                {guided && <text x={(spec.effortX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#5ED3F3" fontSize="20">Effort arm</text>}
+                <text x={(spec.effortX + spec.fulcrumX)/2} y="322" textAnchor="middle" fill="#F4F6F8" fontSize="29" fontWeight="700">{spec.effortLabel}</text>
+                {guided && <text x={(spec.effortX + spec.fulcrumX)/2} y="345" textAnchor="middle" fill="#5ED3F3" fontSize="20">Effort arm</text>}
               </>
             )}
           </>
@@ -11280,7 +11290,7 @@ function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
   const inputX = 170 - spec.inputWidth / 2;
   const outputX = 590 - spec.outputWidth / 2;
   const arrowId = `hyd-assess-arrow-${question.questionId}`;
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Hydraulic system with two connected pistons" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" /></marker></defs><rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/><path d={`M ${inputX+spec.inputWidth} 225 H ${outputX}`} stroke="#5ED3F3" strokeWidth="32" strokeLinecap="round" opacity="0.24"/><path d={`M ${inputX+spec.inputWidth+8} 225 H ${outputX-8}`} stroke="#5ED3F3" strokeWidth="5" strokeDasharray="12 12" opacity="0.85"/><text x="170" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="32" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="24">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Hydraulic system with two connected pistons" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" /></marker></defs><rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/><rect x={inputX+5} y="178" width={spec.inputWidth-10} height="77" rx="6" fill="#5ED3F3" opacity="0.18"/><rect x={outputX+5} y="160" width={spec.outputWidth-10} height="95" rx="6" fill="#5ED3F3" opacity="0.18"/><path d={`M ${inputX+spec.inputWidth-2} 225 H ${outputX+2}`} stroke="#5ED3F3" strokeWidth="34" strokeLinecap="round" opacity="0.34"/><path d={`M ${inputX+spec.inputWidth-2} 225 H ${outputX+2}`} stroke="#5ED3F3" strokeWidth="6" strokeLinecap="round" opacity="0.95"/><text x="170" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="32" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="24">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
 }
 
 function MixedMechanicalAssessmentDiagram({ question }: { question: MvpQuestion }) {
@@ -11326,12 +11336,12 @@ function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionI
   function next() { if (!selectedOptionId) return; onAnswer(createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false), questionIndex === mixedMechanicalAssessmentQuestions.length - 1); }
   const actionLabel = questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question";
   return <Shell right="Mixed Mechanical Assessment">
-    <section className="mx-auto max-w-5xl px-4 pb-[calc(9.5rem+env(safe-area-inset-bottom))] pt-8 sm:px-8 sm:py-12 sm:pb-32">
+    <section className="mx-auto max-w-5xl px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 sm:px-8 sm:py-12 sm:pb-32">
       <div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div>
       <div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div>
       <Card className="p-4 sm:p-7"><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div></Card>
     </section>
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#111418]/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] backdrop-blur sm:px-8">
+    <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 border-t border-white/10 bg-[#111418]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] backdrop-blur sm:bottom-0 sm:px-8">
       <div className="mx-auto flex max-w-5xl justify-end"><PrimaryButton className="w-full text-base sm:w-auto sm:min-w-52" disabled={!selectedOptionId} onClick={next}>{actionLabel}</PrimaryButton></div>
     </div>
   </Shell>;
