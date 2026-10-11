@@ -9817,7 +9817,7 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
   const centeredMinX = Math.max(0, Math.min(760 - diagramWidth, (diagramMinX + diagramMaxX - diagramWidth) / 2));
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-6">
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-2 sm:p-6">
       <div className="mb-3 flex items-center justify-between gap-4">
         {!hideContextLabel && <div className="text-xs uppercase tracking-[0.18em] text-[#6E7A88]">{mode === "guided" ? "Guided diagram" : mode === "practice" ? "Practice diagram" : "Gear diagram"}</div>}
         {mode === "practice" && <div className="text-xs text-[#6E7A88]">No guided cues</div>}
@@ -9840,13 +9840,13 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
                 const angle = (toothIndex * (360 / toothCount) * Math.PI) / 180;
                 return <line key={`${node.label}-${toothIndex}`} x1={node.cx + Math.cos(angle) * toothInner} y1={node.cy + Math.sin(angle) * toothInner} x2={node.cx + Math.cos(angle) * toothOuter} y2={node.cy + Math.sin(angle) * toothOuter} stroke="rgba(255,255,255,0.24)" strokeWidth="4" strokeLinecap="round" />;
               })}
-              <text x={node.cx} y={node.cy + (spec.showTeeth ? -4 : 7)} textAnchor="middle" fill="#F4F6F8" fontSize="30" fontWeight="700">{node.label}</text>
-              {spec.showTeeth && <text x={node.cx} y={node.cy + 23} textAnchor="middle" fill="#9AA3B2" fontSize="18">{node.teeth} teeth</text>}
+              <text x={node.cx} y={node.cy + (spec.showTeeth ? -4 : 7)} textAnchor="middle" fill="#F4F6F8" fontSize="36" fontWeight="700">{node.label}</text>
+              {spec.showTeeth && <text x={node.cx} y={node.cy + 23} textAnchor="middle" fill="#9AA3B2" fontSize="25">{node.teeth} teeth</text>}
             </g>
           );
         })}
         <path d={spec.driverDirection === "clockwise" ? clockwisePath : anticlockwisePath} fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd={`url(#${markerId})`} />
-        <text x={driver.cx} y="292" textAnchor="middle" fill="#D9F8FF" fontSize="21" fontWeight="600">Gear {driver.label}: {spec.driverDirection === "clockwise" ? "Clockwise" : "Anticlockwise"}</text>
+        <text x={driver.cx} y="292" textAnchor="middle" fill="#D9F8FF" fontSize="29" fontWeight="600">Gear {driver.label}: {spec.driverDirection === "clockwise" ? "Clockwise" : "Anticlockwise"}</text>
       </svg>
       {mode === "guided" && spec.helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{spec.helper}</p>}
     </div>
@@ -10046,9 +10046,9 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
   const count = pulleySupportCounts[question.questionId] ?? 2;
   const fixedOnly = count === 1;
   const helper = mode === "guided" ? question.feedbackCue : undefined;
-  if (fixedOnly) return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 330" role="img" aria-label="Single fixed pulley with a load on one side and a free end on the other" className="h-auto w-full"><line x1="170" y1="52" x2="590" y2="52" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/><circle cx="380" cy="100" r="48" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="5"/><path d="M 285 260 L 285 100 Q 285 52 333 52 L 427 52 Q 475 52 475 100 L 475 275" fill="none" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/><rect x="230" y="245" width="110" height="55" rx="12" fill="#252C35"/><text x="285" y="278" textAnchor="middle" fill="#F4F6F8" fontSize="20">Load</text><path d="M 475 210 L 475 285" stroke="#D9F8FF" strokeWidth="5"/><path d="M 460 268 L 475 292 L 490 268" fill="#D9F8FF"/><text x="525" y="265" fill="#AAB4C0" fontSize="18">Pull down</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+  if (fixedOnly) return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 330" role="img" aria-label="Single fixed pulley with a load on one side and a free end on the other" className="h-auto w-full"><line x1="170" y1="52" x2="590" y2="52" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/><circle cx="380" cy="100" r="48" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="5"/><path d="M 285 260 L 285 100 Q 285 52 333 52 L 427 52 Q 475 52 475 100 L 475 275" fill="none" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/><rect x="230" y="245" width="110" height="55" rx="12" fill="#252C35"/><text x="285" y="278" textAnchor="middle" fill="#F4F6F8" fontSize="28">Load</text><path d="M 475 210 L 475 285" stroke="#D9F8FF" strokeWidth="5"/><path d="M 460 268 L 475 292 L 490 268" fill="#D9F8FF"/><text x="525" y="265" fill="#AAB4C0" fontSize="25">Pull down</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
   const xs = Array.from({ length: count }, (_, i) => 250 + (i * 260) / Math.max(count - 1, 1));
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 350" role="img" aria-label={`Moving pulley block supported by ${count} rope sections`} className="h-auto w-full"><line x1="100" y1="55" x2="650" y2="55" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/>{xs.map((x,i)=><g key={x}><line x1={x} y1="70" x2={x} y2="220" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/>{mode === "guided" && <text x={x} y="135" textAnchor="middle" fill="#D9F8FF" fontSize="17">{i+1}</text>}</g>)}<rect x="205" y="215" width="350" height="62" rx="20" fill="#171C23" stroke="rgba(255,255,255,0.24)" strokeWidth="4"/><circle cx="300" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><circle cx="460" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><text x="380" y="256" textAnchor="middle" fill="#F4F6F8" fontSize="20" fontWeight="700">Moving block</text><rect x="300" y="280" width="160" height="48" rx="12" fill="#252C35"/><text x="380" y="311" textAnchor="middle" fill="#C8D2DD" fontSize="19">Load</text><line x1="600" y1="70" x2="600" y2="270" stroke="#8D98A6" strokeWidth="5" strokeDasharray="10 9"/><path d="M 586 252 L 600 276 L 614 252" fill="#8D98A6"/>{mode === "guided" && <text x="620" y="185" fill="#8D98A6" fontSize="16">Free end</text>}</svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 350" role="img" aria-label={`Moving pulley block supported by ${count} rope sections`} className="h-auto w-full"><line x1="100" y1="55" x2="650" y2="55" stroke="rgba(255,255,255,0.3)" strokeWidth="8" strokeLinecap="round"/>{xs.map((x,i)=><g key={x}><line x1={x} y1="70" x2={x} y2="220" stroke="#5ED3F3" strokeWidth="7" strokeLinecap="round"/>{mode === "guided" && <text x={x} y="135" textAnchor="middle" fill="#D9F8FF" fontSize="24">{i+1}</text>}</g>)}<rect x="205" y="215" width="350" height="62" rx="20" fill="#171C23" stroke="rgba(255,255,255,0.24)" strokeWidth="4"/><circle cx="300" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><circle cx="460" cy="225" r="30" fill="#20262F" stroke="rgba(255,255,255,0.22)" strokeWidth="4"/><text x="380" y="256" textAnchor="middle" fill="#F4F6F8" fontSize="28" fontWeight="700">Moving block</text><rect x="300" y="280" width="160" height="48" rx="12" fill="#252C35"/><text x="380" y="311" textAnchor="middle" fill="#C8D2DD" fontSize="26">Load</text><line x1="600" y1="70" x2="600" y2="270" stroke="#8D98A6" strokeWidth="5" strokeDasharray="10 9"/><path d="M 586 252 L 600 276 L 614 252" fill="#8D98A6"/>{mode === "guided" && <text x="620" y="185" fill="#8D98A6" fontSize="16">Free end</text>}</svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
 }
 
 function PulleyPracticeIntroScreen({ stage, onStart }: { stage: "guided" | "independent" | "assessment"; onStart: () => void }) {
@@ -10259,7 +10259,7 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
   const effortRight = Math.max(spec.effortX, spec.fulcrumX);
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-6">
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-2 sm:p-6">
       <svg viewBox="45 0 670 330" role="img" aria-label="Lever diagram showing load arm and effort arm measured from the fulcrum" className="h-auto w-full">
         <defs>
           <marker id={downArrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
@@ -10273,14 +10273,14 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
         <line x1="80" y1="150" x2="690" y2="150" stroke="#DDE3EA" strokeWidth="16" strokeLinecap="round" />
 
         <polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-42},235 ${spec.fulcrumX+42},235`} fill="#5ED3F3" opacity="0.52" />
-        <text x={spec.fulcrumX} y="272" textAnchor="middle" fill="#DCE3EA" fontSize="20" fontWeight="600">Fulcrum</text>
-        {guided && <text x={spec.fulcrumX} y="292" textAnchor="middle" fill="#6E7A88" fontSize="14">(pivot)</text>}
+        <text x={spec.fulcrumX} y="272" textAnchor="middle" fill="#DCE3EA" fontSize="28" fontWeight="600">Fulcrum</text>
+        {guided && <text x={spec.fulcrumX} y="292" textAnchor="middle" fill="#6E7A88" fontSize="20">(pivot)</text>}
 
         <rect x={spec.loadX-38} y="68" width="76" height="52" rx="9" fill="#2A313A" stroke="rgba(255,255,255,0.18)" />
         <path d={`M ${spec.loadX} 34 V 124`} stroke="#FFB86B" strokeWidth="5" markerEnd={`url(#${downArrowId})`} />
         <path d={`M ${spec.effortX} 34 V 124`} stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${downArrowId})`} />
-        <text x={spec.loadX} y="99" textAnchor="middle" fill="#F4F6F8" fontSize="21" fontWeight="600">Load</text>
-        <text x={spec.effortX} y="28" textAnchor="middle" fill="#D9F8FF" fontSize="21" fontWeight="600">Effort</text>
+        <text x={spec.loadX} y="99" textAnchor="middle" fill="#F4F6F8" fontSize="29" fontWeight="600">Load</text>
+        <text x={spec.effortX} y="28" textAnchor="middle" fill="#D9F8FF" fontSize="29" fontWeight="600">Effort</text>
 
         {numericArms && (
           <>
@@ -10291,16 +10291,16 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
             {spec.loadLabel && (
               <>
                 <line x1={loadLeft + 10} y1={armY} x2={loadRight - 10} y2={armY} stroke="#FFB86B" strokeWidth="4" markerStart={`url(#${armArrowId})`} markerEnd={`url(#${armArrowId})`} />
-                <text x={(spec.loadX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="21" fontWeight="700">{spec.loadLabel}</text>
-                {guided && <text x={(spec.loadX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#FFB86B" fontSize="14">Load arm</text>}
+                <text x={(spec.loadX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="29" fontWeight="700">{spec.loadLabel}</text>
+                {guided && <text x={(spec.loadX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#FFB86B" fontSize="20">Load arm</text>}
               </>
             )}
 
             {spec.effortLabel && (
               <>
                 <line x1={effortLeft + 10} y1={armY} x2={effortRight - 10} y2={armY} stroke="#5ED3F3" strokeWidth="4" markerStart={`url(#${armArrowId})`} markerEnd={`url(#${armArrowId})`} />
-                <text x={(spec.effortX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="21" fontWeight="700">{spec.effortLabel}</text>
-                {guided && <text x={(spec.effortX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#5ED3F3" fontSize="14">Effort arm</text>}
+                <text x={(spec.effortX + spec.fulcrumX)/2} y="232" textAnchor="middle" fill="#F4F6F8" fontSize="29" fontWeight="700">{spec.effortLabel}</text>
+                {guided && <text x={(spec.effortX + spec.fulcrumX)/2} y="254" textAnchor="middle" fill="#5ED3F3" fontSize="20">Effort arm</text>}
               </>
             )}
           </>
@@ -11280,7 +11280,7 @@ function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
   const inputX = 170 - spec.inputWidth / 2;
   const outputX = 590 - spec.outputWidth / 2;
   const arrowId = `hyd-assess-arrow-${question.questionId}`;
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-5 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Hydraulic system with two connected pistons" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" /></marker></defs><rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/><path d={`M ${inputX+spec.inputWidth} 225 H ${outputX}`} stroke="#5ED3F3" strokeWidth="32" strokeLinecap="round" opacity="0.24"/><path d={`M ${inputX+spec.inputWidth+8} 225 H ${outputX-8}`} stroke="#5ED3F3" strokeWidth="5" strokeDasharray="12 12" opacity="0.85"/><text x="170" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="21" fontWeight="600">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="21" fontWeight="600">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="24" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="17">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Hydraulic system with two connected pistons" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" /></marker></defs><rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/><path d={`M ${inputX+spec.inputWidth} 225 H ${outputX}`} stroke="#5ED3F3" strokeWidth="32" strokeLinecap="round" opacity="0.24"/><path d={`M ${inputX+spec.inputWidth+8} 225 H ${outputX-8}`} stroke="#5ED3F3" strokeWidth="5" strokeDasharray="12 12" opacity="0.85"/><text x="170" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="32" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="24">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
 }
 
 function MixedMechanicalAssessmentDiagram({ question }: { question: MvpQuestion }) {
@@ -11324,7 +11324,17 @@ function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionI
   const progress = ((questionIndex + 1) / mixedMechanicalAssessmentQuestions.length) * 100;
   const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
   function next() { if (!selectedOptionId) return; onAnswer(createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false), questionIndex === mixedMechanicalAssessmentQuestions.length - 1); }
-  return <Shell right="Mixed Mechanical Assessment"><section className="mx-auto max-w-5xl px-6 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-8 sm:px-8 sm:py-12"><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><Card><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div><div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question"}</PrimaryButton></div></Card></section></Shell>;
+  const actionLabel = questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question";
+  return <Shell right="Mixed Mechanical Assessment">
+    <section className="mx-auto max-w-5xl px-4 pb-[calc(9.5rem+env(safe-area-inset-bottom))] pt-8 sm:px-8 sm:py-12 sm:pb-32">
+      <div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div>
+      <div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div>
+      <Card className="p-4 sm:p-7"><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div></Card>
+    </section>
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#111418]/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] backdrop-blur sm:px-8">
+      <div className="mx-auto flex max-w-5xl justify-end"><PrimaryButton className="w-full text-base sm:w-auto sm:min-w-52" disabled={!selectedOptionId} onClick={next}>{actionLabel}</PrimaryButton></div>
+    </div>
+  </Shell>;
 }
 
 function MixedMechanicalAssessmentDebriefScreen({ journey, onWhy, onDashboard, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; onWhy: () => void; onDashboard: () => void; onReviewIncorrect: () => void; onReviewAll: () => void }) {
