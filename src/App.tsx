@@ -6226,7 +6226,7 @@ function HydraulicPressureDiagram() {
 function HydraulicAreaForceDiagram() {
   return <div className="hydraulic-visual mt-7" role="img" aria-label="The same pressure acting on a larger piston area produces greater force">
     <svg viewBox="0 0 720 285" className="h-auto w-full">
-      <defs><marker id="forceArrowV1" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto"><path d="M0 0L10 5L0 10z" fill="#D9F8FF"/></marker></defs>
+      <defs><marker id="forceArrowV1" markerWidth="5" markerHeight="5" refX="4.4" refY="2.5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#D9F8FF"/></marker></defs>
       <rect x="85" y="100" width="130" height="135" rx="16" fill="#171C23" stroke="rgba(255,255,255,.2)" strokeWidth="3" />
       <rect x="118" y="125" width="64" height="27" rx="6" fill="#DDE3EA" />
       <rect x="475" y="70" width="175" height="165" rx="18" fill="#171C23" stroke="rgba(255,255,255,.2)" strokeWidth="3" />
@@ -6289,7 +6289,7 @@ function HydraulicSolvingMethodDiagram() {
         <svg viewBox="0 0 680 300" role="img" aria-label="Hydraulic solving method diagram with numbered callouts" className="h-auto w-full">
           <defs>
             <marker id="arrowMethod" markerWidth="6" markerHeight="6" refX="5.2" refY="3" orient="auto" markerUnits="strokeWidth">
-              <path d="M 0 0 L 6 3 L 0 6 z" fill="#5ED3F3" />
+              <path d="M 0 0 L 5 2.5 L 0 5 z" fill="#5ED3F3" />
             </marker>
           </defs>
 
@@ -9805,9 +9805,19 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
   const nodes = buildGearDiagramNodes(spec);
   const driver = nodes[spec.driverIndex];
   const markerId = `gear-arrow-${question.questionId}`;
-  const arrowRadius = driver.radius + 38;
-  const clockwisePath = `M ${driver.cx - arrowRadius * 0.72} ${driver.cy - arrowRadius * 0.68} A ${arrowRadius} ${arrowRadius} 0 1 1 ${driver.cx + arrowRadius * 0.76} ${driver.cy + arrowRadius * 0.62}`;
-  const anticlockwisePath = `M ${driver.cx + arrowRadius * 0.72} ${driver.cy - arrowRadius * 0.68} A ${arrowRadius} ${arrowRadius} 0 1 0 ${driver.cx - arrowRadius * 0.76} ${driver.cy + arrowRadius * 0.62}`;
+  // Keep the direction cue outside the gear train so it never obscures a label or tooth count.
+  const arrowOffset = driver.radius + 30;
+  const arrowOnLeft = driver.cx <= 380;
+  const sideX = driver.cx + (arrowOnLeft ? -arrowOffset : arrowOffset);
+  const upperY = driver.cy - Math.min(58, driver.radius * 0.72);
+  const lowerY = driver.cy + Math.min(58, driver.radius * 0.72);
+  const controlX = sideX + (arrowOnLeft ? -34 : 34);
+  const clockwisePath = arrowOnLeft
+    ? `M ${sideX} ${lowerY} Q ${controlX} ${driver.cy} ${sideX} ${upperY}`
+    : `M ${sideX} ${upperY} Q ${controlX} ${driver.cy} ${sideX} ${lowerY}`;
+  const anticlockwisePath = arrowOnLeft
+    ? `M ${sideX} ${upperY} Q ${controlX} ${driver.cy} ${sideX} ${lowerY}`
+    : `M ${sideX} ${lowerY} Q ${controlX} ${driver.cy} ${sideX} ${upperY}`;
   const aria = `${nodes.length}-gear diagram. Gear ${driver.label} turns ${spec.driverDirection}.`;
   const leftMost = Math.min(...nodes.map((node) => node.cx - node.radius));
   const rightMost = Math.max(...nodes.map((node) => node.cx + node.radius));
@@ -9845,7 +9855,7 @@ function GearQuestionDiagram({ question, mode, hideContextLabel = false }: { que
             </g>
           );
         })}
-        <path d={spec.driverDirection === "clockwise" ? clockwisePath : anticlockwisePath} fill="none" stroke="#5ED3F3" strokeWidth="6" markerEnd={`url(#${markerId})`} />
+        <path d={spec.driverDirection === "clockwise" ? clockwisePath : anticlockwisePath} fill="none" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${markerId})`} />
         <text x={driver.cx} y="292" textAnchor="middle" fill="#D9F8FF" fontSize="29" fontWeight="600">Gear {driver.label}: {spec.driverDirection === "clockwise" ? "Clockwise" : "Anticlockwise"}</text>
       </svg>
       {mode === "guided" && spec.helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{spec.helper}</p>}
@@ -10044,22 +10054,57 @@ const pulleySupportCounts: Record<string, number> = {
 };
 function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { question: MvpQuestion; mode: PulleyQuestionMode; hideContextLabel?: boolean }) {
   const count = pulleySupportCounts[question.questionId] ?? 2;
-  const fixedOnly = count === 1;
   const helper = mode === "guided" ? question.feedbackCue : undefined;
   const arrowId = `pulley-effort-${question.questionId}`;
-  if (fixedOnly) return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 350" role="img" aria-label="Single fixed pulley with one continuous rope, a load and a free effort end" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#D9F8FF"/></marker></defs><line x1="160" y1="48" x2="600" y2="48" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/><line x1="380" y1="48" x2="380" y2="82" stroke="rgba(255,255,255,0.30)" strokeWidth="7"/><circle cx="380" cy="125" r="43" fill="#171C23" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/><path d="M337 125 V270 M423 125 V285" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round"/><path d="M337 125 A43 43 0 0 1 423 125" fill="none" stroke="#5ED3F3" strokeWidth="8"/><rect x="282" y="260" width="110" height="58" rx="12" fill="#252C35"/><text x="337" y="297" textAnchor="middle" fill="#F4F6F8" fontSize="28" fontWeight="600">Load</text><path d="M423 205 V286" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="470" y="250" fill="#D9F8FF" fontSize="25" fontWeight="600">Effort</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+  const commonDefs = <defs><marker id={arrowId} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#D9F8FF"/></marker></defs>;
 
-  const strandXs = Array.from({ length: count }, (_, i) => 205 + (i * 300) / Math.max(count - 1, 1));
-  const movingPulleyXs = strandXs.slice(0, -1).map((x, i) => (x + strandXs[i + 1]) / 2).filter((_, i) => i % 2 === 0);
-  const fixedPulleyXs = strandXs.slice(0, -1).map((x, i) => (x + strandXs[i + 1]) / 2).filter((_, i) => i % 2 === 1);
-  const ropeParts: string[] = [`M ${strandXs[0]} 62 V 220`];
-  for (let i = 0; i < strandXs.length - 1; i += 1) {
-    const x1 = strandXs[i], x2 = strandXs[i + 1], mid = (x1 + x2) / 2;
-    if (i % 2 === 0) ropeParts.push(`Q ${mid} 292 ${x2} 220`);
-    else ropeParts.push(`Q ${mid} 82 ${x2} 220`);
+  // Each assessment drawing uses a mechanically plausible single continuous rope.
+  // The moving assembly is supported by exactly the number of rope sections represented by `count`.
+  let mechanism: JSX.Element;
+  if (count === 1) {
+    mechanism = <>
+      <line x1="160" y1="48" x2="600" y2="48" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/>
+      <line x1="380" y1="48" x2="380" y2="82" stroke="rgba(255,255,255,0.30)" strokeWidth="7"/>
+      <circle cx="380" cy="125" r="43" fill="#171C23" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M337 270 V125 A43 43 0 0 1 423 125 V285" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round"/>
+      <rect x="282" y="260" width="110" height="58" rx="12" fill="#252C35"/><text x="337" y="297" textAnchor="middle" fill="#F4F6F8" fontSize="28" fontWeight="600">Load</text>
+      <path d="M423 205 V286" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="470" y="250" fill="#D9F8FF" fontSize="25" fontWeight="600">Effort</text>
+    </>;
+  } else if (count === 2) {
+    mechanism = <>
+      <line x1="145" y1="52" x2="615" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/>
+      <circle cx="260" cy="64" r="8" fill="#DCE3EA"/><text x="260" y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>
+      <circle cx="305" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M260 64 V235 A45 45 0 0 0 350 235 V76" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round"/>
+      <rect x="235" y="294" width="140" height="52" rx="12" fill="#252C35"/><line x1="305" y1="280" x2="305" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="305" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
+      <path d="M350 150 V82" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="382" y="108" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      {mode === "guided" && <><text x="242" y="188" fill="#D9F8FF" fontSize="20">1</text><text x="360" y="188" fill="#D9F8FF" fontSize="20">2</text></>}
+    </>;
+  } else if (count === 3) {
+    mechanism = <>
+      <line x1="145" y1="52" x2="615" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/>
+      <line x1="290" y1="52" x2="290" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="290" cy="120" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <circle cx="380" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <circle cx="245" cy="278" r="8" fill="#DCE3EA"/><text x="210" y="310" textAnchor="end" fill="#AAB4C0" fontSize="20">Rope fixed to moving block</text>
+      <path d="M245 278 V120 A45 45 0 0 1 335 120 V235 A45 45 0 0 0 425 235 V76" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="260" y="294" width="240" height="52" rx="12" fill="#252C35"/><line x1="380" y1="280" x2="380" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="380" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
+      <path d="M425 150 V82" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="458" y="108" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      {mode === "guided" && <><text x="228" y="190" fill="#D9F8FF" fontSize="20">1</text><text x="320" y="190" fill="#D9F8FF" fontSize="20">2</text><text x="437" y="190" fill="#D9F8FF" fontSize="20">3</text></>}
+    </>;
+  } else {
+    mechanism = <>
+      <line x1="130" y1="52" x2="630" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/>
+      <circle cx="200" cy="64" r="8" fill="#DCE3EA"/><text x="200" y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>
+      <line x1="335" y1="52" x2="335" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="335" cy="120" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <circle cx="245" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/><circle cx="425" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M200 64 V235 A45 45 0 0 0 290 235 V120 A45 45 0 0 1 380 120 V235 A45 45 0 0 0 470 235 V76" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="175" y="294" width="320" height="52" rx="12" fill="#252C35"/><line x1="245" y1="280" x2="245" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><line x1="425" y1="280" x2="425" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="335" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
+      <path d="M470 150 V82" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="503" y="108" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      {mode === "guided" && <><text x="182" y="190" fill="#D9F8FF" fontSize="20">1</text><text x="300" y="190" fill="#D9F8FF" fontSize="20">2</text><text x="362" y="190" fill="#D9F8FF" fontSize="20">3</text><text x="482" y="190" fill="#D9F8FF" fontSize="20">4</text></>}
+    </>;
   }
-  ropeParts.push(`V 286`);
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 390" role="img" aria-label={`Continuous rope system with ${count} supporting rope sections`} className="h-auto w-full"><defs><marker id={arrowId} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#D9F8FF"/></marker></defs><line x1="115" y1="52" x2="645" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/><circle cx={strandXs[0]} cy="62" r="8" fill="#DCE3EA"/><text x={strandXs[0]} y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>{fixedPulleyXs.map((x)=><g key={`fixed-${x}`}><line x1={x} y1="52" x2={x} y2="105" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx={x} cy="130" r="28" fill="#20262F" stroke="rgba(255,255,255,0.28)" strokeWidth="4"/></g>)}{movingPulleyXs.map((x)=><circle key={`moving-${x}`} cx={x} cy="250" r="30" fill="#20262F" stroke="rgba(255,255,255,0.28)" strokeWidth="4"/>)}<path d={ropeParts.join(" ")} fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>{mode === "guided" && strandXs.map((x,i)=><text key={`strand-${x}`} x={x-13} y="185" textAnchor="end" fill="#D9F8FF" fontSize="21">{i+1}</text>)}<rect x="270" y="286" width="220" height="48" rx="12" fill="#252C35"/><line x1="380" y1="270" x2="380" y2="286" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="380" y="318" textAnchor="middle" fill="#F4F6F8" fontSize="26" fontWeight="600">Moving load</text><path d={`M ${strandXs[strandXs.length - 1]} 225 V 292`} stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x={strandXs[strandXs.length - 1]+28} y="306" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text></svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
+
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 370" role="img" aria-label={`Mechanically routed continuous rope system with ${count} supporting rope section${count === 1 ? "" : "s"}`} className="h-auto w-full">{commonDefs}{mechanism}</svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
 }
 function PulleyPracticeIntroScreen({ stage, onStart }: { stage: "guided" | "independent" | "assessment"; onStart: () => void }) {
   const config = stage === "guided" ? { eyebrow: "Guided practice", title: "Guided Pulley Practice", body: "Ten diagram-based questions with immediate feedback. The diagrams help you apply the supporting-strand method.", items: ["10 questions", "Immediate feedback", "Guided diagrams"], button: "Begin guided practice" } : stage === "independent" ? { eyebrow: "Independent practice", title: "Independent Pulley Practice", body: "Twelve less-supported questions covering recognition, strand counting, force calculations and the distance tradeoff.", items: ["12 questions", "Immediate feedback", "Less support"], button: "Begin independent practice" } : { eyebrow: "Assessment-style check", title: "Pulley Check", body: "Ten questions with no immediate feedback. This gives a cleaner picture of what remains available independently.", items: ["10 questions", "No immediate feedback", "Untimed"], button: "Start Pulley Check" };
@@ -11289,10 +11334,15 @@ function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
   const spec = specs[question.questionId] ?? { inputWidth: 86, outputWidth: 130, inputLabel: "Input", outputLabel: "Output" };
   const inputX = 170 - spec.inputWidth / 2;
   const outputX = 590 - spec.outputWidth / 2;
+  const inputRight = inputX + spec.inputWidth;
   const arrowId = `hyd-assess-arrow-${question.questionId}`;
-  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Hydraulic system with two connected pistons" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" /></marker></defs><rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.2)" strokeWidth="3"/><rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/><rect x={inputX+5} y="178" width={spec.inputWidth-10} height="77" rx="6" fill="#5ED3F3" opacity="0.18"/><rect x={outputX+5} y="160" width={spec.outputWidth-10} height="95" rx="6" fill="#5ED3F3" opacity="0.18"/><path d={`M ${inputX+spec.inputWidth-2} 225 H ${outputX+2}`} stroke="#5ED3F3" strokeWidth="34" strokeLinecap="round" opacity="0.34"/><path d={`M ${inputX+spec.inputWidth-2} 225 H ${outputX+2}`} stroke="#5ED3F3" strokeWidth="6" strokeLinecap="round" opacity="0.95"/><text x="170" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="32" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="24">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
+  return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Two pistons joined by one continuous sealed hydraulic-fluid circuit" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" /></marker></defs>
+    {/* Cylinder bodies */}<rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="4"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="4"/>
+    {/* One visibly continuous fluid volume: left chamber -> pipe -> right chamber. */}<path d={`M ${inputX+5} 178 H ${inputRight-5} V 212 H ${outputX+5} V 160 H ${outputX+spec.outputWidth-5} V 255 H ${outputX+5} V 246 H ${inputRight-5} V 255 H ${inputX+5} Z`} fill="#5ED3F3" opacity="0.24"/><rect x={inputRight-2} y="210" width={outputX-inputRight+4} height="38" rx="8" fill="#5ED3F3" opacity="0.24" stroke="#5ED3F3" strokeWidth="4"/>
+    {/* Pistons */}<rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/>
+    <text x="380" y="236" textAnchor="middle" fill="#D9F8FF" fontSize="22" fontWeight="600">continuous hydraulic fluid</text>
+    <text x="170" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="32" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="24">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
 }
-
 function MixedMechanicalAssessmentDiagram({ question }: { question: MvpQuestion }) {
   if (question.subcompetency === "gears") return <GearQuestionDiagram question={question} mode="assessment" hideContextLabel />;
   if (question.subcompetency === "pulleys") return <PulleyQuestionDiagram question={question} mode="assessment" hideContextLabel />;
