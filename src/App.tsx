@@ -10075,10 +10075,10 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <line x1="145" y1="52" x2="615" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/>
       <circle cx="260" cy="64" r="8" fill="#DCE3EA"/><text x="260" y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>
       <circle cx="305" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <line x1="500" y1="52" x2="500" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="500" cy="105" r="29" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="4"/>
-      <path d="M260 64 V235 A45 45 0 0 0 350 235 V105 H471 A29 29 0 0 0 500 134 H610" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="545" y1="52" x2="545" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="545" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M260 64 V235 A45 45 0 0 0 350 235 V105 H500 V105 A45 45 0 0 1 545 60 H650" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="235" y="294" width="140" height="52" rx="12" fill="#252C35"/><line x1="305" y1="280" x2="305" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="305" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
-      <path d="M540 134 H610" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="535" y="172" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      <path d="M585 60 H650" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="585" y="96" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="242" y="188" fill="#D9F8FF" fontSize="20">1</text><text x="360" y="188" fill="#D9F8FF" fontSize="20">2</text></>}
     </>;
   } else if (count === 3) {
@@ -10087,10 +10087,10 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <line x1="290" y1="52" x2="290" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="290" cy="120" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
       <circle cx="380" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
       <circle cx="245" cy="278" r="9" fill="#DCE3EA"/><line x1="245" y1="278" x2="270" y2="294" stroke="rgba(255,255,255,0.45)" strokeWidth="5"/>
-      <line x1="520" y1="52" x2="520" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="520" cy="105" r="29" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="4"/>
-      <path d="M245 278 V120 A45 45 0 0 1 335 120 V235 A45 45 0 0 0 425 235 V105 H491 A29 29 0 0 0 520 134 H630" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="555" y1="52" x2="555" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="555" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M245 278 V120 A45 45 0 0 1 335 120 V235 A45 45 0 0 0 425 235 V105 H510 V105 A45 45 0 0 1 555 60 H665" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="260" y="294" width="240" height="52" rx="12" fill="#252C35"/><line x1="380" y1="280" x2="380" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="380" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
-      <path d="M560 134 H630" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="555" y="172" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      <path d="M600 60 H665" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="600" y="96" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="228" y="190" fill="#D9F8FF" fontSize="20">1</text><text x="320" y="190" fill="#D9F8FF" fontSize="20">2</text><text x="437" y="190" fill="#D9F8FF" fontSize="20">3</text></>}
     </>;
   } else {
@@ -10099,10 +10099,10 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <circle cx="200" cy="64" r="8" fill="#DCE3EA"/><text x="200" y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>
       <line x1="335" y1="52" x2="335" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="335" cy="120" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
       <circle cx="245" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/><circle cx="425" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <line x1="555" y1="52" x2="555" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="555" cy="105" r="29" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="4"/>
-      <path d="M200 64 V235 A45 45 0 0 0 290 235 V120 A45 45 0 0 1 380 120 V235 A45 45 0 0 0 470 235 V105 H526 A29 29 0 0 0 555 134 H665" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="570" y1="52" x2="570" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="570" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M200 64 V235 A45 45 0 0 0 290 235 V120 A45 45 0 0 1 380 120 V235 A45 45 0 0 0 470 235 V105 H525 V105 A45 45 0 0 1 570 60 H690" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="175" y="294" width="320" height="52" rx="12" fill="#252C35"/><line x1="245" y1="280" x2="245" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><line x1="425" y1="280" x2="425" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="335" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
-      <path d="M595 134 H665" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="590" y="172" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      <path d="M625 60 H690" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="625" y="96" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="182" y="190" fill="#D9F8FF" fontSize="20">1</text><text x="300" y="190" fill="#D9F8FF" fontSize="20">2</text><text x="362" y="190" fill="#D9F8FF" fontSize="20">3</text><text x="482" y="190" fill="#D9F8FF" fontSize="20">4</text></>}
     </>;
   }
@@ -10318,7 +10318,7 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
 
   return (
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-2 sm:p-6">
-      <svg viewBox="45 0 670 405" role="img" aria-label="Lever diagram showing load arm and effort arm measured from the fulcrum" className="h-auto w-full">
+      <svg viewBox={mode === "assessment" ? "160 0 550 405" : "45 0 670 405"} role="img" aria-label="Lever diagram showing load arm and effort arm measured from the fulcrum" className="h-auto w-full">
         <defs>
           <marker id={downArrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
             <path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" />
@@ -10328,10 +10328,10 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
           </marker>
         </defs>
 
-        <line x1="80" y1="150" x2="690" y2="150" stroke="#DDE3EA" strokeWidth="16" strokeLinecap="round" />
+        <line x1={mode === "assessment" ? 190 : 80} y1="150" x2="690" y2="150" stroke="#DDE3EA" strokeWidth="16" strokeLinecap="round" />
 
-        <polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-34},220 ${spec.fulcrumX+34},220`} fill="#5ED3F3" opacity="0.52" />
-        <text x={spec.fulcrumX} y="242" textAnchor="middle" fill="#DCE3EA" fontSize="28" fontWeight="600">Fulcrum</text>
+        <polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-17},191 ${spec.fulcrumX+17},191`} fill="#5ED3F3" opacity="0.52" />
+        <text x={spec.fulcrumX} y="224" textAnchor="middle" fill="#DCE3EA" fontSize="26" fontWeight="600">Fulcrum</text>
         {guided && <text x={spec.fulcrumX} y="273" textAnchor="middle" fill="#6E7A88" fontSize="20">(pivot)</text>}
 
         <rect x={spec.loadX-38} y="68" width="76" height="52" rx="9" fill="#2A313A" stroke="rgba(255,255,255,0.18)" />
