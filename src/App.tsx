@@ -10075,9 +10075,10 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <line x1="145" y1="52" x2="615" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/>
       <circle cx="260" cy="64" r="8" fill="#DCE3EA"/><text x="260" y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>
       <circle cx="305" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <path d="M260 64 V235 A45 45 0 0 0 350 235 V76" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round"/>
+      <line x1="500" y1="52" x2="500" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="500" cy="105" r="29" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="4"/>
+      <path d="M260 64 V235 A45 45 0 0 0 350 235 V105 H471 A29 29 0 0 0 500 134 H610" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="235" y="294" width="140" height="52" rx="12" fill="#252C35"/><line x1="305" y1="280" x2="305" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="305" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
-      <path d="M350 150 V82" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="382" y="108" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      <path d="M540 134 H610" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="535" y="172" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="242" y="188" fill="#D9F8FF" fontSize="20">1</text><text x="360" y="188" fill="#D9F8FF" fontSize="20">2</text></>}
     </>;
   } else if (count === 3) {
@@ -10085,10 +10086,11 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <line x1="145" y1="52" x2="615" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/>
       <line x1="290" y1="52" x2="290" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="290" cy="120" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
       <circle cx="380" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <circle cx="245" cy="278" r="8" fill="#DCE3EA"/><text x="210" y="310" textAnchor="end" fill="#AAB4C0" fontSize="20">Rope fixed to moving block</text>
-      <path d="M245 278 V120 A45 45 0 0 1 335 120 V235 A45 45 0 0 0 425 235 V76" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="245" cy="278" r="9" fill="#DCE3EA"/><line x1="245" y1="278" x2="270" y2="294" stroke="rgba(255,255,255,0.45)" strokeWidth="5"/>
+      <line x1="520" y1="52" x2="520" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="520" cy="105" r="29" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="4"/>
+      <path d="M245 278 V120 A45 45 0 0 1 335 120 V235 A45 45 0 0 0 425 235 V105 H491 A29 29 0 0 0 520 134 H630" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="260" y="294" width="240" height="52" rx="12" fill="#252C35"/><line x1="380" y1="280" x2="380" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="380" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
-      <path d="M425 150 V82" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="458" y="108" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      <path d="M560 134 H630" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="555" y="172" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="228" y="190" fill="#D9F8FF" fontSize="20">1</text><text x="320" y="190" fill="#D9F8FF" fontSize="20">2</text><text x="437" y="190" fill="#D9F8FF" fontSize="20">3</text></>}
     </>;
   } else {
@@ -10097,9 +10099,10 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <circle cx="200" cy="64" r="8" fill="#DCE3EA"/><text x="200" y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>
       <line x1="335" y1="52" x2="335" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="335" cy="120" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
       <circle cx="245" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/><circle cx="425" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <path d="M200 64 V235 A45 45 0 0 0 290 235 V120 A45 45 0 0 1 380 120 V235 A45 45 0 0 0 470 235 V76" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="555" y1="52" x2="555" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="555" cy="105" r="29" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="4"/>
+      <path d="M200 64 V235 A45 45 0 0 0 290 235 V120 A45 45 0 0 1 380 120 V235 A45 45 0 0 0 470 235 V105 H526 A29 29 0 0 0 555 134 H665" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="175" y="294" width="320" height="52" rx="12" fill="#252C35"/><line x1="245" y1="280" x2="245" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><line x1="425" y1="280" x2="425" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="335" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
-      <path d="M470 150 V82" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="503" y="108" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
+      <path d="M595 134 H665" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="590" y="172" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="182" y="190" fill="#D9F8FF" fontSize="20">1</text><text x="300" y="190" fill="#D9F8FF" fontSize="20">2</text><text x="362" y="190" fill="#D9F8FF" fontSize="20">3</text><text x="482" y="190" fill="#D9F8FF" fontSize="20">4</text></>}
     </>;
   }
@@ -10327,8 +10330,8 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
 
         <line x1="80" y1="150" x2="690" y2="150" stroke="#DDE3EA" strokeWidth="16" strokeLinecap="round" />
 
-        <polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-42},235 ${spec.fulcrumX+42},235`} fill="#5ED3F3" opacity="0.52" />
-        <text x={spec.fulcrumX} y="252" textAnchor="middle" fill="#DCE3EA" fontSize="28" fontWeight="600">Fulcrum</text>
+        <polygon points={`${spec.fulcrumX},158 ${spec.fulcrumX-34},220 ${spec.fulcrumX+34},220`} fill="#5ED3F3" opacity="0.52" />
+        <text x={spec.fulcrumX} y="242" textAnchor="middle" fill="#DCE3EA" fontSize="28" fontWeight="600">Fulcrum</text>
         {guided && <text x={spec.fulcrumX} y="273" textAnchor="middle" fill="#6E7A88" fontSize="20">(pivot)</text>}
 
         <rect x={spec.loadX-38} y="68" width="76" height="52" rx="9" fill="#2A313A" stroke="rgba(255,255,255,0.18)" />
@@ -11324,7 +11327,7 @@ function AnswerReviewScreen({ journey, context, onModeChange, onBack }: { journe
 
 function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
   const specs: Record<string, { inputWidth: number; outputWidth: number; inputLabel: string; outputLabel: string; topLabel?: string; showInputArrow?: boolean }> = {
-    "MMA-HYD-001": { inputWidth: 78, outputWidth: 150, inputLabel: "Area 1", outputLabel: "Area 2", topLabel: "Same pressure" },
+    "MMA-HYD-001": { inputWidth: 78, outputWidth: 150, inputLabel: "Area 1", outputLabel: "Area 2" },
     "MMA-HYD-002": { inputWidth: 86, outputWidth: 120, inputLabel: "Input", outputLabel: "Output", showInputArrow: true },
     "MMA-HYD-003": { inputWidth: 90, outputWidth: 130, inputLabel: "Fluid", outputLabel: "Area 0.02 m²", topLabel: "Pressure 50 kPa" },
     "MMA-HYD-004": { inputWidth: 72, outputWidth: 160, inputLabel: "100 N · 2 cm²", outputLabel: "10 cm²" },
@@ -11338,9 +11341,8 @@ function HydraulicAssessmentDiagram({ question }: { question: MvpQuestion }) {
   const arrowId = `hyd-assess-arrow-${question.questionId}`;
   return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7"><svg viewBox="0 0 760 340" role="img" aria-label="Two pistons joined by one continuous sealed hydraulic-fluid circuit" className="h-auto w-full"><defs><marker id={arrowId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="#5ED3F3" /></marker></defs>
     {/* Cylinder bodies */}<rect x={inputX} y="110" width={spec.inputWidth} height="150" rx="14" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="4"/><rect x={outputX} y="85" width={spec.outputWidth} height="175" rx="16" fill="#171C23" stroke="rgba(255,255,255,0.28)" strokeWidth="4"/>
-    {/* One visibly continuous fluid volume: left chamber -> pipe -> right chamber. */}<path d={`M ${inputX+5} 178 H ${inputRight-5} V 212 H ${outputX+5} V 160 H ${outputX+spec.outputWidth-5} V 255 H ${outputX+5} V 246 H ${inputRight-5} V 255 H ${inputX+5} Z`} fill="#5ED3F3" opacity="0.24"/><rect x={inputRight-2} y="210" width={outputX-inputRight+4} height="38" rx="8" fill="#5ED3F3" opacity="0.24" stroke="#5ED3F3" strokeWidth="4"/>
+    {/* One continuous fluid colour and shape. The connector overlays the cylinder side strokes so there is no false wall at either junction. */}<rect x={inputX+4} y="169" width={spec.inputWidth-8} height="87" fill="#355564"/><rect x={outputX+4} y="150" width={spec.outputWidth-8} height="106" fill="#355564"/><rect x={inputRight-4} y="210" width={outputX-inputRight+8} height="38" fill="#355564"/><rect x={inputRight-7} y="210" width="14" height="38" fill="#355564"/><rect x={outputX-7} y="210" width="14" height="38" fill="#355564"/>
     {/* Pistons */}<rect x={inputX+10} y="145" width={spec.inputWidth-20} height="24" rx="5" fill="#DDE3EA"/><rect x={outputX+12} y="122" width={spec.outputWidth-24} height="28" rx="5" fill="#DDE3EA"/>
-    <text x="380" y="236" textAnchor="middle" fill="#D9F8FF" fontSize="22" fontWeight="600">continuous hydraulic fluid</text>
     <text x="170" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.inputLabel}</text><text x="590" y="300" textAnchor="middle" fill="#DCE3EA" fontSize="29" fontWeight="600">{spec.outputLabel}</text>{spec.topLabel && <text x="380" y="42" textAnchor="middle" fill="#D9F8FF" fontSize="32" fontWeight="700">{spec.topLabel}</text>}{spec.showInputArrow && <><path d="M 170 36 V 118" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><text x="170" y="28" textAnchor="middle" fill="#D9F8FF" fontSize="24">push down</text></>}{question.questionId === "MMA-HYD-005" && <><path d="M 170 42 V 112" stroke="#5ED3F3" strokeWidth="5" markerEnd={`url(#${arrowId})`}/><path d="M 590 150 V 72" stroke="#D9F8FF" strokeWidth="5" markerEnd={`url(#${arrowId})`}/></>}</svg></div>;
 }
 function MixedMechanicalAssessmentDiagram({ question }: { question: MvpQuestion }) {
