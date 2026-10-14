@@ -10075,8 +10075,8 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <line x1="145" y1="52" x2="615" y2="52" stroke="rgba(255,255,255,0.30)" strokeWidth="8" strokeLinecap="round"/>
       <circle cx="260" cy="64" r="8" fill="#DCE3EA"/><text x="260" y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>
       <circle cx="305" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <line x1="545" y1="52" x2="545" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="545" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <path d="M260 64 V235 A45 45 0 0 0 350 235 V105 H500 V105 A45 45 0 0 1 545 60 H650" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="395" y1="52" x2="395" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="395" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M260 64 V235 A45 45 0 0 0 350 235 V105 A45 45 0 0 1 395 60 H650" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="235" y="294" width="140" height="52" rx="12" fill="#252C35"/><line x1="305" y1="280" x2="305" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="305" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
       <path d="M585 60 H650" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="585" y="96" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="242" y="188" fill="#D9F8FF" fontSize="20">1</text><text x="360" y="188" fill="#D9F8FF" fontSize="20">2</text></>}
@@ -10087,8 +10087,8 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <line x1="290" y1="52" x2="290" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="290" cy="120" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
       <circle cx="380" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
       <circle cx="245" cy="278" r="9" fill="#DCE3EA"/><line x1="245" y1="278" x2="270" y2="294" stroke="rgba(255,255,255,0.45)" strokeWidth="5"/>
-      <line x1="555" y1="52" x2="555" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="555" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <path d="M245 278 V120 A45 45 0 0 1 335 120 V235 A45 45 0 0 0 425 235 V105 H510 V105 A45 45 0 0 1 555 60 H665" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="470" y1="52" x2="470" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="470" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M245 278 V120 A45 45 0 0 1 335 120 V235 A45 45 0 0 0 425 235 V105 A45 45 0 0 1 470 60 H665" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="260" y="294" width="240" height="52" rx="12" fill="#252C35"/><line x1="380" y1="280" x2="380" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="380" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
       <path d="M600 60 H665" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="600" y="96" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="228" y="190" fill="#D9F8FF" fontSize="20">1</text><text x="320" y="190" fill="#D9F8FF" fontSize="20">2</text><text x="437" y="190" fill="#D9F8FF" fontSize="20">3</text></>}
@@ -10099,8 +10099,8 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
       <circle cx="200" cy="64" r="8" fill="#DCE3EA"/><text x="200" y="32" textAnchor="middle" fill="#AAB4C0" fontSize="21">Fixed end</text>
       <line x1="335" y1="52" x2="335" y2="76" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="335" cy="120" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
       <circle cx="245" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/><circle cx="425" cy="235" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <line x1="570" y1="52" x2="570" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="570" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
-      <path d="M200 64 V235 A45 45 0 0 0 290 235 V120 A45 45 0 0 1 380 120 V235 A45 45 0 0 0 470 235 V105 H525 V105 A45 45 0 0 1 570 60 H690" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="515" y1="52" x2="515" y2="60" stroke="rgba(255,255,255,0.28)" strokeWidth="6"/><circle cx="515" cy="105" r="45" fill="#20262F" stroke="rgba(255,255,255,0.30)" strokeWidth="5"/>
+      <path d="M200 64 V235 A45 45 0 0 0 290 235 V120 A45 45 0 0 1 380 120 V235 A45 45 0 0 0 470 235 V105 A45 45 0 0 1 515 60 H690" fill="none" stroke="#5ED3F3" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="175" y="294" width="320" height="52" rx="12" fill="#252C35"/><line x1="245" y1="280" x2="245" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><line x1="425" y1="280" x2="425" y2="294" stroke="rgba(255,255,255,0.35)" strokeWidth="6"/><text x="335" y="328" textAnchor="middle" fill="#F4F6F8" fontSize="25" fontWeight="600">Moving load</text>
       <path d="M625 60 H690" stroke="#D9F8FF" strokeWidth="4" markerEnd={`url(#${arrowId})`}/><text x="625" y="96" fill="#D9F8FF" fontSize="23" fontWeight="600">Effort</text>
       {mode === "guided" && <><text x="182" y="190" fill="#D9F8FF" fontSize="20">1</text><text x="300" y="190" fill="#D9F8FF" fontSize="20">2</text><text x="362" y="190" fill="#D9F8FF" fontSize="20">3</text><text x="482" y="190" fill="#D9F8FF" fontSize="20">4</text></>}
