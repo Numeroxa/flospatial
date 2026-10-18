@@ -139,6 +139,8 @@ type TestScenario =
   | "lever_guided_strong"
   | "lever_independent_strong"
   | "mixed_assessment_pulley_focus"
+  | "numerical_guided_strong"
+  | "numerical_independent_strong"
   | "abstract_guided_ready"
   | "abstract_guided_strong"
   | "abstract_independent_strong"
@@ -5479,6 +5481,21 @@ function createMixedAssessmentPulleyFocusDemoJourney(): MvpGuestJourney {
 }
 
 
+function createNumericalGuidedStrongDemoJourney(): MvpGuestJourney {
+  const base = createHydraulicBaselineDemoJourney();
+  const ready = completeNumericalFundamentals(startNumericalFundamentals(base));
+  const session = createGuidedNumericalPracticeSession();
+  const responses = guidedNumericalPracticeQuestions.map((question, index) => createAssessmentResponse(session.sessionId, question, index < 9 ? question.correctOptionId : getNonCorrectOptionId(question), 12000 + index * 360, false));
+  return completeGuidedNumericalPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
+}
+function createNumericalIndependentStrongDemoJourney(): MvpGuestJourney {
+  const ready = createNumericalGuidedStrongDemoJourney();
+  const session = createNumericalIndependentPracticeSession();
+  const responses = numericalIndependentPracticeQuestions.map((question, index) => createAssessmentResponse(session.sessionId, question, index < 11 ? question.correctOptionId : getNonCorrectOptionId(question), 14500 + index * 410, false));
+  return completeNumericalIndependentPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
+}
+
+
 function createAbstractGuidedReadyDemoJourney(): MvpGuestJourney {
   const base = createHydraulicBaselineDemoJourney();
   const started = startAbstractLogicalFundamentals(base);
@@ -5547,6 +5564,10 @@ function createTestScenarioJourney(scenario: TestScenario): MvpGuestJourney {
       return createLeverIndependentStrongDemoJourney();
     case "mixed_assessment_pulley_focus":
       return createMixedAssessmentPulleyFocusDemoJourney();
+    case "numerical_guided_strong":
+      return createNumericalGuidedStrongDemoJourney();
+    case "numerical_independent_strong":
+      return createNumericalIndependentStrongDemoJourney();
     case "abstract_guided_ready":
       return createAbstractGuidedReadyDemoJourney();
     case "abstract_guided_strong":
@@ -5636,6 +5657,16 @@ function TestScenarioPanel({ onLoad }: { onLoad: (scenario: TestScenario) => voi
       scenario: "mixed_assessment_pulley_focus",
       title: "Mixed assessment → Pulley focus",
       description: "Loads a completed mixed assessment where pulleys become the clearest strengthening recommendation.",
+    },
+    {
+      scenario: "numerical_guided_strong",
+      title: "Strong guided numerical practice",
+      description: "Loads a journey where Independent Numerical Practice is recommended next.",
+    },
+    {
+      scenario: "numerical_independent_strong",
+      title: "Strong independent numerical practice",
+      description: "Loads a journey where independent numerical practice is complete and the Numerical Check is recommended next.",
     },
     {
       scenario: "abstract_guided_ready",
