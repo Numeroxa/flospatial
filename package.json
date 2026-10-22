@@ -1,7 +1,7 @@
 {
   "name": "aptesta",
   "private": true,
-  "version": "0.44.16",
+  "version": "0.44.18",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.4",
+    "@supabase/supabase-js": "2.57.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
