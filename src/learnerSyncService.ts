@@ -4,7 +4,8 @@ export const LEARNER_SYNC_SCHEMA_VERSION = "0.38";
 export type LearnerSyncResult<T> = { journey: T; remoteUpdatedAt: string | null; action: "uploaded" | "merged" };
 
 type AnyRecord = Record<string, any>;
-const ARRAY_ID_KEYS = ["sessionId","responseId","competencyEvidenceId","observationId","constraintId","recommendationId","whyExplanationId","readinessSnapshotId","milestoneId","moduleProgressId","moduleCompletionId","practiceSummaryId","debriefId"];
+// Response identity must take priority: every response also carries its session ID.
+const ARRAY_ID_KEYS = ["responseId","sessionId","competencyEvidenceId","observationId","constraintId","recommendationId","whyExplanationId","readinessSnapshotId","milestoneId","moduleProgressId","moduleCompletionId","practiceSummaryId","debriefId"];
 function requireClient() { if (!supabase) throw new Error("Supabase is not configured on this deployment."); return supabase; }
 function itemKey(item: any, index: number) { if (item && typeof item === "object") for (const key of ARRAY_ID_KEYS) if (item[key]) return `${key}:${item[key]}`; return `json:${JSON.stringify(item)}:${index}`; }
 function unionArray(local: any[] = [], remote: any[] = []) { const map = new Map<string, any>(); remote.forEach((v,i)=>map.set(itemKey(v,i),v)); local.forEach((v,i)=>map.set(itemKey(v,i),v)); return [...map.values()]; }

@@ -1,0 +1,78 @@
+{
+  "package.json": {
+    "normalization": "raw",
+    "sha256": "ac7758261c5b663b73064dfc8ed0655d17d1c02570afc89e7e29bb140d7bf528"
+  },
+  "tsconfig.json": {
+    "normalization": "raw",
+    "sha256": "6f7b0605628713ed180770066e10d31c04924fb1b326b26316d3a28a22dd4d89"
+  },
+  "vite.config.ts": {
+    "normalization": "raw",
+    "sha256": "5d3467c7549855f58348757f8a02aed800e6c4c9efa6481f6f493256ec7bd705"
+  },
+  "src/abstractLogicalCalibrationCatalog.ts": {
+    "normalization": "raw",
+    "sha256": "bab8cee29bdea2da9fd31f07bcdae96c7519898b614f34b7f91322a4c0bda48e"
+  },
+  "src/accountService.ts": {
+    "normalization": "raw",
+    "sha256": "a0cf6b53b9847afaf5e3b3e7f9e03627fa21f014c1375140d316c3ec68a8c1be"
+  },
+  "src/App.shell.tsx": {
+    "normalization": "raw",
+    "sha256": "61247752f3be83e032cbab3b9950ac6e908f0af60791833b4060ba784fbfad47"
+  },
+  "src/App.tsx": {
+    "normalization": "lf-with-starting-declaration-excluded",
+    "sha256": "009eac9d05a5dd0b250f43570fb82bb3db6da91d37fd492722fa43c6c1bcefc9"
+  },
+  "src/assessmentProfiles.ts": {
+    "normalization": "raw",
+    "sha256": "b846ad5be9159c71ecb7f6723266173bae5d7c422ce3a81c88a025965bc2addf"
+  },
+  "src/calibrationCatalog.ts": {
+    "normalization": "raw",
+    "sha256": "ad175351611f98ed685fccdb59ba534b5d15dd8802e062bbaf08c274f33465d1"
+  },
+  "src/calibrationFramework.ts": {
+    "normalization": "raw",
+    "sha256": "19eaec12c891c18aeb1347719b42daee75353f82d3faf4d912bf68f5f38e82bf"
+  },
+  "src/index.css": {
+    "normalization": "raw",
+    "sha256": "8a760a784f79570e06fdcb0c6a2677ea66c304230b7925ea313d63b46d8ba407"
+  },
+  "src/learnerSyncService.ts": {
+    "normalization": "raw",
+    "sha256": "a330a1494e038a78795498de222a669864617424a3ebe010fa94a8a0cffa4e1e"
+  },
+  "src/main.tsx": {
+    "normalization": "raw",
+    "sha256": "ea80670266a7ca3cb25c6a7e78d5243884198462e46b882a3bb80e1f0ef3664d"
+  },
+  "src/mechanicalCalibrationCatalog.ts": {
+    "normalization": "raw",
+    "sha256": "b62d399a608845ab3054e134cbde78fd8f75f05fa194ef478304e120d9a477be"
+  },
+  "src/numericalCalibrationCatalog.ts": {
+    "normalization": "raw",
+    "sha256": "3afa4f4f8ae82b15fd7f52c3516074c9bb8e2a54db12ca627985e9316e6efd95"
+  },
+  "src/pilot2Telemetry.ts": {
+    "normalization": "raw",
+    "sha256": "bec2ebbaf0e9be479207d55b519af95cb9995e0776e53370b895c11695c1611f"
+  },
+  "src/supabaseClient.ts": {
+    "normalization": "raw",
+    "sha256": "e4c6da3ded7a82fab0e8e1a9fa0605e62a8b6e249749f6b597f8b037522b07ed"
+  },
+  "src/verbalCalibrationCatalog.ts": {
+    "normalization": "raw",
+    "sha256": "378ad21fd76e3b1145115971e1f8cc3ce19939e56d65468aac6088c7116d3c36"
+  },
+  "src/vite-env.d.ts": {
+    "normalization": "raw",
+    "sha256": "424faf9241dd699dda995b367ed36665732da1e6ec1f33b2fd40394488ecac92"
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { beginPilot2Question, recordPilot2Selection, submitPilot2Question, buildPilot2Csv, PILOT2_TELEMETRY_VERSION, type Pilot2Telemetry } from "./pilot2Telemetry";
 import { createAptestaAccount, getAptestaSession, isSupabaseConfigured, signInAptesta, signOutAptesta } from "./accountService";
 import { LEARNER_SYNC_SCHEMA_VERSION, learnerJourneyFingerprint, syncLearnerJourney } from "./learnerSyncService";
 import { employerProfiles, gearDirectionFluencyProfile, providerProfiles } from "./assessmentProfiles";
@@ -234,7 +235,7 @@ type AssessmentSession = {
   calibrationFormId?: string;
 };
 
-type AssessmentResponse = {
+type AssessmentResponse = Partial<Pilot2Telemetry> & {
   responseId: string;
   sessionId: string;
   questionId: string;
@@ -243,7 +244,7 @@ type AssessmentResponse = {
   responseTimeMs: number;
   notSureSelected: boolean;
   answeredAt: string;
-  responseTimeBasis?: "selection_latency" | "legacy_next_click";
+  responseTimeBasis?: "selection_latency" | "legacy_next_click" | "submission_latency";
   firstActionTimeMs?: number;
   telemetryVersion?: string;
   deviceClass?: "phone" | "tablet" | "desktop";
@@ -540,7 +541,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Aptesta v0.44 Content & Fidelity";
+const BUILD_LABEL = "Aptesta v0.44.20 Pilot 2 Instrumentation";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -2606,35 +2607,35 @@ const startingAssessmentQuestions: MvpQuestion[] = [
   // Mechanical reasoning — eight questions, two from each core topic.
   makeStartingQuestion("START-MECH-001", "mechanical", "hydraulics", "pressure_transfer", "In a sealed hydraulic system, force is applied to the input piston. What happens to the pressure created in the fluid?", ["It is transmitted through the fluid", "It stays only behind the input piston", "It is destroyed by the fluid", "It can act only if the system is open"], "A", "Pressure applied to a sealed fluid is transmitted through the system."),
   makeStartingQuestion("START-MECH-002", "mechanical", "hydraulics", "piston_area_force", "Why can a larger output piston produce more force than a smaller input piston in an ideal hydraulic system?", ["The same pressure acts over a larger area", "The larger piston creates pressure from nothing", "The output piston always moves farther", "The fluid makes the load lighter"], "A", "At the same pressure, a larger piston area produces greater force."),
-  makeStartingQuestion("START-MECH-003", "mechanical", "gears", "direct_mesh_direction", "Gear A turns clockwise and directly meshes with Gear B. Which way does Gear B turn?", ["Anticlockwise", "Clockwise", "It does not turn", "Direction depends only on gear size"], "A", "Directly meshed gears rotate in opposite directions."),
+  makeStartingQuestion("START-MECH-003", "mechanical", "gears", "direct_mesh_direction", "Two external gears mesh directly without slipping. Viewed from the same side, which pair of rotation directions is possible?", ["Both clockwise","Both anticlockwise","One clockwise and the other anticlockwise","One rotating while the other remains stationary"], "C", "At the contact, the teeth must move together. Directly meshed external gears therefore rotate in opposite directions; neither same-direction pair nor one turning against a stationary gear is possible."),
   makeStartingQuestion("START-MECH-004", "mechanical", "gears", "gear_ratio", "A 12-tooth gear drives a 36-tooth gear. Compared with the 12-tooth gear, the 36-tooth gear turns:", ["At one-third the speed", "Three times faster", "At the same speed", "In no predictable relationship"], "A", "The driven gear has three times as many teeth, so it turns at one-third the speed."),
-  makeStartingQuestion("START-MECH-005", "mechanical", "pulleys", "fixed_pulley", "What is the main effect of a single fixed pulley?", ["It changes the direction of the pulling force", "It halves the required force", "It doubles the load", "It prevents the rope from moving"], "A", "A single fixed pulley mainly changes the direction of effort."),
-  makeStartingQuestion("START-MECH-006", "mechanical", "pulleys", "supporting_strands", "A moving load is directly supported by three rope sections in an ideal pulley system. What is the ideal mechanical advantage?", ["3", "1", "2", "6"], "A", "Three supporting rope sections give an ideal mechanical advantage of three."),
-  makeStartingQuestion("START-MECH-007", "mechanical", "levers", "easiest_setup", "Which lever arrangement gives the greatest ideal force advantage?", ["A long effort arm and a short load arm", "A short effort arm and a long load arm", "Equal arms with the effort at the fulcrum", "No fulcrum"], "A", "A long effort arm and short load arm give the greatest force advantage."),
-  makeStartingQuestion("START-MECH-008", "mechanical", "levers", "moment_balance", "A 300 N load acts 0.5 m from a fulcrum. An effort is applied 1.5 m from the fulcrum. What effort balances the load?", ["100 N", "300 N", "450 N", "900 N"], "A", "The load moment is 300 × 0.5 = 150 N·m. Dividing by the 1.5 m effort arm gives 100 N."),
+  makeStartingQuestion("START-MECH-005", "mechanical", "pulleys", "fixed_pulley", "A single ideal pulley is fixed to the ceiling. A 75 N load hangs from one end of its rope and is held still by a downward pull on the other end. What pull is needed?", ["37.5 N","75 N","150 N","0 N"], "B", "A fixed pulley redirects the pull but provides no ideal force advantage. One rope section supports the load, so holding a 75 N load requires a 75 N pull."),
+  makeStartingQuestion("START-MECH-006", "mechanical", "pulleys", "supporting_strands", "An ideal hoist is re-rigged so that two rope sections support the moving load instead of four. To lift the same load, what happens to the required effort?", ["It halves","It stays the same","It doubles","It becomes four times as large"], "C", "Ideal mechanical advantage equals the number of supporting rope sections. Reducing it from four to two halves the advantage, so the effort needed for the same load doubles."),
+  makeStartingQuestion("START-MECH-007", "mechanical", "levers", "easiest_setup", "A lever has a fixed pivot and a fixed load position. The effort is applied at right angles to the bar. If the effort point is moved from 30 cm to 60 cm from the pivot, what effort is needed to lift the same load ideally?", ["Half as much","The same amount","Twice as much","Four times as much"], "A", "Doubling the effort arm doubles the turning effect of each unit of effort. With the load arm unchanged, half the effort produces the same load-balancing moment."),
+  makeStartingQuestion("START-MECH-008", "mechanical", "levers", "moment_balance", "A 90 N load acts 1.6 m to the right of a pivot. A downward effort acts 0.8 m to the left. What effort balances the lever?", ["45 N","90 N","180 N","72 N"], "C", "The load moment is 90 N × 1.6 m = 144 N·m. Balance requires effort × 0.8 m = 144 N·m, so the effort is 180 N. Its arm is half as long as the load arm, so twice the force is sensible."),
 
   // Numerical reasoning — six questions across arithmetic, estimation, percentages, ratios, rates and data.
   makeStartingQuestion("START-NUM-001", "numerical", "arithmetic_estimation", "basic_arithmetic", "What is 438 + 276?", ["714", "704", "724", "614"], "A", "438 + 276 = 714."),
   makeStartingQuestion("START-NUM-002", "numerical", "arithmetic_estimation", "estimation", "Which is the closest estimate for 39.6 × 5.2?", ["200", "100", "300", "40"], "A", "40 × 5 is about 200."),
   makeStartingQuestion("START-NUM-003", "numerical", "percentages_ratios", "percentage_of_amount", "What is 15% of 320?", ["48", "32", "64", "45"], "A", "10% of 320 is 32 and 5% is 16, giving 48."),
   makeStartingQuestion("START-NUM-004", "numerical", "percentages_ratios", "ratio_sharing", "Red and blue markers are in the ratio 3:5. There are 64 markers altogether. How many are red?", ["24", "40", "18", "32"], "A", "There are eight ratio parts. Each part is 8, so red = 3 × 8 = 24."),
-  makeStartingQuestion("START-NUM-005", "numerical", "rates_proportion", "unit_rate", "A vehicle travels 240 km in 4 hours. What is its average speed?", ["60 km/h", "80 km/h", "40 km/h", "960 km/h"], "A", "240 ÷ 4 = 60 km/h."),
+  makeStartingQuestion("START-NUM-005", "numerical", "rates_proportion", "unit_rate", "A conveyor moves parcels at a constant speed of 3 metres per second. How far does a parcel move in 5 seconds?", ["0.6 metres","8 metres","15 metres","5 metres"], "C", "Distance equals speed × time. At 3 metres each second for 5 seconds, the parcel moves 3 × 5 = 15 metres."),
   makeStartingQuestion("START-NUM-006", "numerical", "tables_data", "table_percentage", "Which station had the highest completion rate?", ["South", "North", "East", "West"], "A", "South completed 45 of 50 tasks, a 90% completion rate, which is the highest.", { dataTable: { headers: ["Station", "Assigned", "Completed"], rows: [["North", "45", "36"], ["South", "50", "45"], ["East", "40", "34"], ["West", "60", "48"]] } }),
 
   // Abstract & logical reasoning — six questions across patterns, matrices, classification and deduction.
-  makeStartingQuestion("START-ABS-001", "abstract_logical", "pattern_sequences", "rotation", "Which symbol comes next?", ["↑", "→", "↓", "←"], "A", "The arrow rotates 90° clockwise each step.", { abstractVisual: { kind: "sequence", rows: [["↑", "→", "↓", "←", "?"]] } }),
-  makeStartingQuestion("START-ABS-002", "abstract_logical", "pattern_sequences", "two_rule_sequence", "What comes next?", ["▲▲▲▲▲", "○○○○○", "▲▲▲▲", "○○○○○○"], "A", "Shape alternates while the count increases by one. The fifth term is five triangles.", { abstractVisual: { kind: "sequence", rows: [["▲", "○○", "▲▲▲", "○○○○", "?"]] } }),
-  makeStartingQuestion("START-ABS-003", "abstract_logical", "matrices_rules", "combination_rule", "What belongs in the missing cell?", ["■■◆", "■◆", "■■", "◆◆"], "A", "The third cell combines the symbols in the first two cells of each row.", { abstractVisual: { kind: "matrix", rows: [["▲", "○○", "▲○○"], ["■■", "◆", "?"]] } }),
+  makeStartingQuestion("START-ABS-001", "abstract_logical", "pattern_sequences", "rotation", "Which arrow completes the sequence?", ["→","↑","←","↓"], "B", "The arrow makes a half-turn (180°) each step: up, down, up, down, then up again.", {"abstractVisual":{"kind":"sequence","rows":[["↑","↓","↑","↓","?"]]}}),
+  makeStartingQuestion("START-ABS-002", "abstract_logical", "pattern_sequences", "two_rule_sequence", "What number comes next?", ["7","8","10","6"], "A", "Read alternate positions as two separate sequences. The first, third and fifth numbers are 2, 4, 6, increasing by 2. The second and fourth are 9, 8, decreasing by 1, so the sixth number is 7.", {"abstractVisual":{"kind":"sequence","rows":[["2","9","4","8","6","?"]]}}),
+  makeStartingQuestion("START-ABS-003", "abstract_logical", "matrices_rules", "combination_rule", "Each row uses the same rule. What belongs in the missing cell?", ["◆■▲","◆","■","▲"], "C", "The third cell keeps only the symbol shared by the first two cells. The first row shares ●; the second row shares ■. Combining all symbols would include symbols that are not shared.", {"abstractVisual":{"kind":"matrix","rows":[["▲●","●■","●"],["◆■","■▲","?"]]}}),
   makeStartingQuestion("START-ABS-004", "abstract_logical", "classification_relationships", "odd_one_out", "Which item is the odd one out?", ["○", "△", "□", "∠"], "D", "The angle is the only item that is not a closed shape.", { abstractVisual: { kind: "set", rows: [["○", "△", "□", "∠"]] } }),
-  makeStartingQuestion("START-ABS-005", "abstract_logical", "deductive_reasoning", "syllogism", "All rescue helmets are equipment. No equipment is a living thing. What must follow?", ["No rescue helmet is a living thing", "All living things are rescue helmets", "Some equipment is a living thing", "All equipment is a rescue helmet"], "A", "Every rescue helmet is equipment, and no equipment is a living thing."),
+  makeStartingQuestion("START-ABS-005", "abstract_logical", "deductive_reasoning", "syllogism", "Every item on the upper shelf is labelled. Some spare batteries are on the upper shelf. Which statement must be true?", ["All spare batteries are labelled","Some spare batteries are labelled","No labelled items are on the upper shelf","All labelled items are spare batteries"], "B", "The spare batteries on the upper shelf are among the items that must be labelled. Therefore some spare batteries are labelled. The statements do not place every spare battery there or say that all labelled items are batteries."),
   makeStartingQuestion("START-ABS-006", "abstract_logical", "deductive_reasoning", "ordering", "Maya finishes before Noah. Noah finishes before Omar. Who must finish last?", ["Omar", "Noah", "Maya", "Cannot be known"], "A", "The required order is Maya, then Noah, then Omar."),
 
   // Verbal comprehension — six questions across stated information, context, instructions, inference and scope.
   makeStartingQuestion("START-VER-001", "verbal", "explicit_information", "stated_detail", "What time must candidates arrive by?", ["07:40", "08:00", "07:20", "08:30"], "A", "The notice explicitly states an arrival time of 07:40.", { verbalPassage: { title: "Assessment notice", text: "Candidates must bring photo identification and arrive by 07:40. Lockers are available for phones and bags. The written assessment begins at 08:00." } }),
-  makeStartingQuestion("START-VER-002", "verbal", "inference_context", "meaning_in_context", "What does concise most nearly mean?", ["Brief but complete", "Confusing and incomplete", "Highly technical", "Repeated several times"], "A", "The context defines concise as covering what matters without unnecessary detail.", { verbalPassage: { title: "Review", text: "The revised instructions were concise: they covered every essential step without unnecessary detail." } }),
-  makeStartingQuestion("START-VER-003", "verbal", "instructions_sequence", "conditional_instruction", "A visitor arrives at 18:20. Which entrance should they use?", ["The west entrance", "The east entrance", "Either entrance", "No entrance is available"], "A", "After 18:00 all visitors must use the staffed west entrance.", { verbalPassage: { title: "Entry procedure", text: "Use the east entrance before 18:00. After 18:00, the east entrance is locked and all visitors must use the staffed west entrance." } }),
+  makeStartingQuestion("START-VER-002", "verbal", "inference_context", "meaning_in_context", "What does cover mean in this message?", ["Keep the shift times secret","Shorten the afternoon shift","Put a roof over the workplace","Work the shift in place of another crew"], "D", "The reserve team is taking over the afternoon work while the morning crew attends training. In this context, cover means work the shift in place of another crew.", {"verbalPassage":{"title":"Roster message","text":"The reserve team will cover the afternoon shift so that the morning crew can attend a training session."}}),
+  makeStartingQuestion("START-VER-003", "verbal", "instructions_sequence", "conditional_instruction", "A candidate returns borrowed keys while the desk is unattended. What should they do?", ["Leave the keys on the desk","Put the keys through the outside mail slot","Place the keys in the secured return box","Keep the keys until the next day"], "C", "The desk is unattended, so the instruction to use the secured return box applies. Leaving keys on the desk, using the outside mail slot or keeping them is not the stated procedure.", {"verbalPassage":{"title":"Key return instructions","text":"Hand borrowed keys to a staff member at the desk. If the desk is unattended, place the keys in the secured return box beside it. Never use the outside mail slot."}}),
   makeStartingQuestion("START-VER-004", "verbal", "instructions_sequence", "ordered_steps", "What should happen immediately after the sample is collected?", ["Seal the container", "Label the container", "Record the time before sealing", "Discard the form"], "A", "The instruction says to seal the container immediately after collection.", { verbalPassage: { title: "Sample procedure", text: "Label the container before collecting the sample. Seal it immediately after collection. Then record the time on the form." } }),
-  makeStartingQuestion("START-VER-005", "verbal", "inference_context", "supported_inference", "What can reasonably be inferred?", ["The failed gauge was not used for the training session", "Both gauges failed the check", "Training began before any gauge was fitted", "The replacement gauge was also marked out of service"], "A", "A passing replacement was fitted before training, supporting that the failed gauge was not used.", { verbalPassage: { title: "Equipment record", text: "A pressure gauge failed its morning check and was marked out of service. A second gauge passed the same check and was fitted to the unit before training began." } }),
+  makeStartingQuestion("START-VER-005", "verbal", "inference_context", "supported_inference", "Which conclusion is best supported?", ["No chair was available when Talia first arrived","The person who left had been refused an interview","Talia was the last person to arrive that day","Everyone in the room was applying for the same role"], "A", "Every chair was occupied on arrival, and Talia sat only after someone left. This supports the conclusion that no chair was initially available. The passage gives no evidence about interviews, other arrival times or why people were there.", {"verbalPassage":{"title":"Waiting room","text":"Every chair in the waiting room was occupied when Talia arrived. She stood by the wall until another person left, then sat in the vacated chair."}}),
   makeStartingQuestion("START-VER-006", "verbal", "assumptions_conclusions", "scope_limit", "Which conclusion is best supported?", ["Most candidates in the pilot completed more questions after the change", "The change will help every future candidate", "The interface was the only factor affecting performance", "All candidates in the pilot improved"], "A", "The evidence supports a statement about most participants in this pilot only.", { verbalPassage: { title: "Pilot study", text: "In a pilot involving 24 candidates, 18 completed more questions after the interface was simplified." } }),
 ];
 
@@ -3101,10 +3102,45 @@ function createAssessmentResponse(
   selectedOptionId: string | null,
   responseTimeMs: number,
   notSureSelected: boolean,
-  telemetry: Partial<Pick<AssessmentResponse, "responseTimeBasis" | "firstActionTimeMs" | "telemetryVersion" | "deviceClass">> = {},
+  telemetry: Partial<Pick<AssessmentResponse, "responseTimeBasis" | "firstActionTimeMs" | "telemetryVersion" | "deviceClass">> & Partial<Pilot2Telemetry> = {},
 ): AssessmentResponse {
   return { responseId: id("response"), sessionId, questionId: question.questionId, selectedOptionId, correct: selectedOptionId === question.correctOptionId, responseTimeMs, notSureSelected, answeredAt: now(), ...telemetry };
 }
+// Pilot 2 uses the existing response record and journey persistence.
+function usePilot2Response(sessionId: string, questionIndex: number) {
+  const key = sessionId + ":" + questionIndex;
+  const captureRef = useRef<{ key: string; capture: ReturnType<typeof beginPilot2Question>; response?: AssessmentResponse }>({ key, capture: beginPilot2Question() });
+  if (captureRef.current.key !== key) captureRef.current = { key, capture: beginPilot2Question() };
+  return {
+    select(optionId: string) { recordPilot2Selection(captureRef.current.capture, optionId); },
+    createResponse(question: MvpQuestion, selectedOptionId: string): AssessmentResponse {
+      const current = captureRef.current;
+      if (!current.response) {
+        const telemetry = submitPilot2Question(current.capture);
+        // Preserve the historical first-selection responseTimeMs for hydraulic/gear independent evidence.
+        const selectionBasis = question.sessionType === "hydraulic_independent_practice" || question.sessionType === "gear_independent_practice";
+        current.response = createAssessmentResponse(sessionId, question, selectedOptionId, selectionBasis ? telemetry.firstSelectionTimeMs : telemetry.totalQuestionTimeMs, false, {
+          ...telemetry, domain: question.domain, subcompetency: question.subcompetency,
+          responseTimeBasis: selectionBasis ? "selection_latency" : "submission_latency",
+          firstActionTimeMs: telemetry.firstSelectionTimeMs,
+          telemetryVersion: PILOT2_TELEMETRY_VERSION, deviceClass: getDeviceClass(),
+        });
+      }
+      return current.response;
+    },
+  };
+}
+
+function downloadPilot2JourneyCsv(journey: MvpGuestJourney) {
+  const questions = [...startingAssessmentQuestions, ...guidedHydraulicPracticeQuestions, ...hydraulicIndependentPracticeQuestions, ...guidedGearPracticeQuestions, ...gearIndependentPracticeQuestionPool, ...gearFluencyQuestionBank, ...gearAssessmentQuestions, ...guidedPulleyPracticeQuestions, ...pulleyIndependentPracticeQuestionPool, ...pulleyAssessmentQuestions, ...guidedLeverPracticeQuestions, ...leverIndependentPracticeQuestionPool, ...leverAssessmentQuestions, ...mixedMechanicalPracticeQuestionPool, ...mixedMechanicalAssessmentQuestionPool, ...guidedNumericalPracticeQuestions, ...numericalIndependentPracticeQuestionPool, ...numericalAssessmentQuestions, ...guidedAbstractLogicalPracticeQuestions, ...abstractLogicalIndependentPracticeQuestionBank, ...abstractLogicalAssessmentQuestions, ...guidedVerbalPracticeQuestions, ...verbalIndependentPracticeQuestionBank, ...verbalAssessmentQuestions];
+  const url = URL.createObjectURL(new Blob([buildPilot2Csv(journey, questions)], { type: "text/csv;charset=utf-8;" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "aptesta-pilot2-" + journey.guestJourneyId + ".csv";
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function evidenceStrength(attempted: number): EvidenceStrength {
   if (attempted === 0) return "none";
   if (attempted <= 5) return "early";
@@ -5528,7 +5564,7 @@ function createVerbalGuidedStrongDemoJourney(): MvpGuestJourney {
 function createVerbalIndependentStrongDemoJourney(): MvpGuestJourney {
   const ready = createVerbalGuidedStrongDemoJourney();
   const session = createVerbalIndependentPracticeSession();
-  const responses = verbalIndependentPracticeQuestions.map((question, index) => createAssessmentResponse(session.sessionId, question, index < 22 ? question.correctOptionId : getNonCorrectOptionId(question), 14500 + index * 410, false));
+  const responses = verbalIndependentPracticeQuestions.map((question, index) => createAssessmentResponse(session.sessionId, question, index < 10 ? question.correctOptionId : getNonCorrectOptionId(question), 14500 + index * 410, false));
   return completeVerbalIndependentPractice({ ...ready, sessions: [...ready.sessions, session], responses: [...ready.responses, ...responses] }, session.sessionId);
 }
 
@@ -5752,7 +5788,7 @@ function learnerGoalLabel(journey: MvpGuestJourney) {
 }
 function LandingScreen({ journey, cloudReturnState, onBegin, onContinue, onOpenAccount, onLoadTestScenario, onOpenMechanicalCalibrationPilot, onOpenNumericalCalibrationPilot, onOpenAbstractLogicalCalibrationPilot, onOpenVerbalCalibrationPilot, onOpenCalibrationFramework, onOpenCalibrationReadiness, onOpenTechnicalPilot, onOpenEmpiricalPilot }: { journey: MvpGuestJourney; cloudReturnState: "checking" | "local" | "restored" | "synced" | "attention"; onBegin: () => void; onContinue: () => void; onOpenAccount: () => void; onLoadTestScenario: (scenario: TestScenario) => void; onOpenMechanicalCalibrationPilot: () => void; onOpenNumericalCalibrationPilot: () => void; onOpenAbstractLogicalCalibrationPilot: () => void; onOpenVerbalCalibrationPilot: () => void; onOpenCalibrationFramework: () => void; onOpenCalibrationReadiness: () => void; onOpenTechnicalPilot: () => void; onOpenEmpiricalPilot: () => void }) {
   const returning = hasMeaningfulLearnerProgress(journey);
-  return <Shell><section className="mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-center px-6 py-16 sm:px-8 sm:py-20"><div className="max-w-3xl"><Badge>No account or email required to begin</Badge><h1 className="mt-8 text-5xl font-semibold leading-tight tracking-tight md:text-6xl">Learn how to solve aptitude-test questions.</h1><p className="mt-8 max-w-2xl text-lg leading-relaxed text-[#9AA3B2]">Structured teaching, realistic practice and clear checks—guided by a Mentor that tells you what to work on next and why.</p>{returning ? <Card className="mt-10 border-[#5ED3F3]/20"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Welcome back</div><h2 className="mt-2 text-2xl font-semibold">Continue your preparation</h2><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Saved goal: {learnerGoalLabel(journey)}. Aptesta will return you to the most useful saved point in your current journey.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onContinue}>Continue preparing</PrimaryButton><SecondaryButton onClick={onBegin}>Start again or change goal</SecondaryButton><SecondaryButton onClick={onOpenAccount}>Open account & cross-device progress</SecondaryButton></div><p className="mt-4 text-xs leading-relaxed text-[#6E7A88]">{cloudReturnState === "restored" ? "Progress restored from your account on this device." : cloudReturnState === "synced" ? "Your account progress is up to date across devices." : cloudReturnState === "attention" ? "Your progress is safe on this device. Open your account to check cross-device progress." : cloudReturnState === "checking" ? "Checking your saved account progress…" : "Your current progress is saved on this device."}</p></Card> : <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onBegin}>Start preparation</PrimaryButton><SecondaryButton onClick={onOpenAccount}>Sign in to an existing account</SecondaryButton></div>}</div><div className="mt-16 grid gap-5 md:grid-cols-3"><Card><h3 className="text-lg font-semibold">Learn the method</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Understand the reasoning before you are expected to perform it independently.</p></Card><Card><h3 className="text-lg font-semibold">Build independent performance</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Move from guided practice to less-supported questions and assessment-style checks.</p></Card><Card><h3 className="text-lg font-semibold">Know what to do next</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">The Mentor recommends the next useful step and explains the evidence behind it.</p></Card></div>{SHOW_TEST_SCENARIOS && <details className="mt-10 rounded-2xl border border-white/5 bg-[#151A21] p-5"><summary className="cursor-pointer text-sm font-medium text-[#8D98A6]">Tester tools</summary><div className="mt-5"><div className="mb-5"><div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#6E7A88]">Calibration labs</div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onOpenMechanicalCalibrationPilot}>Open mechanical calibration pilot</SecondaryButton><SecondaryButton onClick={onOpenNumericalCalibrationPilot}>Open numerical calibration pilot</SecondaryButton><SecondaryButton onClick={onOpenAbstractLogicalCalibrationPilot}>Open abstract/logical calibration pilot</SecondaryButton><PrimaryButton onClick={onOpenVerbalCalibrationPilot}>Open verbal calibration pilot</PrimaryButton><SecondaryButton onClick={onOpenCalibrationFramework}>Open calibration framework</SecondaryButton><PrimaryButton onClick={onOpenCalibrationReadiness}>Open calibration readiness</PrimaryButton><PrimaryButton onClick={onOpenTechnicalPilot}>Open technical pilot</PrimaryButton><PrimaryButton onClick={onOpenEmpiricalPilot}>Open empirical pilot</PrimaryButton></div></div><TestScenarioPanel onLoad={onLoadTestScenario} /></div></details>}</section></Shell>;
+  return <Shell><section className="mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-center px-6 py-16 sm:px-8 sm:py-20"><div className="max-w-3xl"><Badge>No account or email required to begin</Badge><h1 className="mt-8 text-5xl font-semibold leading-tight tracking-tight md:text-6xl">Learn how to solve aptitude-test questions.</h1><p className="mt-8 max-w-2xl text-lg leading-relaxed text-[#9AA3B2]">Structured teaching, realistic practice and clear checks—guided by a Mentor that tells you what to work on next and why.</p>{returning ? <Card className="mt-10 border-[#5ED3F3]/20"><div className="text-sm uppercase tracking-[0.18em] text-[#6E7A88]">Welcome back</div><h2 className="mt-2 text-2xl font-semibold">Continue your preparation</h2><p className="mt-3 text-sm leading-relaxed text-[#AAB4C0]">Saved goal: {learnerGoalLabel(journey)}. Aptesta will return you to the most useful saved point in your current journey.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onContinue}>Continue preparing</PrimaryButton><SecondaryButton onClick={onBegin}>Start again or change goal</SecondaryButton><SecondaryButton onClick={onOpenAccount}>Open account & cross-device progress</SecondaryButton></div><p className="mt-4 text-xs leading-relaxed text-[#6E7A88]">{cloudReturnState === "restored" ? "Progress restored from your account on this device." : cloudReturnState === "synced" ? "Your account progress is up to date across devices." : cloudReturnState === "attention" ? "Your progress is safe on this device. Open your account to check cross-device progress." : cloudReturnState === "checking" ? "Checking your saved account progress…" : "Your current progress is saved on this device."}</p></Card> : <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><PrimaryButton onClick={onBegin}>Start preparation</PrimaryButton><SecondaryButton onClick={onOpenAccount}>Sign in to an existing account</SecondaryButton></div>}</div><div className="mt-16 grid gap-5 md:grid-cols-3"><Card><h3 className="text-lg font-semibold">Learn the method</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Understand the reasoning before you are expected to perform it independently.</p></Card><Card><h3 className="text-lg font-semibold">Build independent performance</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">Move from guided practice to less-supported questions and assessment-style checks.</p></Card><Card><h3 className="text-lg font-semibold">Know what to do next</h3><p className="mt-3 text-sm leading-relaxed text-[#9AA3B2]">The Mentor recommends the next useful step and explains the evidence behind it.</p></Card></div>{SHOW_TEST_SCENARIOS && <details className="mt-10 rounded-2xl border border-white/5 bg-[#151A21] p-5"><summary className="cursor-pointer text-sm font-medium text-[#8D98A6]">Tester tools</summary><div className="mt-4"><SecondaryButton onClick={() => downloadPilot2JourneyCsv(journey)}>Export Pilot 2 journey CSV</SecondaryButton></div><div className="mt-5"><div className="mb-5"><div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#6E7A88]">Calibration labs</div><div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onOpenMechanicalCalibrationPilot}>Open mechanical calibration pilot</SecondaryButton><SecondaryButton onClick={onOpenNumericalCalibrationPilot}>Open numerical calibration pilot</SecondaryButton><SecondaryButton onClick={onOpenAbstractLogicalCalibrationPilot}>Open abstract/logical calibration pilot</SecondaryButton><PrimaryButton onClick={onOpenVerbalCalibrationPilot}>Open verbal calibration pilot</PrimaryButton><SecondaryButton onClick={onOpenCalibrationFramework}>Open calibration framework</SecondaryButton><PrimaryButton onClick={onOpenCalibrationReadiness}>Open calibration readiness</PrimaryButton><PrimaryButton onClick={onOpenTechnicalPilot}>Open technical pilot</PrimaryButton><PrimaryButton onClick={onOpenEmpiricalPilot}>Open empirical pilot</PrimaryButton></div></div><TestScenarioPanel onLoad={onLoadTestScenario} /></div></details>}</section></Shell>;
 }
 function PathwaySelectionScreen({ onSelect, onSelectFrnsw }: { onSelect: () => void; onSelectFrnsw: () => void }) {
   return <Shell right="Learner pathway · v0.29"><section className="mx-auto max-w-5xl px-6 py-12 sm:px-8 sm:py-16">
@@ -6213,7 +6249,7 @@ function DashboardScreen({
 
     <div className="mt-8 flex flex-col gap-3 border-t border-white/5 pt-6 text-sm text-[#6E7A88] sm:flex-row sm:items-center sm:justify-between"><span>Progress is saved on this device.</span><span>Build: {BUILD_LABEL}</span></div>
 
-    {SHOW_TEST_SCENARIOS && <details className="mt-6 rounded-2xl border border-white/5 bg-[#151A21] p-5"><summary className="cursor-pointer text-sm font-medium text-[#8D98A6]">Tester tools</summary><div className="mt-5"><div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onRunGearFluency}>Open Gear Direction Fluency</SecondaryButton><SecondaryButton onClick={onOpenMechanicalCalibrationPilot}>Open mechanical calibration pilot</SecondaryButton><SecondaryButton onClick={onOpenNumericalCalibrationPilot}>Open numerical calibration pilot</SecondaryButton><SecondaryButton onClick={onOpenAbstractLogicalCalibrationPilot}>Open abstract/logical calibration pilot</SecondaryButton><PrimaryButton onClick={onOpenVerbalCalibrationPilot}>Open verbal calibration pilot</PrimaryButton><SecondaryButton onClick={onOpenFluencyAnalytics}>Open fluency analytics</SecondaryButton><SecondaryButton onClick={onOpenCalibrationFramework}>Open calibration framework</SecondaryButton><PrimaryButton onClick={onOpenCalibrationReadiness}>Open calibration readiness</PrimaryButton><PrimaryButton onClick={onOpenTechnicalPilot}>Open technical pilot</PrimaryButton><PrimaryButton onClick={onOpenEmpiricalPilot}>Open empirical pilot</PrimaryButton><SecondaryButton onClick={onReset}>Reset local journey</SecondaryButton></div><TestScenarioPanel onLoad={onLoadTestScenario} /></div></details>}
+    {SHOW_TEST_SCENARIOS && <details className="mt-6 rounded-2xl border border-white/5 bg-[#151A21] p-5"><summary className="cursor-pointer text-sm font-medium text-[#8D98A6]">Tester tools</summary><div className="mt-4"><SecondaryButton onClick={() => downloadPilot2JourneyCsv(journey)}>Export Pilot 2 journey CSV</SecondaryButton></div><div className="mt-5"><div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap"><SecondaryButton onClick={onRunGearFluency}>Open Gear Direction Fluency</SecondaryButton><SecondaryButton onClick={onOpenMechanicalCalibrationPilot}>Open mechanical calibration pilot</SecondaryButton><SecondaryButton onClick={onOpenNumericalCalibrationPilot}>Open numerical calibration pilot</SecondaryButton><SecondaryButton onClick={onOpenAbstractLogicalCalibrationPilot}>Open abstract/logical calibration pilot</SecondaryButton><PrimaryButton onClick={onOpenVerbalCalibrationPilot}>Open verbal calibration pilot</PrimaryButton><SecondaryButton onClick={onOpenFluencyAnalytics}>Open fluency analytics</SecondaryButton><SecondaryButton onClick={onOpenCalibrationFramework}>Open calibration framework</SecondaryButton><PrimaryButton onClick={onOpenCalibrationReadiness}>Open calibration readiness</PrimaryButton><PrimaryButton onClick={onOpenTechnicalPilot}>Open technical pilot</PrimaryButton><PrimaryButton onClick={onOpenEmpiricalPilot}>Open empirical pilot</PrimaryButton><SecondaryButton onClick={onReset}>Reset local journey</SecondaryButton></div><TestScenarioPanel onLoad={onLoadTestScenario} /></div></details>}
   </section></Shell>;
 }
 function HydraulicCuriosityDiagram() {
@@ -7112,10 +7148,11 @@ function GuidedHydraulicPracticeDebriefScreen({ journey, onWhy, onNext, onReview
 
 
 function HydraulicIndependentPracticeIntroScreen({ onStart }: { onStart: () => void }) {
-  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-6 py-12 sm:px-8 sm:py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Try it independently</p><h1 className="mt-5 text-4xl font-semibold">Independent Hydraulic Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Apply the hydraulic method without prompts across ten short, test-style questions. The contexts change, but the underlying relationships stay the same.</p><div className="mx-auto mt-8 grid max-w-xl gap-3 sm:grid-cols-3">{["10 questions", "Immediate feedback", "No guided prompts"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Work accurately first. Speed will come as the pattern becomes familiar.</p><div className="mt-9"><PrimaryButton onClick={onStart}>Begin independent practice</PrimaryButton></div></Card></section></Shell>;
+  return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-6 py-12 sm:px-8 sm:py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Try it independently</p><h1 className="mt-5 text-4xl font-semibold">Independent Hydraulic Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Apply the hydraulic method without prompts across ten short, test-style questions. The contexts change, but the underlying relationships stay the same.</p><div className="mx-auto mt-8 grid max-w-xl gap-3 sm:grid-cols-3">{["10 questions", "Feedback after submission", "No guided prompts"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Work accurately first. Speed will come as the pattern becomes familiar.</p><div className="mt-9"><PrimaryButton onClick={onStart}>Begin independent practice</PrimaryButton></div></Card></section></Shell>;
 }
 
-function HydraulicIndependentPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
+function HydraulicIndependentPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean, commitOnly?: boolean) => void }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -7142,20 +7179,22 @@ function HydraulicIndependentPracticeQuestionScreen({ journey, sessionId, questi
   function select(optionId: string) {
     if (showFeedback) return;
     setSelectedOptionId(optionId);
+    pilot.select(optionId);
     setSelectedAt(Date.now());
-    setShowFeedback(true);
+
   }
 
   function next() {
     if (!selectedOptionId) return;
+    if (!showFeedback) { onAnswer(pilot.createResponse(question, selectedOptionId), false, true); setShowFeedback(true); return; }
     const selectionLatencyMs = Math.max(1, (selectedAt ?? Date.now()) - startedAt);
     onAnswer(
-      createAssessmentResponse(sessionId, question, selectedOptionId, selectionLatencyMs, false, { responseTimeBasis: "selection_latency", telemetryVersion: "learner-v0.24", deviceClass: getDeviceClass() }),
+      pilot.createResponse(question, selectedOptionId),
       questionIndex === hydraulicIndependentPracticeQuestions.length - 1
     );
   }
 
-  return <Shell right="Independent practice"><section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-10 sm:pt-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Independent Hydraulic Practice</p><h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Hydraulic reasoning</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {hydraulicIndependentPracticeQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><div id="hydraulic-independent-question" className="scroll-mt-4"><Card className="p-5 sm:p-6"><p className="text-lg leading-relaxed text-[#F4F6F8] sm:text-xl">{question.stem}</p><div className="mt-5 grid gap-3">{visibleOptions.map((option) => <button key={option.optionId} type="button" onClick={() => select(option.optionId)} disabled={showFeedback} className={`rounded-2xl border bg-[#111418] p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"} ${showFeedback ? "cursor-default" : ""}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{showFeedback && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p></div><div className="shrink-0"><PrimaryButton className="w-full sm:w-auto" onClick={next}>{questionIndex === hydraulicIndependentPracticeQuestions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div>}</Card></div></section></Shell>;
+  return <Shell right="Independent practice"><section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-10 sm:pt-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Independent Hydraulic Practice</p><h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Hydraulic reasoning</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {hydraulicIndependentPracticeQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><div id="hydraulic-independent-question" className="scroll-mt-4"><Card className="p-5 sm:p-6"><p className="text-lg leading-relaxed text-[#F4F6F8] sm:text-xl">{question.stem}</p><div className="mt-5 grid gap-3">{visibleOptions.map((option) => <button key={option.optionId} type="button" onClick={() => select(option.optionId)} disabled={showFeedback} className={`rounded-2xl border bg-[#111418] p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"} ${showFeedback ? "cursor-default" : ""}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{!showFeedback && <div className="mt-6 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === hydraulicIndependentPracticeQuestions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div>}{showFeedback && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p></div><div className="shrink-0"><PrimaryButton className="w-full sm:w-auto" onClick={next}>{questionIndex === hydraulicIndependentPracticeQuestions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div>}</Card></div></section></Shell>;
 }
 
 function HydraulicIndependentPracticeDebriefScreen({ journey, onWhy, onContinue, onDashboard, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; onWhy: () => void; onContinue: () => void; onDashboard: () => void; onReviewIncorrect: () => void; onReviewAll: () => void }) {
@@ -7600,7 +7639,8 @@ function GearIndependentPracticeIntroScreen({ onStart }: { onStart: () => void }
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Independent practice</p><h1 className="mt-5 text-4xl font-semibold">Independent Gear Practice</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">Twelve diagram-based problems covering direction, idlers, relative speed and simple gear ratios.</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{["12 questions", "Immediate answer feedback", "No guided diagram cues"].map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">This is practice, not the final check. You will still see whether each answer is correct, but the diagrams will no longer tell you what to notice.</p><div className="mt-10"><PrimaryButton onClick={onStart}>Begin independent practice</PrimaryButton></div></Card></section></Shell>;
 }
 
-function GearIndependentPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
+function GearIndependentPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean, commitOnly?: boolean) => void }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -7626,22 +7666,14 @@ function GearIndependentPracticeQuestionScreen({ journey, sessionId, questionInd
 
   function select(optionId: string) {
     if (showFeedback) return;
-    const latencyMs = Math.max(0, Date.now() - startedAt);
     setSelectedOptionId(optionId);
-    setShowFeedback(true);
-    // Silent telemetry only. Independent Practice remains untimed for the learner.
-    pendingResponseRef.current = createAssessmentResponse(sessionId, question, optionId, latencyMs, false, {
-      responseTimeBasis: "selection_latency",
-      firstActionTimeMs: latencyMs,
-      telemetryVersion: gearDirectionFluencyProfile.telemetryVersion,
-      deviceClass: getDeviceClass(),
-    });
+    pilot.select(optionId);
   }
 
   function next() {
-    const response = pendingResponseRef.current;
-    if (!response) return;
-    onAnswer(response, questionIndex === gearIndependentPracticeQuestions.length - 1);
+    if (!selectedOptionId) return;
+    if (!showFeedback) { onAnswer(pilot.createResponse(question, selectedOptionId), false, true); setShowFeedback(true); return; }
+    onAnswer(pilot.createResponse(question, selectedOptionId), questionIndex === gearIndependentPracticeQuestions.length - 1);
   }
 
   return (
@@ -7691,6 +7723,7 @@ function GearIndependentPracticeQuestionScreen({ journey, sessionId, questionInd
             })}
           </div>
 
+          {!showFeedback && <div className="mt-6 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === gearIndependentPracticeQuestions.length - 1 ? "Complete independent practice" : "Next question"}</PrimaryButton></div>}
           {showFeedback && (
             <div className={`mt-5 rounded-2xl border p-5 ${
               selectedCorrect
@@ -9899,6 +9932,7 @@ function GearAssessmentIntroScreen({ onStart }: { onStart: () => void }) {
 }
 
 function GearAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); }, [questionIndex]);
@@ -9909,7 +9943,7 @@ function GearAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAns
 
   function next() {
     if (!selectedOptionId) return;
-    const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false);
+    const response = pilot.createResponse(question, selectedOptionId);
     onAnswer(response, questionIndex === gearAssessmentQuestions.length - 1);
   }
 
@@ -9925,7 +9959,7 @@ function GearAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAns
           <GearQuestionDiagram question={question} mode="assessment" />
           <p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p>
           <div className="mt-8 grid gap-4">
-            {question.options.map((option) => <button key={option.optionId} onClick={() => setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}
+            {question.options.map((option) => <button key={option.optionId} onClick={() => { setSelectedOptionId(option.optionId); pilot.select(option.optionId); }} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}
           </div>
           <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === gearAssessmentQuestions.length - 1 ? "Finish Gear Check" : "Next question"}</PrimaryButton></div>
         </Card>
@@ -10141,7 +10175,7 @@ function PulleyQuestionDiagram({ question, mode, hideContextLabel = false }: { q
   return <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">{!hideContextLabel && <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#6E7A88]">Pulley diagram</div>}<svg viewBox="0 0 760 370" role="img" aria-label={`Mechanically routed continuous rope system with ${count} supporting rope section${count === 1 ? "" : "s"}`} className="h-auto w-full">{commonDefs}{mechanism}</svg>{helper && <p className="mt-3 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/10 p-4 text-sm leading-relaxed text-[#D9F8FF]">{helper}</p>}</div>;
 }
 function PulleyPracticeIntroScreen({ stage, onStart }: { stage: "guided" | "independent" | "assessment"; onStart: () => void }) {
-  const config = stage === "guided" ? { eyebrow: "Guided practice", title: "Guided Pulley Practice", body: "Ten diagram-based questions with immediate feedback. The diagrams help you apply the supporting-strand method.", items: ["10 questions", "Immediate feedback", "Guided diagrams"], button: "Begin guided practice" } : stage === "independent" ? { eyebrow: "Independent practice", title: "Independent Pulley Practice", body: "Twelve less-supported questions covering recognition, strand counting, force calculations and the distance tradeoff.", items: ["12 questions", "Immediate feedback", "Less support"], button: "Begin independent practice" } : { eyebrow: "Assessment-style check", title: "Pulley Check", body: "Ten questions with no immediate feedback. This gives a cleaner picture of what remains available independently.", items: ["10 questions", "No immediate feedback", "Untimed"], button: "Start Pulley Check" };
+  const config = stage === "guided" ? { eyebrow: "Guided practice", title: "Guided Pulley Practice", body: "Ten diagram-based questions with immediate feedback. The diagrams help you apply the supporting-strand method.", items: ["10 questions", "Immediate feedback", "Guided diagrams"], button: "Begin guided practice" } : stage === "independent" ? { eyebrow: "Independent practice", title: "Independent Pulley Practice", body: "Twelve less-supported questions covering recognition, strand counting, force calculations and the distance tradeoff.", items: ["12 questions", "Feedback after submission", "Less support"], button: "Begin independent practice" } : { eyebrow: "Assessment-style check", title: "Pulley Check", body: "Ten questions with no immediate feedback. This gives a cleaner picture of what remains available independently.", items: ["10 questions", "No immediate feedback", "Untimed"], button: "Start Pulley Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item)=><div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
 }
 
@@ -10156,7 +10190,8 @@ function PulleyReasoningReminder() {
   );
 }
 
-function PulleyPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: PulleyQuestionMode }) {
+function PulleyPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean, commitOnly?: boolean) => void; questions: MvpQuestion[]; stage: PulleyQuestionMode }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -10181,13 +10216,14 @@ function PulleyPracticeQuestionScreen({ journey, sessionId, questionIndex, onAns
 
   function select(optionId: string) {
     if (immediate && showFeedback) return;
-    setSelectedOptionId(optionId);
-    if (immediate) setShowFeedback(true);
+    setSelectedOptionId(optionId); pilot.select(optionId);
+    if (stage === "guided") setShowFeedback(true);
   }
 
   function next() {
     if (!selectedOptionId) return;
-    const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false);
+    if (stage === "independent" && !showFeedback) { onAnswer(pilot.createResponse(question, selectedOptionId), false, true); setShowFeedback(true); return; }
+    const response = (stage === "guided" ? createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false) : pilot.createResponse(question, selectedOptionId));
     onAnswer(response, questionIndex === questions.length - 1);
   }
 
@@ -10266,7 +10302,7 @@ function PulleyPracticeQuestionScreen({ journey, sessionId, questionIndex, onAns
             </div>
           )}
 
-          {!immediate && (
+          {stage !== "guided" && !showFeedback && (
             <div className="mt-8 flex justify-end">
               <PrimaryButton disabled={!selectedOptionId} onClick={next}>
                 {questionIndex === questions.length - 1 ? "Finish Pulley Check" : "Next question"}
@@ -10406,7 +10442,7 @@ function LeverQuestionDiagram({ question, mode }: { question: MvpQuestion; mode:
 }
 
 function LeverPracticeIntroScreen({ stage, onStart }: { stage: "guided" | "independent" | "assessment"; onStart: () => void }) {
-  const config = stage === "guided" ? { eyebrow: "Guided practice", title: "Guided Lever Practice", body: "Ten diagram-based questions with immediate feedback. The diagrams help you apply the fulcrum-and-arm method.", items: ["10 questions", "Immediate feedback", "Guided diagrams"], button: "Begin guided practice" } : stage === "independent" ? { eyebrow: "Independent practice", title: "Independent Lever Practice", body: "Twelve less-supported questions covering setup recognition, mechanical advantage, moments and force-distance tradeoffs.", items: ["12 questions", "Immediate feedback", "Less support"], button: "Begin independent practice" } : { eyebrow: "Assessment-style check", title: "Lever Check", body: "Ten questions with no immediate feedback. This gives a cleaner picture of what remains available independently.", items: ["10 questions", "No immediate feedback", "Untimed"], button: "Start Lever Check" };
+  const config = stage === "guided" ? { eyebrow: "Guided practice", title: "Guided Lever Practice", body: "Ten diagram-based questions with immediate feedback. The diagrams help you apply the fulcrum-and-arm method.", items: ["10 questions", "Immediate feedback", "Guided diagrams"], button: "Begin guided practice" } : stage === "independent" ? { eyebrow: "Independent practice", title: "Independent Lever Practice", body: "Twelve less-supported questions covering setup recognition, mechanical advantage, moments and force-distance tradeoffs.", items: ["12 questions", "Feedback after submission", "Less support"], button: "Begin independent practice" } : { eyebrow: "Assessment-style check", title: "Lever Check", body: "Ten questions with no immediate feedback. This gives a cleaner picture of what remains available independently.", items: ["10 questions", "No immediate feedback", "Untimed"], button: "Start Lever Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item)=><div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
 }
 
@@ -10421,7 +10457,8 @@ function LeverReasoningReminder() {
   );
 }
 
-function LeverPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: LeverQuestionMode }) {
+function LeverPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean, commitOnly?: boolean) => void; questions: MvpQuestion[]; stage: LeverQuestionMode }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -10446,13 +10483,14 @@ function LeverPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnsw
 
   function select(optionId: string) {
     if (immediate && showFeedback) return;
-    setSelectedOptionId(optionId);
-    if (immediate) setShowFeedback(true);
+    setSelectedOptionId(optionId); pilot.select(optionId);
+    if (stage === "guided") setShowFeedback(true);
   }
 
   function next() {
     if (!selectedOptionId) return;
-    const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false);
+    if (stage === "independent" && !showFeedback) { onAnswer(pilot.createResponse(question, selectedOptionId), false, true); setShowFeedback(true); return; }
+    const response = (stage === "guided" ? createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false) : pilot.createResponse(question, selectedOptionId));
     onAnswer(response, questionIndex === questions.length - 1);
   }
 
@@ -10531,7 +10569,7 @@ function LeverPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnsw
             </div>
           )}
 
-          {!immediate && (
+          {stage !== "guided" && !showFeedback && (
             <div className="mt-8 flex justify-end">
               <PrimaryButton disabled={!selectedOptionId} onClick={next}>
                 {questionIndex === questions.length - 1 ? "Finish Lever Check" : "Next question"}
@@ -10708,7 +10746,7 @@ function NumericalPracticeIntroScreen({ stage, onStart }: { stage: NumericalStag
   const config = stage === "guided"
     ? { eyebrow: "Learning through application", title: "Guided Numerical Practice", description: "Ten questions across arithmetic, percentages, ratios, rates and data. Immediate feedback helps you correct the method as you work.", items: ["10 questions", "Immediate feedback", "Four numerical areas"], action: "Begin guided practice" }
     : stage === "independent"
-      ? { eyebrow: "Less-supported practice", title: "Independent Numerical Practice", description: "A balanced mixed set across arithmetic, percentages and ratios, rates, and data interpretation. Feedback follows each answer, but the method is yours to choose.", items: ["12 questions", "Immediate feedback", "Mixed numerical methods"], action: "Start independent practice" }
+      ? { eyebrow: "Less-supported practice", title: "Independent Numerical Practice", description: "A balanced mixed set across arithmetic, percentages and ratios, rates, and data interpretation. Feedback follows submission, but the method is yours to choose.", items: ["12 questions", "Feedback after submission", "Mixed numerical methods"], action: "Start independent practice" }
       : { eyebrow: "Assessment-style check", title: "Numerical Check", description: "Twelve mixed questions with no immediate answer feedback. The Mentor will use the result to identify either a clear area to strengthen or a progression step.", items: ["12 questions", "No immediate feedback", "Untimed in v1"], action: "Start Numerical Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.description}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><p className="mx-auto mt-7 max-w-xl text-sm leading-relaxed text-[#8D98A6]">Use mental or written working. The alpha build does not include a calculator.</p><div className="mt-10"><PrimaryButton onClick={onStart}>{config.action}</PrimaryButton></div></Card></section></Shell>;
 }
@@ -10762,7 +10800,8 @@ function NumericalReasoningReminder() {
   );
 }
 
-function NumericalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: NumericalStage }) {
+function NumericalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean, commitOnly?: boolean) => void; questions: MvpQuestion[]; stage: NumericalStage }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -10788,14 +10827,15 @@ function NumericalPracticeQuestionScreen({ journey, sessionId, questionIndex, on
 
   function select(optionId: string) {
     if (immediate && showFeedback) return;
-    setSelectedOptionId(optionId);
-    if (immediate) setShowFeedback(true);
+    setSelectedOptionId(optionId); pilot.select(optionId);
+    if (stage === "guided") setShowFeedback(true);
   }
 
   function next() {
     if (!selectedOptionId) return;
+    if (stage === "independent" && !showFeedback) { onAnswer(pilot.createResponse(question, selectedOptionId), false, true); setShowFeedback(true); return; }
     onAnswer(
-      createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false),
+      (stage === "guided" ? createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false) : pilot.createResponse(question, selectedOptionId)),
       questionIndex === questions.length - 1
     );
   }
@@ -10880,10 +10920,10 @@ function NumericalPracticeQuestionScreen({ journey, sessionId, questionIndex, on
             </div>
           )}
 
-          {!immediate && (
+          {stage !== "guided" && !showFeedback && (
             <div className="mt-8 flex justify-end">
               <PrimaryButton disabled={!selectedOptionId} onClick={next}>
-                {questionIndex === questions.length - 1 ? "Finish check" : "Next question"}
+                {questionIndex === questions.length - 1 ? (stage === "assessment" ? "Finish check" : "Complete practice") : "Next question"}
               </PrimaryButton>
             </div>
           )}
@@ -11013,12 +11053,13 @@ function AbstractLogicalPracticeIntroScreen({ stage, onStart }: { stage: Abstrac
   const config = stage === "guided"
     ? { eyebrow: "Guided learning", title: "Guided Abstract & Logical Practice", body: "Twelve balanced questions across patterns, matrices, classification and deduction. Use the same rule-finding routine, with immediate feedback and a short cue about what to notice.", items: ["12 questions", "Immediate feedback", "Rule-finding cues"], button: "Start guided practice" }
     : stage === "independent"
-      ? { eyebrow: "Less-supported practice", title: "Independent Abstract & Logical Practice", body: "Twelve balanced questions across patterns, matrices, classification and deduction. Feedback comes after each answer, but the method is no longer signposted.", items: ["12 questions", "Immediate feedback", "3 per category"], button: "Start independent practice" }
+      ? { eyebrow: "Less-supported practice", title: "Independent Abstract & Logical Practice", body: "Twelve balanced questions across patterns, matrices, classification and deduction. Feedback comes after submission, but the method is no longer signposted.", items: ["12 questions", "Feedback after submission", "3 per category"], button: "Start independent practice" }
       : { eyebrow: "Assessment-style check", title: "Abstract & Logical Check", body: "Twelve mixed questions with no immediate answer feedback. The Mentor will identify either a clear area to strengthen or a progression step.", items: ["12 questions", "No immediate feedback", "Untimed in v1"], button: "Start Abstract & Logical Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
 }
 
-function AbstractLogicalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: AbstractLogicalStage }) {
+function AbstractLogicalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean, commitOnly?: boolean) => void; questions: MvpQuestion[]; stage: AbstractLogicalStage }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -11027,10 +11068,11 @@ function AbstractLogicalPracticeQuestionScreen({ journey, sessionId, questionInd
   const progress = ((questionIndex + 1) / questions.length) * 100;
   const answered = journey.responses.filter((r) => r.sessionId === sessionId).length;
   const selectedCorrect = selectedOptionId === question.correctOptionId;
-  function select(optionId: string) { if (stage !== "assessment" && showFeedback) return; setSelectedOptionId(optionId); if (stage !== "assessment") setShowFeedback(true); }
-  function next() { if (!selectedOptionId) return; const response = createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false); onAnswer(response, questionIndex === questions.length - 1); }
+  function select(optionId: string) { if (stage !== "assessment" && showFeedback) return; setSelectedOptionId(optionId); pilot.select(optionId); if (stage === "guided") setShowFeedback(true); }
+  function next() { if (!selectedOptionId) return;
+    if (stage === "independent" && !showFeedback) { onAnswer(pilot.createResponse(question, selectedOptionId), false, true); setShowFeedback(true); return; } const response = (stage === "guided" ? createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false) : pilot.createResponse(question, selectedOptionId)); onAnswer(response, questionIndex === questions.length - 1); }
   const title = stage === "guided" ? "Guided Abstract & Logical Practice" : stage === "independent" ? "Independent Abstract & Logical Practice" : "Abstract & Logical Check";
-  return <Shell right={title}><section className={`mx-auto max-w-5xl px-8 pt-12 ${stage === "assessment" ? "pb-12" : "pb-44 lg:pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Find the rule</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br /><span className="text-xs">{answered} saved</span></div></div>{stage !== "assessment" && <div className="mb-7 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5ED3F3]">Reasoning reminder</div><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">Identify the type → separate the features → test the simplest rule → verify it across every step.</p></div>}<Card>{question.abstractVisual && <AbstractLogicalVisualPanel visual={question.abstractVisual} />}{stage === "guided" && question.feedbackCue && <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">{question.feedbackCue}</div>}<p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-lg text-[#DCE3EA]">{option.text}</span></button>)}</div>{stage === "assessment" ? <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === questions.length - 1 ? "Finish check" : "Next question"}</PrimaryButton></div> : showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl lg:static lg:mt-7 lg:rounded-2xl lg:border lg:p-5 lg:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div></div>}</Card></section></Shell>;
+  return <Shell right={title}><section className={`mx-auto max-w-5xl px-8 pt-12 ${stage === "assessment" ? "pb-12" : "pb-44 lg:pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Find the rule</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br /><span className="text-xs">{answered} saved</span></div></div>{stage !== "assessment" && <div className="mb-7 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5ED3F3]">Reasoning reminder</div><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">Identify the type → separate the features → test the simplest rule → verify it across every step.</p></div>}<Card>{question.abstractVisual && <AbstractLogicalVisualPanel visual={question.abstractVisual} />}{stage === "guided" && question.feedbackCue && <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">{question.feedbackCue}</div>}<p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-lg text-[#DCE3EA]">{option.text}</span></button>)}</div>{stage !== "guided" && !showFeedback ? <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === questions.length - 1 ? (stage === "assessment" ? "Finish check" : "Complete practice") : "Next question"}</PrimaryButton></div> : showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl lg:static lg:mt-7 lg:rounded-2xl lg:border lg:p-5 lg:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div></div>}</Card></section></Shell>;
 }
 
 function AbstractLogicalDebriefScreen({ journey, stage, onWhy, onDashboard, onNext, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; stage: AbstractLogicalStage; onWhy: () => void; onDashboard: () => void; onNext?: () => void; onReviewIncorrect?: () => void; onReviewAll?: () => void }) {
@@ -11088,7 +11130,7 @@ function VerbalPracticeIntroScreen({ stage, onStart }: { stage: VerbalStage; onS
   const config = stage === "guided"
     ? { eyebrow: "Guided practice", title: "Guided Verbal Practice", body: "Twelve balanced questions across explicit information, inference and context, instructions, and evidence-based conclusions. Immediate feedback keeps the reading method visible.", items: ["12 questions", "Immediate feedback", "3 per category"], button: "Start guided practice" }
     : stage === "independent"
-      ? { eyebrow: "Less-supported practice", title: "Independent Verbal Practice", body: "Twelve balanced questions across the four verbal skills. Feedback follows each answer, but the reading focus is no longer signposted.", items: ["12 questions", "Immediate feedback", "3 per category"], button: "Start independent practice" }
+      ? { eyebrow: "Less-supported practice", title: "Independent Verbal Practice", body: "Twelve balanced questions across the four verbal skills. Feedback follows submission, but the reading focus is no longer signposted.", items: ["12 questions", "Feedback after submission", "3 per category"], button: "Start independent practice" }
       : { eyebrow: "Assessment-style check", title: "Verbal Comprehension Check", body: "Twelve mixed questions with no immediate answer feedback. The Mentor will identify either a clear area to strengthen or a progression step.", items: ["12 questions", "No immediate feedback", "Untimed in v1"], button: "Start Verbal Check" };
   return <Shell><section className="mx-auto flex min-h-[82vh] max-w-3xl items-center px-8 py-16"><Card className="text-center"><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{config.eyebrow}</p><h1 className="mt-5 text-4xl font-semibold">{config.title}</h1><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#9AA3B2]">{config.body}</p><div className="mx-auto mt-9 grid max-w-xl gap-3 sm:grid-cols-3">{config.items.map((item) => <div key={item} className="rounded-xl border border-white/5 bg-[#111418] p-4 text-sm text-[#AAB4C0]">{item}</div>)}</div><div className="mt-10"><PrimaryButton onClick={onStart}>{config.button}</PrimaryButton></div></Card></section></Shell>;
 }
@@ -11115,7 +11157,8 @@ function VerbalPassagePanel({ passage }: { passage?: VerbalPassage }) {
   );
 }
 
-function VerbalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void; questions: MvpQuestion[]; stage: VerbalStage }) {
+function VerbalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnswer, questions, stage }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean, commitOnly?: boolean) => void; questions: MvpQuestion[]; stage: VerbalStage }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -11141,14 +11184,15 @@ function VerbalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAns
 
   function select(optionId: string) {
     if (immediate && showFeedback) return;
-    setSelectedOptionId(optionId);
-    if (immediate) setShowFeedback(true);
+    setSelectedOptionId(optionId); pilot.select(optionId);
+    if (stage === "guided") setShowFeedback(true);
   }
 
   function next() {
     if (!selectedOptionId) return;
+    if (stage === "independent" && !showFeedback) { onAnswer(pilot.createResponse(question, selectedOptionId), false, true); setShowFeedback(true); return; }
     onAnswer(
-      createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false),
+      (stage === "guided" ? createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false) : pilot.createResponse(question, selectedOptionId)),
       questionIndex === questions.length - 1
     );
   }
@@ -11227,10 +11271,10 @@ function VerbalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAns
             </div>
           )}
 
-          {!immediate && (
+          {stage !== "guided" && !showFeedback && (
             <div className="mt-8 flex justify-end">
               <PrimaryButton disabled={!selectedOptionId} onClick={next}>
-                {questionIndex === questions.length - 1 ? "Finish check" : "Next question"}
+                {questionIndex === questions.length - 1 ? (stage === "assessment" ? "Finish check" : "Complete practice") : "Next question"}
               </PrimaryButton>
             </div>
           )}
@@ -11409,6 +11453,7 @@ function MixedMechanicalAssessmentIntroScreen({ onStart }: { onStart: () => void
 }
 
 function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAnswer }: { journey: MvpGuestJourney; sessionId: string; questionIndex: number; onAnswer: (response: AssessmentResponse, final: boolean) => void }) {
+  const pilot = usePilot2Response(sessionId, questionIndex);
   const [startedAt, setStartedAt] = useState(Date.now());
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); setStartedAt(Date.now()); setSelectedOptionId(null); }, [questionIndex]);
@@ -11416,13 +11461,13 @@ function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionI
   if (!question) return null;
   const progress = ((questionIndex + 1) / mixedMechanicalAssessmentQuestions.length) * 100;
   const answered = journey.responses.filter((response) => response.sessionId === sessionId).length;
-  function next() { if (!selectedOptionId) return; onAnswer(createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false), questionIndex === mixedMechanicalAssessmentQuestions.length - 1); }
+  function next() { if (!selectedOptionId) return; onAnswer(pilot.createResponse(question, selectedOptionId), questionIndex === mixedMechanicalAssessmentQuestions.length - 1); }
   const actionLabel = questionIndex === mixedMechanicalAssessmentQuestions.length - 1 ? "Finish assessment" : "Next question";
   return <Shell right="Mixed Mechanical Assessment">
     <section className="mx-auto max-w-5xl px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-8 sm:px-8 sm:py-12 sm:pb-32">
       <div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div>
       <div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div>
-      <Card className="p-4 sm:p-7"><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={()=>setSelectedOptionId(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div></Card>
+      <Card className="p-4 sm:p-7"><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={() => { setSelectedOptionId(option.optionId); pilot.select(option.optionId); }} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div></Card>
     </section>
     <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 border-t border-white/10 bg-[#111418]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] backdrop-blur sm:bottom-0 sm:px-8">
       <div className="mx-auto flex max-w-5xl justify-end"><PrimaryButton className="w-full text-base sm:w-auto sm:min-w-52" disabled={!selectedOptionId} onClick={next}>{actionLabel}</PrimaryButton></div>
@@ -11631,10 +11676,11 @@ export default function AptestaPrototype() {
     setScreen("hydraulic-independent-practice-intro");
   }
   function startHydraulicIndependentPractice() { const session = createHydraulicIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("hydraulic-independent-practice-question"); }
-  function handleHydraulicIndependentAnswer(response: AssessmentResponse, final: boolean) {
+  function handleHydraulicIndependentAnswer(response: AssessmentResponse, final: boolean, commitOnly = false) {
     const retainedResponses = journey.responses.filter((item) => !(item.sessionId === response.sessionId && item.questionId === response.questionId));
     const nextResponses = [...retainedResponses, response];
     const withResponse: MvpGuestJourney = { ...journey, responses: nextResponses, updatedAt: now() };
+    if (commitOnly) { updateJourney(withResponse); return; }
     if (final) {
       const completed = completeHydraulicIndependentPractice(withResponse, response.sessionId);
       updateJourney(completed);
@@ -11671,8 +11717,9 @@ export default function AptestaPrototype() {
   }
   function openGearIndependentPracticeIntro() { setShowWhy(false); setScreen("gear-independent-practice-intro"); }
   function startGearIndependentPractice() { const session = createGearIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("gear-independent-practice-question"); }
-  function handleGearIndependentPracticeAnswer(response: AssessmentResponse, final: boolean) {
-    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+  function handleGearIndependentPracticeAnswer(response: AssessmentResponse, final: boolean, commitOnly = false) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses.filter((item) => item.responseId !== response.responseId), response], updatedAt: now() };
+    if (commitOnly) { updateJourney(withResponse); return; }
     if (final && activeSessionId) { const completed = completeGearIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("gear-independent-practice-debrief"); return; }
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
@@ -11701,8 +11748,9 @@ export default function AptestaPrototype() {
   }
   function openPulleyIndependentPracticeIntro() { setShowWhy(false); setScreen("pulley-independent-practice-intro"); }
   function startPulleyIndependentPractice() { const session = createPulleyIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("pulley-independent-practice-question"); }
-  function handlePulleyIndependentPracticeAnswer(response: AssessmentResponse, final: boolean) {
-    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+  function handlePulleyIndependentPracticeAnswer(response: AssessmentResponse, final: boolean, commitOnly = false) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses.filter((item) => item.responseId !== response.responseId), response], updatedAt: now() };
+    if (commitOnly) { updateJourney(withResponse); return; }
     if (final && activeSessionId) { const completed = completePulleyIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("pulley-independent-practice-debrief"); return; }
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
@@ -11721,7 +11769,7 @@ export default function AptestaPrototype() {
   function handleGuidedLeverAnswer(response: AssessmentResponse, final: boolean) { const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() }; if (final && activeSessionId) { const completed = completeGuidedLeverPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("guided-lever-practice-debrief"); return; } updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1); }
   function openLeverIndependentPracticeIntro() { setShowWhy(false); setScreen("lever-independent-practice-intro"); }
   function startLeverIndependentPractice() { const session = createLeverIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("lever-independent-practice-question"); }
-  function handleLeverIndependentPracticeAnswer(response: AssessmentResponse, final: boolean) { const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() }; if (final && activeSessionId) { const completed = completeLeverIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("lever-independent-practice-debrief"); return; } updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1); }
+  function handleLeverIndependentPracticeAnswer(response: AssessmentResponse, final: boolean, commitOnly = false) { const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses.filter((item) => item.responseId !== response.responseId), response], updatedAt: now() }; if (commitOnly) { updateJourney(withResponse); return; } if (final && activeSessionId) { const completed = completeLeverIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("lever-independent-practice-debrief"); return; } updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1); }
   function openLeverAssessmentIntro() { setShowWhy(false); setScreen("lever-assessment-intro"); }
   function startLeverAssessment() { const session = createLeverAssessmentSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("lever-assessment-question"); }
   function handleLeverAssessmentAnswer(response: AssessmentResponse, final: boolean) { const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() }; if (final && activeSessionId) { const completed = completeLeverAssessment(withResponse, activeSessionId); updateJourney(completed); setScreen("lever-assessment-debrief"); return; } updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1); }
@@ -11753,8 +11801,9 @@ export default function AptestaPrototype() {
   }
   function openNumericalIndependentPracticeIntro() { setShowWhy(false); setScreen("numerical-independent-practice-intro"); }
   function startNumericalIndependentPractice() { const session = createNumericalIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("numerical-independent-practice-question"); }
-  function handleNumericalIndependentAnswer(response: AssessmentResponse, final: boolean) {
-    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+  function handleNumericalIndependentAnswer(response: AssessmentResponse, final: boolean, commitOnly = false) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses.filter((item) => item.responseId !== response.responseId), response], updatedAt: now() };
+    if (commitOnly) { updateJourney(withResponse); return; }
     if (final && activeSessionId) { const completed = completeNumericalIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("numerical-independent-practice-debrief"); return; }
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
@@ -11778,8 +11827,9 @@ export default function AptestaPrototype() {
   }
   function openAbstractLogicalIndependentPracticeIntro() { setShowWhy(false); setScreen("abstract-logical-independent-practice-intro"); }
   function startAbstractLogicalIndependentPractice() { const session = createAbstractLogicalIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("abstract-logical-independent-practice-question"); }
-  function handleAbstractLogicalIndependentAnswer(response: AssessmentResponse, final: boolean) {
-    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+  function handleAbstractLogicalIndependentAnswer(response: AssessmentResponse, final: boolean, commitOnly = false) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses.filter((item) => item.responseId !== response.responseId), response], updatedAt: now() };
+    if (commitOnly) { updateJourney(withResponse); return; }
     if (final && activeSessionId) { const completed = completeAbstractLogicalIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setScreen("abstract-logical-independent-practice-debrief"); return; }
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
@@ -11803,8 +11853,9 @@ export default function AptestaPrototype() {
   }
   function openVerbalIndependentPracticeIntro() { setShowWhy(false); setScreen("verbal-independent-practice-intro"); }
   function startVerbalIndependentPractice() { const session = createVerbalIndependentPracticeSession(); updateJourney({ ...journey, sessions: [...journey.sessions, session] }); setActiveSessionId(session.sessionId); setActiveQuestionIndex(0); setShowWhy(false); setScreen("verbal-independent-practice-question"); }
-  function handleVerbalIndependentAnswer(response: AssessmentResponse, final: boolean) {
-    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses, response], updatedAt: now() };
+  function handleVerbalIndependentAnswer(response: AssessmentResponse, final: boolean, commitOnly = false) {
+    const withResponse: MvpGuestJourney = { ...journey, responses: [...journey.responses.filter((item) => item.responseId !== response.responseId), response], updatedAt: now() };
+    if (commitOnly) { updateJourney(withResponse); return; }
     if (final && activeSessionId) { const completed = completeVerbalIndependentPractice(withResponse, activeSessionId); updateJourney(completed); setActiveSessionId(undefined); setActiveQuestionIndex(0); setScreen("verbal-independent-practice-debrief"); return; }
     updateJourney(withResponse); setActiveQuestionIndex((idx) => idx + 1);
   }
