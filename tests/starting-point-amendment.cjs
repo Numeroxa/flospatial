@@ -100,7 +100,7 @@ module.exports = function testStartingPoint(app, baseline) {
     assert.ok(variants.some(input => hash(input) === entry.sha256),'reviewed runtime preserved: '+name);
   }
   const reviewedPackage = JSON.parse(execFileSync('git',['show',reviewedCommit+':package.json'],{cwd:repo}));
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(repo,'package.json'))), {...reviewedPackage,version:'0.44.21'});
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(repo,'package.json'))), {...reviewedPackage,version:'0.44.22'});
   console.log('PASS 13 replacements: exact scope, keys/solvers, mappings, retained items, scoring/recommendations and reviewed v0.44.20 runtime hashes');
 };
 module.exports.authorised = authorised;
