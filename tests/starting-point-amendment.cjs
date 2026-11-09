@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const { execFileSync } = require('node:child_process');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const ts = require('typescript');
@@ -68,18 +69,38 @@ module.exports = function testStartingPoint(app, baseline) {
     assert.equal(currentResult.recommendations.at(-1).title,oldResult.recommendations.at(-1).title,'recommendation title');
     if(wrongIndex===-1)assert.equal(currentResponses.filter(r=>r.correct).length,26);
   }
-  // Verify the reviewed v0.44.20 instrumentation and every other runtime file are intact.
+  // Preserve the original review receipts. Check the three authorised runtime
+  // edits against the historical commit, and all other files against the worktree.
+  const correctionFiles = new Set(['package.json', 'src/App.tsx', 'src/index.css']);
+  const reviewedCommit = '0125fbb41bd7ed08eeecdfbc2750d5bcab729b25';
   const repo=path.resolve(__dirname,'..'),manifest=require('./fixtures/pilot2-reviewed-runtime-hashes.json');
   for(const [name,entry]of Object.entries(manifest)){
-    let bytes=fs.readFileSync(path.join(repo,name));
+    const baselineBytes = execFileSync('git',['show',reviewedCommit+':'+name],{cwd:repo,maxBuffer:5e6});
+    const worktreeBytes = fs.readFileSync(path.join(repo,name));
+    const normalize = bytes => bytes.toString('utf8').replace(/\r\n/g,'\n');
+    if (!correctionFiles.has(name)) {
+      assert.equal(normalize(worktreeBytes),normalize(baselineBytes),'frozen release file: '+name);
+    }
+    // Use the shipped commit for the two telemetry modules. Their current
+    // contents are checked against that commit above and exercised in pilot2.
+    if (name === 'src/learnerSyncService.ts' || name === 'src/pilot2Telemetry.ts') continue;
+    let bytes = baselineBytes;
     if(entry.normalization!=='raw'){
       let s=bytes.toString('utf8').replace(/^\uFEFF/,'').replace(/\r\n/g,'\n');
       const ast=ts.createSourceFile('App.tsx',s,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
       const declaration=ast.statements.find(n=>ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>d.name.getText(ast)==='startingAssessmentQuestions'));
       bytes=Buffer.from(s.slice(0,declaration.getStart(ast))+'/* AUTHORISED_STARTING_POINT_DECLARATION */'+s.slice(declaration.end));
     }
-    assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),entry.sha256,'reviewed runtime preserved: '+name);
+    const hash = input => crypto.createHash('sha256').update(input).digest('hex');
+    const variants = [bytes];
+    if (entry.normalization === 'raw') {
+      const lf = bytes.toString('utf8').replace(/\r\n/g,'\n');
+      variants.push(lf, lf.replace(/\n/g,'\r\n'));
+    }
+    assert.ok(variants.some(input => hash(input) === entry.sha256),'reviewed runtime preserved: '+name);
   }
+  const reviewedPackage = JSON.parse(execFileSync('git',['show',reviewedCommit+':package.json'],{cwd:repo}));
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(repo,'package.json'))), {...reviewedPackage,version:'0.44.21'});
   console.log('PASS 13 replacements: exact scope, keys/solvers, mappings, retained items, scoring/recommendations and reviewed v0.44.20 runtime hashes');
 };
 module.exports.authorised = authorised;

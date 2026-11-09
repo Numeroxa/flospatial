@@ -541,7 +541,7 @@ const TEST_ACCESS_PASSWORD = "flospatial";
 const ENABLE_PASSWORD_GATE = import.meta.env.VITE_ENABLE_PASSWORD_GATE !== "false";
 // Keep prototype testing shortcuts visible during the current alpha testing phase.
 const SHOW_TEST_SCENARIOS = true;
-const BUILD_LABEL = "Aptesta v0.44.20 Pilot 2 Instrumentation";
+const BUILD_LABEL = "Aptesta v0.44.21";
 
 function id(prefix = "id") {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
@@ -2395,7 +2395,7 @@ const guidedAbstractLogicalPracticeQuestions: MvpQuestion[] = [
   makeAbstractLogicalQuestion("ABS-G-008", "classification_relationships", "analogy", "▲ becomes △. Using the same rule, what should ■ become?", ["□", "◆", "●", "▲"], "A", "The rule changes a filled shape to its outline version. Filled square becomes outline square.", "Name the transformation before applying it.", {"kind": "sequence", "rows": [["▲", "→", "△", "   ", "■", "→", "?"]]}),
   makeAbstractLogicalQuestion("ABS-G-009", "deductive_reasoning", "must_follow", "All rescue pumps are machines. Which statement must be true?", ["All rescue pumps are machines", "All machines are rescue pumps", "Some machines are not rescue pumps", "All rescue pumps are portable"], "A", "The only statement guaranteed by the information is the original relationship: every rescue pump is a machine.", "Choose only what must follow, not what might be true.", undefined),
   makeAbstractLogicalQuestion("ABS-G-010", "deductive_reasoning", "ordering", "Ali finishes before Ben. Ben finishes before Chen. Who must finish last?", ["Chen", "Ben", "Ali", "Cannot be known"], "A", "The order is Ali, then Ben, then Chen. Chen must be last.", "Build the order explicitly before answering.", undefined),
-  makeAbstractLogicalQuestion("ABS-G-011", "matrices_rules", "subtraction_rule", "What belongs in the missing cell?", ["▲", "▲▲", "▲▲▲", "○"], "A", "In each row, the third cell is what remains after the second count is removed from the first. Four triangles minus three leaves one triangle.", "Describe the relationship between the cells before choosing an answer.", {"kind": "matrix", "rows": [["▲▲▲", "▲▲", "▲"], ["▲▲▲▲", "▲▲▲", "?"]]}),
+  makeAbstractLogicalQuestion("ABS-G-011", "matrices_rules", "subtraction_rule", "Use both of the first two cells in each row to work out the third. What belongs in the missing cell?", ["▲", "▲▲", "▲▲▲", "○"], "A", "In each row, the third cell is what remains after the second count is removed from the first. Four triangles minus three leaves one triangle.", "Describe the relationship between the cells before choosing an answer.", {"kind": "matrix", "rows": [["▲▲▲", "▲", "▲▲"], ["▲▲▲▲", "▲▲▲", "?"]]}),
   makeAbstractLogicalQuestion("ABS-G-012", "classification_relationships", "shared_property", "Which option belongs with the group shown?", ["□", "○", "△", "●"], "A", "The group contains four-sided shapes. The square shares that defining property.", "Find the property shared by the group before looking at the options.", {"kind": "set", "rows": [["▭", "◇", "▱", "?"]]}),
   makeAbstractLogicalQuestion("ABS-G-013", "deductive_reasoning", "conditional", "If the alarm sounds, the warning light turns on. The alarm sounds. What must follow?", ["The warning light turns on", "The warning light stays off", "The alarm is faulty", "Nothing can be concluded"], "A", "The stated condition applies directly: alarm sounds → warning light on.", "Translate the statement into a simple if → then rule.", undefined),
 ].map((question) => ({ ...question, sessionType: "guided_abstract_logical_practice" as const }));
@@ -5855,7 +5855,7 @@ function MechanicalQuestionScreen({ journey, sessionId, questionIndex, onAnswer 
     onAnswer(createAssessmentResponse(sessionId, question, optionId, Date.now() - startedAt, notSure), questionIndex === startingAssessmentQuestions.length - 1);
   }
   return <Shell right="Starting assessment">
-    <div className="fixed inset-0 z-[70] flex h-[100svh] flex-col overflow-hidden bg-[#111418] text-[#F4F6F8] lg:static lg:z-auto lg:h-auto lg:min-h-0 lg:overflow-visible">
+    <div className="phone-starting-viewport fixed inset-0 z-[70] flex h-[100svh] flex-col overflow-hidden bg-[#111418] text-[#F4F6F8] lg:static lg:z-auto lg:h-auto lg:min-h-0 lg:overflow-visible">
       <div ref={questionScrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain lg:overflow-visible">
         <section className="mx-auto max-w-5xl px-6 pb-6 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8 sm:pt-10 lg:pb-10">
           <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div>
@@ -7194,7 +7194,7 @@ function HydraulicIndependentPracticeQuestionScreen({ journey, sessionId, questi
     );
   }
 
-  return <Shell right="Independent practice"><section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-10 sm:pt-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Independent Hydraulic Practice</p><h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Hydraulic reasoning</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {hydraulicIndependentPracticeQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><div id="hydraulic-independent-question" className="scroll-mt-4"><Card className="p-5 sm:p-6"><p className="text-lg leading-relaxed text-[#F4F6F8] sm:text-xl">{question.stem}</p><div className="mt-5 grid gap-3">{visibleOptions.map((option) => <button key={option.optionId} type="button" onClick={() => select(option.optionId)} disabled={showFeedback} className={`rounded-2xl border bg-[#111418] p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"} ${showFeedback ? "cursor-default" : ""}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{!showFeedback && <div className="mt-6 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === hydraulicIndependentPracticeQuestions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div>}{showFeedback && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p></div><div className="shrink-0"><PrimaryButton className="w-full sm:w-auto" onClick={next}>{questionIndex === hydraulicIndependentPracticeQuestions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div>}</Card></div></section></Shell>;
+  return <Shell right="Independent practice"><section className="mx-auto max-w-5xl px-6 pb-20 pt-8 sm:px-8 sm:pb-10 sm:pt-10"><div className="mb-5 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Independent Hydraulic Practice</p><h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Hydraulic reasoning</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {hydraulicIndependentPracticeQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div><div id="hydraulic-independent-question" className="scroll-mt-4"><Card className="p-5 sm:p-6"><p className="text-lg leading-relaxed text-[#F4F6F8] sm:text-xl">{question.stem}</p><div className="mt-5 grid gap-3">{visibleOptions.map((option) => <button key={option.optionId} type="button" onClick={() => select(option.optionId)} disabled={showFeedback} className={`rounded-2xl border bg-[#111418] p-4 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"} ${showFeedback ? "cursor-default" : ""}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div>{!showFeedback && <div className="mt-6 flex justify-end"><PrimaryButton className="phone-question-action" disabled={!selectedOptionId} onClick={next}>Final answer</PrimaryButton></div>}{showFeedback && <div className={`mt-5 rounded-2xl border p-5 ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]" : "border-[#FFB86B]/40 bg-[#211813]"}`}><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p></div><div className="shrink-0"><PrimaryButton className="phone-question-action w-full sm:w-auto" onClick={next}>{questionIndex === hydraulicIndependentPracticeQuestions.length - 1 ? "View results" : "Next question"}</PrimaryButton></div></div></div>}</Card></div></section></Shell>;
 }
 
 function HydraulicIndependentPracticeDebriefScreen({ journey, onWhy, onContinue, onDashboard, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; onWhy: () => void; onContinue: () => void; onDashboard: () => void; onReviewIncorrect: () => void; onReviewAll: () => void }) {
@@ -7723,7 +7723,7 @@ function GearIndependentPracticeQuestionScreen({ journey, sessionId, questionInd
             })}
           </div>
 
-          {!showFeedback && <div className="mt-6 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === gearIndependentPracticeQuestions.length - 1 ? "Complete independent practice" : "Next question"}</PrimaryButton></div>}
+          {!showFeedback && <div className="mt-6 flex justify-end"><PrimaryButton className="phone-question-action" disabled={!selectedOptionId} onClick={next}>Final answer</PrimaryButton></div>}
           {showFeedback && (
             <div className={`mt-5 rounded-2xl border p-5 ${
               selectedCorrect
@@ -7736,8 +7736,8 @@ function GearIndependentPracticeQuestionScreen({ journey, sessionId, questionInd
                   <p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>
                 </div>
                 <div className="shrink-0">
-                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
-                    {questionIndex === gearIndependentPracticeQuestions.length - 1 ? "Complete independent practice" : "Next question"}
+                  <PrimaryButton className="phone-question-action w-full sm:w-auto" onClick={next}>
+                    {questionIndex === gearIndependentPracticeQuestions.length - 1 ? "View results" : "Next question"}
                   </PrimaryButton>
                 </div>
               </div>
@@ -9961,7 +9961,7 @@ function GearAssessmentQuestionScreen({ journey, sessionId, questionIndex, onAns
           <div className="mt-8 grid gap-4">
             {question.options.map((option) => <button key={option.optionId} onClick={() => { setSelectedOptionId(option.optionId); pilot.select(option.optionId); }} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}
           </div>
-          <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === gearAssessmentQuestions.length - 1 ? "Finish Gear Check" : "Next question"}</PrimaryButton></div>
+          <div className="mt-8 flex justify-end"><PrimaryButton className="phone-question-action" disabled={!selectedOptionId} onClick={next}>{questionIndex === gearAssessmentQuestions.length - 1 ? "Finish Gear Check" : "Next question"}</PrimaryButton></div>
         </Card>
       </section>
     </Shell>
@@ -10294,8 +10294,7 @@ function PulleyPracticeQuestionScreen({ journey, sessionId, questionIndex, onAns
                   )}
                 </div>
                 <div className="shrink-0">
-                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
-                    {questionIndex === questions.length - 1 ? `Complete ${stage === "guided" ? "guided practice" : "independent practice"}` : "Next question"}
+                  <PrimaryButton className={"w-full sm:w-auto " + (stage === "independent" ? "phone-question-action" : "")} onClick={next}>{questionIndex === questions.length - 1 ? (stage === "independent" ? "View results" : "Complete guided practice") : "Next question"}
                   </PrimaryButton>
                 </div>
               </div>
@@ -10304,8 +10303,7 @@ function PulleyPracticeQuestionScreen({ journey, sessionId, questionIndex, onAns
 
           {stage !== "guided" && !showFeedback && (
             <div className="mt-8 flex justify-end">
-              <PrimaryButton disabled={!selectedOptionId} onClick={next}>
-                {questionIndex === questions.length - 1 ? "Finish Pulley Check" : "Next question"}
+              <PrimaryButton className="phone-question-action" disabled={!selectedOptionId} onClick={next}>{stage === "independent" ? "Final answer" : questionIndex === questions.length - 1 ? "Finish Pulley Check" : "Next question"}
               </PrimaryButton>
             </div>
           )}
@@ -10561,8 +10559,7 @@ function LeverPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnsw
                   )}
                 </div>
                 <div className="shrink-0">
-                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
-                    {questionIndex === questions.length - 1 ? `Complete ${stage === "guided" ? "guided practice" : "independent practice"}` : "Next question"}
+                  <PrimaryButton className={"w-full sm:w-auto " + (stage === "independent" ? "phone-question-action" : "")} onClick={next}>{questionIndex === questions.length - 1 ? (stage === "independent" ? "View results" : "Complete guided practice") : "Next question"}
                   </PrimaryButton>
                 </div>
               </div>
@@ -10571,8 +10568,7 @@ function LeverPracticeQuestionScreen({ journey, sessionId, questionIndex, onAnsw
 
           {stage !== "guided" && !showFeedback && (
             <div className="mt-8 flex justify-end">
-              <PrimaryButton disabled={!selectedOptionId} onClick={next}>
-                {questionIndex === questions.length - 1 ? "Finish Lever Check" : "Next question"}
+              <PrimaryButton className="phone-question-action" disabled={!selectedOptionId} onClick={next}>{stage === "independent" ? "Final answer" : questionIndex === questions.length - 1 ? "Finish Lever Check" : "Next question"}
               </PrimaryButton>
             </div>
           )}
@@ -10912,8 +10908,7 @@ function NumericalPracticeQuestionScreen({ journey, sessionId, questionIndex, on
                   )}
                 </div>
                 <div className="shrink-0">
-                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
-                    {questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}
+                  <PrimaryButton className={"w-full sm:w-auto " + (stage === "independent" ? "phone-question-action" : "")} onClick={next}>{questionIndex === questions.length - 1 ? (stage === "independent" ? "View results" : "Complete practice") : "Next question"}
                   </PrimaryButton>
                 </div>
               </div>
@@ -10922,8 +10917,7 @@ function NumericalPracticeQuestionScreen({ journey, sessionId, questionIndex, on
 
           {stage !== "guided" && !showFeedback && (
             <div className="mt-8 flex justify-end">
-              <PrimaryButton disabled={!selectedOptionId} onClick={next}>
-                {questionIndex === questions.length - 1 ? (stage === "assessment" ? "Finish check" : "Complete practice") : "Next question"}
+              <PrimaryButton className="phone-question-action" disabled={!selectedOptionId} onClick={next}>{stage === "independent" ? "Final answer" : questionIndex === questions.length - 1 ? "Finish check" : "Next question"}
               </PrimaryButton>
             </div>
           )}
@@ -10989,7 +10983,7 @@ function AbstractLogicalVisualPanel({ visual }: { visual: AbstractVisual }) {
   const isMatrix = visual.kind === "matrix";
   const clusterableSymbols = new Set(["▲", "△", "●", "○", "■", "□", "◆", "◇"]);
   return (
-    <div className="mb-7 overflow-hidden rounded-3xl border border-white/10 bg-[#111418] p-3 sm:p-7">
+    <div data-abstract-visual className="mb-7 rounded-3xl border border-white/10 bg-[#111418] p-2 sm:p-7">
       {visual.caption && <div className="mb-4 text-xs uppercase leading-relaxed tracking-[0.14em] text-[#6E7A88]">{visual.caption}</div>}
       <div className="mx-auto grid max-w-3xl gap-1.5 sm:gap-3" style={{ gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))` }}>
         {visual.rows.flatMap((row, rowIndex) =>
@@ -11009,7 +11003,7 @@ function AbstractLogicalVisualPanel({ visual }: { visual: AbstractVisual }) {
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className={`${isMatrix ? "min-h-[4.5rem]" : "min-h-20"} min-w-0 overflow-hidden flex items-center justify-center rounded-2xl border px-1 text-center font-semibold sm:px-2 ${
+                className={`${isMatrix ? "min-h-[4.5rem]" : "min-h-20"} [container-type:inline-size] min-w-0 flex items-center justify-center rounded-2xl border px-1 text-center font-semibold sm:px-2 ${
                   isSpacer
                     ? "border-transparent bg-transparent"
                     : isTransformWord
@@ -11021,14 +11015,14 @@ function AbstractLogicalVisualPanel({ visual }: { visual: AbstractVisual }) {
               >
                 {isRepeatedSymbolCell ? (
                   <span
-                    className="grid items-center justify-center gap-x-1 gap-y-1 leading-none"
+                    className="grid items-center justify-center gap-x-0.5 gap-y-1 leading-none sm:gap-x-1"
                     style={{ gridTemplateColumns: `repeat(${clusterColumns}, auto)` }}
                     aria-label={`${cellSymbols.length} ${cellSymbols[0]} symbols`}
                   >
                     {cellSymbols.map((symbol, symbolIndex) => (
                       <span
                         key={symbolIndex}
-                        className={`${cellSymbols.length > 2 && cellSymbols.length % 2 === 1 && symbolIndex === cellSymbols.length - 1 ? "col-span-2 justify-self-center" : ""} text-[1.15rem] leading-none sm:text-2xl`}
+                        className={`${cellSymbols.length > 2 && cellSymbols.length % 2 === 1 && symbolIndex === cellSymbols.length - 1 ? "col-span-2 justify-self-center" : ""} text-[min(1.15rem,43cqi)] leading-[1.15] sm:text-[min(1.5rem,43cqi)]`}
                         aria-hidden="true"
                       >
                         {symbol}
@@ -11036,7 +11030,7 @@ function AbstractLogicalVisualPanel({ visual }: { visual: AbstractVisual }) {
                     ))}
                   </span>
                 ) : (
-                  <span className={`${isTransformWord ? "text-[10px] uppercase tracking-[0.05em] sm:text-sm sm:tracking-[0.08em]" : "whitespace-pre text-[1.5rem] leading-none sm:text-3xl"}`}>
+                  <span style={{ "--symbol-fit": `${90 / Math.max(1, cellSymbols.length)}cqi` } as React.CSSProperties} className={`${isTransformWord ? "text-[10px] uppercase tracking-[0.05em] sm:text-sm sm:tracking-[0.08em]" : "whitespace-pre text-[min(1.5rem,var(--symbol-fit))] leading-[1.15] sm:text-[min(1.875rem,var(--symbol-fit))]"}`}>
                     {cell}
                   </span>
                 )}
@@ -11072,7 +11066,7 @@ function AbstractLogicalPracticeQuestionScreen({ journey, sessionId, questionInd
   function next() { if (!selectedOptionId) return;
     if (stage === "independent" && !showFeedback) { onAnswer(pilot.createResponse(question, selectedOptionId), false, true); setShowFeedback(true); return; } const response = (stage === "guided" ? createAssessmentResponse(sessionId, question, selectedOptionId, Date.now() - startedAt, false) : pilot.createResponse(question, selectedOptionId)); onAnswer(response, questionIndex === questions.length - 1); }
   const title = stage === "guided" ? "Guided Abstract & Logical Practice" : stage === "independent" ? "Independent Abstract & Logical Practice" : "Abstract & Logical Check";
-  return <Shell right={title}><section className={`mx-auto max-w-5xl px-8 pt-12 ${stage === "assessment" ? "pb-12" : "pb-44 lg:pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Find the rule</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br /><span className="text-xs">{answered} saved</span></div></div>{stage !== "assessment" && <div className="mb-7 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5ED3F3]">Reasoning reminder</div><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">Identify the type → separate the features → test the simplest rule → verify it across every step.</p></div>}<Card>{question.abstractVisual && <AbstractLogicalVisualPanel visual={question.abstractVisual} />}{stage === "guided" && question.feedbackCue && <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">{question.feedbackCue}</div>}<p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-lg text-[#DCE3EA]">{option.text}</span></button>)}</div>{stage !== "guided" && !showFeedback ? <div className="mt-8 flex justify-end"><PrimaryButton disabled={!selectedOptionId} onClick={next}>{questionIndex === questions.length - 1 ? (stage === "assessment" ? "Finish check" : "Complete practice") : "Next question"}</PrimaryButton></div> : showFeedback && <div className={`fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl lg:static lg:mt-7 lg:rounded-2xl lg:border lg:p-5 lg:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton onClick={next}>{questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}</PrimaryButton></div></div></div></div>}</Card></section></Shell>;
+  return <Shell right={title}><section className={`mx-auto max-w-5xl px-4 sm:px-8 pt-12 ${stage === "assessment" ? "pb-12" : "pb-44 lg:pb-12"}`}><div className="mb-7 h-1.5 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-[#5ED3F3]/70 transition-all" style={{ width: `${progress}%` }} /></div><div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">{title}</p><h1 className="mt-3 text-3xl font-semibold">Find the rule</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {questions.length}<br /><span className="text-xs">{answered} saved</span></div></div>{stage !== "assessment" && <div className="mb-7 rounded-2xl border border-[#5ED3F3]/20 bg-[#5ED3F3]/5 p-5"><div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5ED3F3]">Reasoning reminder</div><p className="mt-2 text-sm leading-relaxed text-[#C8D2DD]">Identify the type → separate the features → test the simplest rule → verify it across every step.</p></div>}<Card className="max-sm:p-4">{question.abstractVisual && <AbstractLogicalVisualPanel visual={question.abstractVisual} />}{stage === "guided" && question.feedbackCue && <div className="mb-6 rounded-2xl border border-[#5ED3F3]/15 bg-[#5ED3F3]/8 p-4 text-sm leading-relaxed text-[#D9F8FF]">{question.feedbackCue}</div>}<p className="text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option) => <button key={option.optionId} onClick={() => select(option.optionId)} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-lg text-[#DCE3EA]">{option.text}</span></button>)}</div>{stage !== "guided" && !showFeedback ? <div className="mt-8 flex justify-end"><PrimaryButton className="phone-question-action" disabled={!selectedOptionId} onClick={next}>{stage === "independent" ? "Final answer" : questionIndex === questions.length - 1 ? "Finish check" : "Next question"}</PrimaryButton></div> : showFeedback && <div className={`${stage === "independent" ? "phone-independent-feedback" : ""} fixed inset-x-0 bottom-0 z-50 border-t p-4 shadow-2xl backdrop-blur-xl lg:static lg:mt-7 lg:rounded-2xl lg:border lg:p-5 lg:shadow-none ${selectedCorrect ? "border-[#38D39F]/40 bg-[#101D1A]/95" : "border-[#FFB86B]/40 bg-[#211813]/95"}`}><div className="mx-auto max-w-5xl"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold">{selectedCorrect ? "Correct" : "Not quite"}</p><p className="mt-2 leading-relaxed text-[#C8D2DD]">{question.explanation}</p>{!selectedCorrect && question.feedbackCue && <p className="mt-3 text-sm leading-relaxed text-[#D9F8FF]"><span className="text-[#6E7A88]">What to notice next time: </span>{question.feedbackCue}</p>}</div><div className="shrink-0 sm:pt-1"><PrimaryButton className={(stage === "independent" ? "phone-question-action" : "")} onClick={next}>{questionIndex === questions.length - 1 ? (stage === "independent" ? "View results" : "Complete practice") : "Next question"}</PrimaryButton></div></div></div></div>}</Card></section></Shell>;
 }
 
 function AbstractLogicalDebriefScreen({ journey, stage, onWhy, onDashboard, onNext, onReviewIncorrect, onReviewAll }: { journey: MvpGuestJourney; stage: AbstractLogicalStage; onWhy: () => void; onDashboard: () => void; onNext?: () => void; onReviewIncorrect?: () => void; onReviewAll?: () => void }) {
@@ -11263,8 +11257,7 @@ function VerbalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAns
                   )}
                 </div>
                 <div className="shrink-0">
-                  <PrimaryButton className="w-full sm:w-auto" onClick={next}>
-                    {questionIndex === questions.length - 1 ? "Complete practice" : "Next question"}
+                  <PrimaryButton className={"w-full sm:w-auto " + (stage === "independent" ? "phone-question-action" : "")} onClick={next}>{questionIndex === questions.length - 1 ? (stage === "independent" ? "View results" : "Complete practice") : "Next question"}
                   </PrimaryButton>
                 </div>
               </div>
@@ -11273,8 +11266,7 @@ function VerbalPracticeQuestionScreen({ journey, sessionId, questionIndex, onAns
 
           {stage !== "guided" && !showFeedback && (
             <div className="mt-8 flex justify-end">
-              <PrimaryButton disabled={!selectedOptionId} onClick={next}>
-                {questionIndex === questions.length - 1 ? (stage === "assessment" ? "Finish check" : "Complete practice") : "Next question"}
+              <PrimaryButton className="phone-question-action" disabled={!selectedOptionId} onClick={next}>{stage === "independent" ? "Final answer" : questionIndex === questions.length - 1 ? "Finish check" : "Next question"}
               </PrimaryButton>
             </div>
           )}
@@ -11469,7 +11461,7 @@ function MixedMechanicalAssessmentQuestionScreen({ journey, sessionId, questionI
       <div className="mb-8 flex items-end justify-between gap-4"><div><p className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Mixed Mechanical Assessment</p><h1 className="mt-3 text-3xl font-semibold">Choose the right method</h1></div><div className="text-right text-sm text-[#8D98A6]">Question {questionIndex + 1} of {mixedMechanicalAssessmentQuestions.length}<br/><span className="text-xs">{answered} saved</span></div></div>
       <Card className="p-4 sm:p-7"><MixedMechanicalAssessmentDiagram question={question}/><p className="mt-7 text-xl leading-relaxed text-[#F4F6F8]">{question.stem}</p><div className="mt-8 grid gap-4">{question.options.map((option)=><button key={option.optionId} onClick={() => { setSelectedOptionId(option.optionId); pilot.select(option.optionId); }} className={`rounded-2xl border bg-[#111418] p-5 text-left transition ${selectedOptionId === option.optionId ? "border-[#5ED3F3]/60 bg-[#5ED3F3]/10" : "border-white/10 hover:border-[#5ED3F3]/40"}`}><span className="mr-3 text-[#5ED3F3]">{option.label}</span><span className="text-[#DCE3EA]">{option.text}</span></button>)}</div></Card>
     </section>
-    <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 border-t border-white/10 bg-[#111418]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] backdrop-blur sm:bottom-0 sm:px-8">
+    <div className="phone-mixed-check-footer fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#111418]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(0,0,0,0.28)] backdrop-blur sm:bottom-0 sm:px-8">
       <div className="mx-auto flex max-w-5xl justify-end"><PrimaryButton className="w-full text-base sm:w-auto sm:min-w-52" disabled={!selectedOptionId} onClick={next}>{actionLabel}</PrimaryButton></div>
     </div>
   </Shell>;
@@ -11535,6 +11527,32 @@ function CorePathwaysCompleteScreen({ journey, onDashboard }: { journey: MvpGues
 function PasswordGate({ onUnlock }: { onUnlock: () => void }) { const [password, setPassword] = useState(""); const [error, setError] = useState(false); return <main className="flex min-h-screen items-center justify-center bg-[#111418] p-8 text-[#F4F6F8]"><section className="w-full max-w-md rounded-[32px] border border-white/5 bg-[#171C23] p-10 shadow-2xl"><div className="text-sm uppercase tracking-[0.22em] text-[#6E7A88]">Aptesta</div><h1 className="mt-6 text-4xl font-semibold">Private testing access</h1><p className="mt-5 text-[#9AA3B2]">Enter the shared testing password to continue.</p><form onSubmit={(e) => { e.preventDefault(); if (password.trim() === TEST_ACCESS_PASSWORD) { window.localStorage.setItem("flospatial.accessGranted.v1", "true"); onUnlock(); } else setError(true); }} className="mt-8"><input value={password} onChange={(e) => { setPassword(e.target.value); setError(false); }} type="password" autoFocus className="w-full rounded-xl border border-white/10 bg-[#111418] px-4 py-4 outline-none focus:border-[#5ED3F3]/50" placeholder="Password" />{error && <p className="mt-3 text-sm text-[#FF9A9A]">That password did not match.</p>}<button className="mt-6 w-full rounded-xl border border-[#5ED3F3]/30 bg-[#5ED3F3]/10 px-7 py-4 font-medium text-[#D9F8FF]">Enter</button></form></section></main>; }
 
 export default function AptestaPrototype() {
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const root = document.documentElement;
+    const updateViewport = () => {
+      // Fixed elements use layout viewport coordinates. Follow browser chrome,
+      // but leave the layout alone while the learner pinch-zooms.
+      const atNormalScale = Math.abs(viewport.scale - 1) < 0.01;
+      const top = atNormalScale ? Math.max(0, viewport.offsetTop) : 0;
+      const bottom = atNormalScale ? Math.max(0, root.clientHeight - viewport.height - top) : 0;
+      root.style.setProperty("--question-viewport-top", `${top}px`);
+      root.style.setProperty("--question-viewport-bottom", `${bottom}px`);
+    };
+    updateViewport();
+    viewport.addEventListener("resize", updateViewport);
+    viewport.addEventListener("scroll", updateViewport);
+    window.addEventListener("resize", updateViewport);
+    return () => {
+      viewport.removeEventListener("resize", updateViewport);
+      viewport.removeEventListener("scroll", updateViewport);
+      window.removeEventListener("resize", updateViewport);
+      root.style.removeProperty("--question-viewport-top");
+      root.style.removeProperty("--question-viewport-bottom");
+    };
+  }, []);
+
   const [accessGranted, setAccessGranted] = useState(() => !ENABLE_PASSWORD_GATE || (typeof window !== "undefined" && window.localStorage.getItem("flospatial.accessGranted.v1") === "true"));
   const [journey, setJourney] = useState<MvpGuestJourney>(() => loadMvpGuestJourney());
   const [screen, setScreen] = useState<AppScreen>("landing");

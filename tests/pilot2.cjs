@@ -38,7 +38,8 @@ function render(component,props){const r={slots:[],cursor:0,effects:[],dirty:tru
 function nodes(tree){if(!tree||typeof tree!=='object')return [];if(Array.isArray(tree))return tree.flatMap(nodes);return [tree,...nodes(tree.props?.children)];}
 function text(tree){if(tree===null||tree===undefined||typeof tree==='boolean')return '';if(typeof tree==='string'||typeof tree==='number')return String(tree);if(Array.isArray(tree))return tree.map(text).join(' ');return text(tree.props?.children);}
 function clickOption(r,q,id){const option=q.options.find(o=>o.optionId===id);const node=nodes(r.tree).find(n=>n.type==='button'&&text(n).includes(option.text));assert.ok(node,'option '+id);assert.ok(!node.props.disabled,'option editable');node.props.onClick();r.update();}
-function next(r){const button=nodes(r.tree).find(n=>typeof n.type==='function'&&n.type.name==='PrimaryButton'&&n.props.onClick);assert.ok(button,'Next exists');assert.ok(!button.props.disabled);button.props.onClick();r.update();}
+function action(r){return nodes(r.tree).find(n=>typeof n.type==='function'&&n.type.name==='PrimaryButton'&&n.props.onClick);}
+function next(r){const button=action(r);assert.ok(button,'Next exists');assert.ok(!button.props.disabled);button.props.onClick();r.update();}
 const shared=[['PulleyPracticeQuestionScreen','pulley'],['LeverPracticeQuestionScreen','lever'],['NumericalPracticeQuestionScreen','numerical'],['AbstractLogicalPracticeQuestionScreen','abstractLogical'],['VerbalPracticeQuestionScreen','verbal']];
 const independent=[['HydraulicIndependentPracticeQuestionScreen','hydraulic'],['GearIndependentPracticeQuestionScreen','gear'],...shared];
 let assertions=0;
@@ -48,15 +49,22 @@ for(const [screen,prefix] of independent){
  const r=render(app[screen],props),wrong=q.options.find(o=>o.optionId!==q.correctOptionId).optionId;
  clock+=300;clickOption(r,q,wrong);assert.ok(!text(r.tree).includes(q.explanation),'no first selection feedback');
  clock+=200;clickOption(r,q,q.correctOptionId);clock+=50;clickOption(r,q,q.correctOptionId);assert.ok(!text(r.tree).includes(q.explanation),'no revised selection feedback');
+ assert.equal(text(action(r)), "Final answer");
  clock+=450;next(r);assert.equal(calls.length,1);const response=calls[0][0];assert.equal(calls[0][2],true,'persist on first Next');assert.equal(response.firstSelectedOptionId,wrong);assert.equal(response.selectedOptionId,q.correctOptionId);assert.equal(response.correct,true);assert.equal(response.answerChangeCount,1);assert.equal(response.firstSelectionTimeMs,300);assert.equal(response.totalQuestionTimeMs,1000);assert.ok(response.finalSubmissionAt);assert.ok(text(r.tree).includes(q.explanation),'feedback after submission');
+ assert.equal(text(action(r)), "Next question");
  clock+=5000;next(r);assert.equal(calls.length,2);assert.equal(calls[1][0].responseId,response.responseId);assert.equal(calls[1][0].totalQuestionTimeMs,1000,'feedback time excluded');
  // Question-key change starts a new capture.
  props.questionIndex=1;r.update();clock+=125;clickOption(r,qs[1],qs[1].correctOptionId);clock+=75;next(r);assert.equal(calls[2][0].firstSelectionTimeMs,125);assert.equal(calls[2][0].answerChangeCount,0);
+ props.questionIndex=qs.length-1;r.update();
+ clickOption(r,qs.at(-1),qs.at(-1).correctOptionId);
+ assert.equal(text(action(r)), "Final answer");
+ next(r);
+ assert.equal(text(action(r)), "View results");
  assertions++;console.log('PASS independent '+prefix);
 }
 const checks=[['GearAssessmentQuestionScreen','gear'],...shared,['MixedMechanicalAssessmentQuestionScreen','mixedMechanical']];
 for(const [screen,prefix] of checks){const qs=app[prefix+'AssessmentQuestions'],q=qs[0],calls=[],r=render(app[screen],{journey:{responses:[]},sessionId:'check',questionIndex:0,questions:qs,stage:'assessment',onAnswer:(...a)=>calls.push(a)});const wrong=q.options.find(o=>o.optionId!==q.correctOptionId).optionId;clock+=100;clickOption(r,q,q.correctOptionId);clock+=200;clickOption(r,q,wrong);assert.ok(!text(r.tree).includes(q.explanation));clock+=100;next(r);assert.equal(calls.length,1);assert.equal(calls[0][0].firstSelectedOptionId,q.correctOptionId);assert.equal(calls[0][0].selectedOptionId,wrong);assert.equal(calls[0][0].correct,false);assert.equal(calls[0][0].answerChangeCount,1);assert.equal(calls[0][0].firstSelectionTimeMs,100);assert.equal(calls[0][0].totalQuestionTimeMs,400);assert.ok(!text(r.tree).includes(q.explanation));assertions++;console.log('PASS check '+prefix);}
-for(const [screen,prefix] of [...shared,['GuidedHydraulicQuestionScreen','hydraulic'],['GuidedGearQuestionScreen','gear']]){const qs=app['guided'+prefix[0].toUpperCase()+prefix.slice(1)+'PracticeQuestions'],q=qs[0],calls=[],r=render(app[screen],{journey:{responses:[]},sessionId:'guided',questionIndex:0,questions:qs,stage:'guided',onAnswer:(...a)=>calls.push(a)});clickOption(r,q,q.correctOptionId);assert.ok(text(r.tree).includes(q.explanation));const other=q.options.find(o=>o.optionId!==q.correctOptionId);const button=nodes(r.tree).find(n=>n.type==='button'&&text(n).includes(other.text));if(button&&!button.props.disabled){button.props.onClick();r.update();}next(r);assert.equal(calls[0][0].selectedOptionId,q.correctOptionId,'Guided selection locks');assertions++;console.log('PASS guided '+prefix);}
+for(const [screen,prefix] of [...shared,['GuidedHydraulicQuestionScreen','hydraulic'],['GuidedGearQuestionScreen','gear']]){const qs=app['guided'+prefix[0].toUpperCase()+prefix.slice(1)+'PracticeQuestions'],q=qs[0],calls=[],r=render(app[screen],{journey:{responses:[]},sessionId:'guided',questionIndex:0,questions:qs,stage:'guided',onAnswer:(...a)=>calls.push(a)});const other=q.options.find(o=>o.optionId!==q.correctOptionId);clickOption(r,q,q.correctOptionId);assert.equal(calls.length,0);assert.ok(text(r.tree).includes(q.explanation));const button=nodes(r.tree).find(n=>n.type==='button'&&text(n).includes(other.text));if(button&&!button.props.disabled){button.props.onClick();r.update();}next(r);assert.equal(calls[0][0].selectedOptionId,q.correctOptionId,'Guided selection locks');assertions++;console.log('PASS guided '+prefix);}
 // Exact clocks, multiple switches, repeated taps, all correctness transitions, frozen submission and legacy CSV.
 for(const firstCorrect of [false,true])for(const finalCorrect of [false,true]){const c=telemetry.beginPilot2Question(1000,0),q=app.verbalAssessmentQuestions[0],wrong=q.options.find(o=>o.optionId!==q.correctOptionId).optionId;telemetry.recordPilot2Selection(c,firstCorrect?q.correctOptionId:wrong,1100,100);telemetry.recordPilot2Selection(c,finalCorrect?q.correctOptionId:wrong,1200,200);const capture=telemetry.submitPilot2Question(c,1500,500);telemetry.recordPilot2Selection(c,wrong,1900,900);assert.equal(telemetry.submitPilot2Question(c,2000,1000).totalQuestionTimeMs,500);const response={...capture,domain:q.domain,subcompetency:q.subcompetency,sessionId:'s',responseId:'r',questionId:q.questionId,selectedOptionId:finalCorrect?q.correctOptionId:wrong,correct:finalCorrect,responseTimeMs:500,answeredAt:'x',telemetryVersion:telemetry.PILOT2_TELEMETRY_VERSION};const csv=telemetry.buildPilot2Csv({guestJourneyId:'p',sessions:[{sessionId:'s',sessionType:'verbal_assessment',startedAt:'x'}],responses:[response]},[q]);assert.ok(csv.includes((firstCorrect?'correct':'incorrect')+'_to_'+(finalCorrect?'correct':'incorrect')));}
 const legacy={sessionId:'old',responseId:'old-r',questionId:'old-q',selectedOptionId:'A',correct:false,responseTimeMs:999,answeredAt:'x'};assert.ok(telemetry.buildPilot2Csv({guestJourneyId:'legacy',sessions:[],responses:[legacy]},[]).includes('legacy_or_uninstrumented'));
@@ -64,7 +72,7 @@ const journey=app.createEmptyMvpGuestJourney();journey.responses.push(legacy);ap
 const demo=app.createVerbalIndependentStrongDemoJourney();const summary=demo.practiceSummaries.find(s=>s.sessionType==='verbal_independent_practice');assert.equal(summary.correct,10);assert.equal(summary.attempted,12);assert.equal(demo.recommendations.find(r=>r.status==='active').recommendationType,'begin_verbal_assessment');
 // Frozen banks and recommendation implementations must remain exactly equal to baseline.
 const baseline=loadApp(true).app;
-for(const bank of banks.filter(name=>name!=='startingAssessmentQuestions'))assert.equal(JSON.stringify(app[bank]),JSON.stringify(baseline[bank]),'frozen '+bank);
+for(const bank of banks.filter(name=>!['startingAssessmentQuestions','guidedAbstractLogicalPracticeQuestions'].includes(name)))assert.equal(JSON.stringify(app[bank]),JSON.stringify(baseline[bank]),'frozen '+bank);
 const source=fs.readFileSync(path.join(repo,'src/App.tsx'),'utf8'),base=cp.execFileSync('git',['show','2065282637d1407a1b41f16b6b73aa33884b5b72:src/App.tsx'],{cwd:repo,encoding:'utf8',maxBuffer:5e6});
 function declarations(s){const ast=ts.createSourceFile('App.tsx',s,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);return new Map(ast.statements.filter(n=>ts.isFunctionDeclaration(n)&&n.name).map(n=>[n.name.text,n.getText(ast).replace(/\r/g, "")]));}
 const before=declarations(base),after=declarations(source);for(const[n,body]of before)if(/^(complete|calculate|weakest)/.test(n))assert.equal(after.get(n),body,'scoring/recommendation '+n);
@@ -77,7 +85,7 @@ console.log('PASS '+assertions+' screen/stage scenarios plus telemetry and regre
 for (const [label, content] of [['baseline',base],['current',source]]) {
   const ast=ts.createSourceFile('App.tsx',content,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
   const vars=new Map(ast.statements.filter(ts.isVariableStatement).map(n=>[n.declarationList.declarations.map(d=>d.name.getText(ast)).join(','),n.getText(ast).replace(/\r/g,'')]));
-  if(label==='baseline')globalThis.baselineVars=vars;else for(const[n,v]of globalThis.baselineVars)if(n!=='BUILD_LABEL'&&n!=='startingAssessmentQuestions')assert.equal(vars.get(n),v,'authored data constant '+n);
+  if(label==='baseline')globalThis.baselineVars=vars;else for(const[n,v]of globalThis.baselineVars)if(n!=='BUILD_LABEL'&&n!=='startingAssessmentQuestions')assert.equal(vars.get(n),n==='guidedAbstractLogicalPracticeQuestions' ? v.replace('subtraction_rule", "What belongs in the missing cell?', 'subtraction_rule", "Use both of the first two cells in each row to work out the third. What belongs in the missing cell?').replace('["▲▲▲", "▲▲", "▲"]','["▲▲▲", "▲", "▲▲"]') : v,'authored data constant '+n);
 }
 const changes=telemetry.beginPilot2Question(1000,0);for(const [i,option] of ['A','B','B','C','A'].entries())telemetry.recordPilot2Selection(changes,option,1100+i*100,100+i*100);assert.equal(changes.answerChangeCount,3);assert.equal(changes.firstOptionId,'A');
 // Existing journey JSON union preserves optional fields without a schema migration.
@@ -94,3 +102,20 @@ const many={...oldJourney,responses:Array.from({length:24},(_,i)=>({...legacy,re
 
 
 require("./starting-point-amendment.cjs")(app, baseline);
+
+
+// The original first row fit both rules, but only subtraction fits the revised example.
+const oldQ10 = baseline.guidedAbstractLogicalPracticeQuestions[9];
+const revisedQ10 = app.guidedAbstractLogicalPracticeQuestions[9];
+assert.equal(oldQ10.questionId, 'ABS-G-011');
+const rules = [(first, second) => first - second, (_, second) => second - 1];
+function matchingAnswers(question) {
+  const [example, target] = question.abstractVisual.rows.map(row => row.map(cell => cell.length));
+  return rules.filter(rule => rule(...example) === example[2])
+    .map(rule => question.options.find(option => option.text === '▲'.repeat(rule(...target))).optionId);
+}
+const oldMatches = matchingAnswers(oldQ10);
+assert.equal(new Set(oldMatches).size, 2);
+assert.ok(oldMatches.includes(oldQ10.correctOptionId));
+assert.deepEqual(matchingAnswers(revisedQ10), [revisedQ10.correctOptionId]);
+console.log('PASS Guided Abstract Q10 resolves the two reported rules');

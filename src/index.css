@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+@media (width < 40rem) {
+  .phone-starting-viewport {
+    top: var(--question-viewport-top, 0px);
+    bottom: auto;
+    height: calc(100dvh - var(--question-viewport-top, 0px));
+    height: min(100dvh, calc(100% - var(--question-viewport-top, 0px) - var(--question-viewport-bottom, 0px)));
+  }
+
+  .phone-question-action {
+    position: fixed;
+    z-index: 40;
+    inset-inline: 1rem;
+    bottom: calc(var(--question-viewport-bottom, 0px) + max(1rem, env(safe-area-inset-bottom)));
+    width: auto;
+    background: #19323b;
+  }
+
+  .phone-question-action:disabled {
+    opacity: 1;
+    background: #19242b;
+    color: #8d98a6;
+  }
+
+  main:has(.phone-question-action) {
+    padding-bottom: calc(6.5rem + var(--question-viewport-bottom, 0px) + env(safe-area-inset-bottom));
+  }
+
+  .phone-mixed-check-footer {
+    bottom: var(--question-viewport-bottom, 0px);
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  main:has(.phone-mixed-check-footer) {
+    padding-bottom: calc(6.5rem + var(--question-viewport-bottom, 0px) + env(safe-area-inset-bottom));
+  }
+
+  .phone-independent-feedback {
+    position: static;
+    margin-top: 1.25rem;
+    border-radius: 1rem;
+    border-width: 1px;
+    backdrop-filter: none;
+  }
+}
