@@ -8,18 +8,8 @@
     height: min(100dvh, calc(100% - var(--question-viewport-top, 0px) - var(--question-viewport-bottom, 0px)));
   }
 
-  main:has(.phone-question-action) {
-    /* Keep taps clear of Safari's bottom toolbar reveal area. */
-    --phone-question-action-bottom: calc(var(--question-viewport-bottom, 0px) + max(3rem, calc(env(safe-area-inset-bottom) + 1rem)));
-    padding-bottom: calc(var(--phone-question-action-bottom) + 4.5rem);
-  }
-
   .phone-question-action {
-    position: fixed;
-    z-index: 40;
-    inset-inline: 1rem;
-    bottom: var(--phone-question-action-bottom);
-    width: auto;
+    width: 100%;
     background: #19323b;
   }
 
